@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "home": "Startseite",
+    "schedule": "Zeitplan",
+    "about": "Über uns",
+    "contact": "Kontakt"
+  },
+  "dayTrip": {
+    "title": "Gamescom 2025 mit Clicker Spiele",
+    "subtitle": "Entdecken Sie die weltweit größte Gaming-Messe mit uns",
+    "description": "Schließen Sie sich Clicker Spiele auf der weltweit größten Gaming-Veranstaltung an! Erleben Sie die neuesten Spiele, treffen Sie Branchenprofis und entdecken Sie was als nächstes im Gaming kommt."
+  },
+  "schedule": {
+    "title": "Zeitplan",
+    "subtitle": "Ihr perfekter Tag in München",
+    "morning": "Morgen",
+    "afternoon": "Nachmittag",
+    "evening": "Abend",
+    "departure": "Abfahrt",
+    "arrival": "Ankunft",
+    "breakfast": "Frühstück",
+    "sightseeing": "Stadtbesichtigung",
+    "lunch": "Mittagessen",
+    "museum": "Museumsbesuch",
+    "dinner": "Abendessen",
+    "return": "Rückfahrt"
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
+    "open": "Öffnen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "navigation": {
+    "home": "Home",
+    "schedule": "Schedule",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "dayTrip": {
+    "title": "Gamescom 2025 with Clicker Spiele",
+    "subtitle": "Discover the world's largest gaming fair with us",
+    "description": "Join Clicker Spiele at the world's largest gaming event! Experience the latest games, meet industry professionals, and discover what's next in gaming."
+  },
+  "schedule": {
+    "title": "Schedule",
+    "subtitle": "Your perfect day in Munich",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "departure": "Departure",
+    "arrival": "Arrival",
+    "breakfast": "Breakfast",
+    "sightseeing": "Sightseeing",
+    "lunch": "Lunch",
+    "museum": "Museum Visit",
+    "dinner": "Dinner",
+    "return": "Return Trip"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "close": "Close",
+    "open": "Open",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  }
+}
