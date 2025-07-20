@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:email": "email dev --port 6942",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -26,6 +27,7 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@react-email/components": "0.3.2",
     "better-auth": "^1.2.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -37,11 +39,13 @@
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "resend": "^4.7.0",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@react-email/preview-server": "^4.2.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -50,6 +54,7 @@
     "eslint-config-next": "15.4.1",
     "prettier": "^3.6.2",
     "prisma": "^6.12.0",
+    "react-email": "4.2.3",
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",

@@ -183,5 +183,34 @@
   "nav-user": {
     "account": "account",
     "notifications": "notifications"
+  },
+  "settings": {
+    "account": {
+      "userInformationUpdated": "User information updated successfully.",
+      "failedToUpdateUserInformation": "An Error occured, please try again later",
+      "profileInformation": "Profile Information",
+      "updateYourPersonalInformation": "Update your personal information and display name.",
+      "displayName": "Display Name",
+      "email": "E-Mail",
+      "saveChanges": "Save Changes",
+      "displayNamePlaceholder": "Your new Display Name",
+      "emailPlaceholder": "Your new E-Mail",
+      "dataExport": "Data Export",
+      "dataExportDescription": "Download a copy of your data.",
+      "dataExportInfo": "Request an export of your personal data. This may take some time to process.",
+      "requestDataExport": "Export Data",
+      "userNotLoggedIn": "Action can not be made because there is no active session.",
+      "requestDataExportSuccess": "Data Export will start soon",
+      "failedToExportData": "Something went wrong with the Data Export",
+      "dangerZone": "Danger Zone",
+      "irreversibleAndDestructiveActions": "Irreversible and destructive actions.",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDescription": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "areYouAbsolutelySure": "Are you absolutely sure?",
+      "thisActionCannotBeUndone": "This action cannot be undone.                                             This will permanently delete your account and remove all your data from our servers.",
+      "type": "Type",
+      "toConfirm": "to confirm",
+      "deleteConfirmationPlaceholder": "Type DELETE to confirm"
+    }
   }
 }

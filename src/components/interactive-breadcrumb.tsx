@@ -38,10 +38,14 @@ export function InteractiveBreadcrumb({
             <React.Fragment key={href}>
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage>{segment.toUpperCase()[0] + segment.slice(1)}</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {segment.toUpperCase()[0] + segment.slice(1)}
+                  </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link href={href}>{segment.toUpperCase()[0] + segment.slice(1)}</Link>
+                    <Link href={href}>
+                      {segment.toUpperCase()[0] + segment.slice(1)}
+                    </Link>
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>

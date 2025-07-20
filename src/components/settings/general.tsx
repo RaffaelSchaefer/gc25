@@ -13,8 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 
 const languages = [
@@ -86,28 +84,6 @@ export function GeneralSettings() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>
-            Update your personal information and display name.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="display-name">Display Name</Label>
-            <Input id="display-name" placeholder="Your display name" />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="your@email.com" />
-          </div>
-
-          <Button>Save Changes</Button>
         </CardContent>
       </Card>
     </div>

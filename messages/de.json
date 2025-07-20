@@ -183,5 +183,34 @@
   "nav-user": {
     "account": "Konto",
     "notifications": "Benachrichtigungen"
+  },
+  "settings": {
+    "account": {
+      "userInformationUpdated": "Benutzerinformationen erfolgreich aktualisiert.",
+      "failedToUpdateUserInformation": "Ein Fehler trat auf, bitte versuchen Sie es später erneut",
+      "profileInformation": "Profilinformationen",
+      "updateYourPersonalInformation": "Aktualisieren Sie Ihre persönlichen Daten und Anzeigennamen.",
+      "displayName": "Anzeigename",
+      "saveChanges": "Änderungen speichern",
+      "displayNamePlaceholder": "Dein neuer Anzeigenname",
+      "emailPlaceholder": "Deine neue E-Mail",
+      "email": "E-Mail",
+      "dataExport": "Datenexport",
+      "dataExportDescription": "Laden Sie eine Kopie Ihrer Daten herunter.",
+      "dataExportInfo": "Fordern Sie einen Export Ihrer persönlichen Daten an. Dies kann einige Zeit in Anspruch nehmen, um verarbeitet zu werden.",
+      "requestDataExport": "Daten exportieren",
+      "userNotLoggedIn": "Aktion kann nicht durchgeführt werden da es keine aktive Session gibt.",
+      "requestDataExportSuccess": "Der Datenexport beginnt bald",
+      "failedToExportData": "Etwas ist schief gelaufen mit dem Daten Export",
+      "dangerZone": "Gefahrenzone",
+      "irreversibleAndDestructiveActions": "Irreversible und zerstörerische Handlungen.",
+      "deleteAccount": "Konto löschen",
+      "deleteAccountDescription": "Löschen Sie Ihr Konto und alle zugehörigen Daten dauerhaft. \nDiese Aktion kann nicht rückgängig gemacht werden.",
+      "areYouAbsolutelySure": "Bist du dir absolut sicher?",
+      "thisActionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.                                             \nDadurch wird Ihr Konto dauerhaft gelöscht und alle Ihre Daten von unseren Servern entfernt.",
+      "type": "Scheib",
+      "toConfirm": "zum bestätigen",
+      "deleteConfirmationPlaceholder": "Geben Sie DELETE ein, um dies zu bestätigen"
+    }
   }
 }
