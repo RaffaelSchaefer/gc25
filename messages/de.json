@@ -167,5 +167,21 @@
     "description": "Melde dich mit Discord an, um am Clicker Spiele Abenteuer teilzunehmen",
     "button": "Mit Discord fortfahren",
     "loading": "Laden..."
+  },
+  "homepage": {
+    "title": "Startseite"
+  },
+  "sidebar": {
+    "company_name": "Clicker Spiele",
+    "product_name": "Reiseplaner",
+    "upgrade_to_pro": "Auf Pro upgraden",
+    "account": "Konto",
+    "billing": "Abrechnung",
+    "notifications": "Benachrichtigungen",
+    "logout": "Abmelden"
+  },
+  "nav-user": {
+    "account": "Konto",
+    "notifications": "Benachrichtigungen"
   }
 }

@@ -167,5 +167,21 @@
     "description": "Login with Discord to join the Clicker Spiele adventure",
     "button": "Continue with Discord",
     "loading": "Loading..."
+  },
+  "homepage": {
+    "title": "Homepage"
+  },
+  "sidebar": {
+    "company_name": "Clicker Spiele",
+    "product_name": "Trip Planer",
+    "upgrade_to_pro": "Upgrade to Pro",
+    "account": "Account",
+    "billing": "Billing",
+    "notifications": "Notifications",
+    "logout": "Log out"
+  },
+  "nav-user": {
+    "account": "account",
+    "notifications": "notifications"
   }
 }

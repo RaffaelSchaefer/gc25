@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.match(/^\/(en|de)\/home/)) {
     const secureResponse = await securePathsMiddleware(request);
-    return secureResponse;  
+    return secureResponse;
   }
 
   return i18nResponse;
