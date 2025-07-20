@@ -1,9 +1,26 @@
-import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
+import { NextRequest } from "next/server";
+import i18nMiddleware from "./middlewares/i18n-middleware";
+import { middleware as securePathsMiddleware } from "./middlewares/secure-paths-middleware";
 
-export default createMiddleware(routing);
+/**
+ * @author Raffael Elias Schäfer
+ */
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const i18nResponse = i18nMiddleware(request);
+
+  if (i18nResponse && i18nResponse.status === 307) {
+    return i18nResponse;
+  }
+
+  if (pathname.match(/^\/(en|de)\/home/)) {
+    const secureResponse = await securePathsMiddleware(request);
+    return secureResponse;  
+  }
+
+  return i18nResponse;
+}
 
 export const config = {
-  // Matcher für alle Pfade außer Next.js interne und statische Dateien
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/", "/:locale(en|de)/:path*"],
 };

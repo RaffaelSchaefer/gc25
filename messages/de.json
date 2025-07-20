@@ -7,32 +7,165 @@
   },
   "dayTrip": {
     "title": "Gamescom 2025 mit Clicker Spiele",
-    "subtitle": "Entdecken Sie die weltweit größte Gaming-Messe mit uns",
-    "description": "Schließen Sie sich Clicker Spiele auf der weltweit größten Gaming-Veranstaltung an! Erleben Sie die neuesten Spiele, treffen Sie Branchenprofis und entdecken Sie was als nächstes im Gaming kommt."
+    "description": "Schließe dich Clicker Spiele auf dem weltgrößten Gaming-Event an! Erlebe die neuesten Spiele, triff Branchenprofis und entdecke, was als Nächstes im Gaming kommt.",
+    "badge": "Gamescom 2025 Erlebnis",
+    "details": {
+      "dates": "Daten",
+      "dates_value": "19.-24. Aug",
+      "duration": "Dauer",
+      "duration_value": "6 Tage",
+      "location": "Ort",
+      "location_value": "Köln, DE",
+      "cost": "Kosten",
+      "cost_value": "Eigene Kosten"
+    },
+    "buttons": {
+      "join": "Anmelden zum Teilnehmen",
+      "schedule": "Zeitplan ansehen"
+    },
+    "availability": {
+      "expenses": "Zahle für deine eigenen Ausgaben",
+      "registration": "Aktive Planungsphase"
+    }
   },
   "schedule": {
-    "title": "Zeitplan",
-    "subtitle": "Ihr perfekter Tag in München",
-    "morning": "Morgen",
-    "afternoon": "Nachmittag",
-    "evening": "Abend",
-    "departure": "Abfahrt",
-    "arrival": "Ankunft",
-    "breakfast": "Frühstück",
-    "sightseeing": "Stadtbesichtigung",
-    "lunch": "Mittagessen",
-    "museum": "Museumsbesuch",
-    "dinner": "Abendessen",
-    "return": "Rückfahrt"
+    "title": "6-Tage-Zeitplan",
+    "subtitle": "Deine vollständige Gamescom 2025 Abenteuer-Zeitleiste",
+    "notice": "Änderungen am Zeitplan sind vorbehalten",
+    "days": [
+      {
+        "day": 1,
+        "date": "19. Aug",
+        "title": "Ankunft & Camp-Aufbau",
+        "activities": [
+          {
+            "time": "10:00",
+            "activity": "Treffen am Campingplatz",
+            "icon": "Users"
+          },
+          {
+            "time": "11:00",
+            "activity": "Zelte aufbauen & einrichten",
+            "icon": "Tent"
+          },
+          {
+            "time": "19:00",
+            "activity": "Gemeinsames Abendessen",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "date": "20. Aug",
+        "title": "Gamescom Tag 1",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Erster Tag auf der Gamescom",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Mittagessen auf der Messe",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Abendessen auswärts",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "date": "21. Aug",
+        "title": "Gamescom Tag 2",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Gamescom-Erkundung",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Mittagessen auf der Messe",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Abendessen auswärts",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "date": "22. Aug",
+        "title": "Gamescom Tag 3",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Letzter Gamescom-Tag",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Mittagessen auf der Messe",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Abendessen auswärts",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "date": "23. Aug",
+        "title": "Köln-Aktivitätstag",
+        "activities": [
+          {
+            "time": "10:00",
+            "activity": "Aktivitätstag von Vio & Charly",
+            "icon": "MapPin"
+          },
+          {
+            "time": "12:00",
+            "activity": "Mittagessen in Köln",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Abendessen auswärts",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 6,
+        "date": "24. Aug",
+        "title": "Abreise",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Zelte abbauen & packen",
+            "icon": "Tent"
+          },
+          {
+            "time": "11:00",
+            "activity": "Heimfahrt",
+            "icon": "Car"
+          }
+        ]
+      }
+    ]
   },
-  "common": {
-    "loading": "Laden...",
-    "error": "Fehler",
-    "retry": "Erneut versuchen",
-    "close": "Schließen",
-    "open": "Öffnen",
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "confirm": "Bestätigen"
+  "login": {
+    "title": "Willkommen zum Gamescom 2025 Abenteuer",
+    "description": "Melde dich mit Discord an, um am Clicker Spiele Abenteuer teilzunehmen",
+    "button": "Mit Discord fortfahren",
+    "loading": "Laden..."
   }
 }

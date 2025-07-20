@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Clock, Users, Star } from "lucide-react";
+import { useRouter } from "@/i18n/routing";
 
 export default function Component() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const t = useTranslations("dayTrip");
+  const router = useRouter();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -46,7 +48,7 @@ export default function Component() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/30 backdrop-blur-sm mb-8">
             <Star className="w-4 h-4 text-purple-400" />
             <span className="text-purple-300 text-sm font-medium">
-              Gamescom 2024 Experience
+              {t("badge")}
             </span>
           </div>
 
@@ -64,26 +66,34 @@ export default function Component() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             <div className="group p-4 rounded-xl bg-gray-800/50 border border-purple-500/20 backdrop-blur-sm hover:bg-purple-500/10 hover:border-purple-500/40 transition-all duration-300">
               <Calendar className="w-6 h-6 text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-gray-400 text-sm">Dates</p>
-              <p className="text-white font-semibold">Aug 19-24</p>
+              <p className="text-gray-400 text-sm">{t("details.dates")}</p>
+              <p className="text-white font-semibold">
+                {t("details.dates_value")}
+              </p>
             </div>
 
             <div className="group p-4 rounded-xl bg-gray-800/50 border border-purple-500/20 backdrop-blur-sm hover:bg-purple-500/10 hover:border-purple-500/40 transition-all duration-300">
               <Clock className="w-6 h-6 text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-gray-400 text-sm">Duration</p>
-              <p className="text-white font-semibold">6 Days</p>
+              <p className="text-gray-400 text-sm">{t("details.duration")}</p>
+              <p className="text-white font-semibold">
+                {t("details.duration_value")}
+              </p>
             </div>
 
             <div className="group p-4 rounded-xl bg-gray-800/50 border border-purple-500/20 backdrop-blur-sm hover:bg-purple-500/10 hover:border-purple-500/40 transition-all duration-300">
               <MapPin className="w-6 h-6 text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-gray-400 text-sm">Location</p>
-              <p className="text-white font-semibold">Cologne, DE</p>
+              <p className="text-gray-400 text-sm">{t("details.location")}</p>
+              <p className="text-white font-semibold">
+                {t("details.location_value")}
+              </p>
             </div>
 
             <div className="group p-4 rounded-xl bg-gray-800/50 border border-purple-500/20 backdrop-blur-sm hover:bg-purple-500/10 hover:border-purple-500/40 transition-all duration-300">
               <Users className="w-6 h-6 text-purple-400 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-gray-400 text-sm">Cost</p>
-              <p className="text-white font-semibold">Own Expenses</p>
+              <p className="text-gray-400 text-sm">{t("details.cost")}</p>
+              <p className="text-white font-semibold">
+                {t("details.cost_value")}
+              </p>
             </div>
           </div>
 
@@ -92,8 +102,9 @@ export default function Component() {
             <Button
               size="lg"
               className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
+              onClick={() => router.push("/login")}
             >
-              <span className="relative z-10">Login to Join</span>
+              <span className="relative z-10">{t("buttons.join")}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-300 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
             </Button>
 
@@ -103,19 +114,23 @@ export default function Component() {
               onClick={scrollToSchedule}
               className="px-8 py-4 border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400 rounded-xl transition-all duration-300 backdrop-blur-sm bg-transparent"
             >
-              View Schedule
+              {t("buttons.schedule")}
             </Button>
           </div>
 
           {/* Price and availability */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-400">Pay for your own expenses</span>
+              <span className="text-gray-400">
+                {t("availability.expenses")}
+              </span>
             </div>
             <div className="w-px h-4 bg-gray-600 hidden sm:block" />
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-green-400">Registration open</span>
+              <span className="text-green-400">
+                {t("availability.registration")}
+              </span>
             </div>
           </div>
         </div>

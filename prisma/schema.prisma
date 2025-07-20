@@ -1,0 +1,129 @@
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  createdEvents Event[]   @relation("CreatedEvents")
+  updatedEvents Event[]   @relation("UpdatedEvents")
+  comments      Comment[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([accountId, providerId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELED
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation("CreatedEvents", fields: [createdById], references: [id], onDelete: Restrict)
+
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("UpdatedEvents", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  status   EventStatus @default(DRAFT)
+  isPublic Boolean     @default(false)
+  isFixed  Boolean     @default(false)
+
+  name        String  @db.VarChar(120)
+  slug        String? @unique
+  description String
+  summary     String? @db.VarChar(280)
+
+  startDate DateTime
+  endDate   DateTime
+  location  String?
+  url       String?
+
+  // Relations
+  comments Comment[]
+
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([status])
+  @@index([isPublic, startDate])
+  @@index([startDate])
+  @@map("event")
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  content String
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@map("comment")
+}

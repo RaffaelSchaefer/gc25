@@ -7,32 +7,165 @@
   },
   "dayTrip": {
     "title": "Gamescom 2025 with Clicker Spiele",
-    "subtitle": "Discover the world's largest gaming fair with us",
-    "description": "Join Clicker Spiele at the world's largest gaming event! Experience the latest games, meet industry professionals, and discover what's next in gaming."
+    "description": "Join Clicker Spiele at the world's largest gaming event! Experience the latest games, meet industry professionals, and discover what's next in gaming.",
+    "badge": "Gamescom 2025 Experience",
+    "details": {
+      "dates": "Dates",
+      "dates_value": "Aug 19-24",
+      "duration": "Duration",
+      "duration_value": "6 Days",
+      "location": "Location",
+      "location_value": "Cologne, DE",
+      "cost": "Cost",
+      "cost_value": "Own Expenses"
+    },
+    "buttons": {
+      "join": "Login to Join",
+      "schedule": "View Schedule"
+    },
+    "availability": {
+      "expenses": "Pay for your own expenses",
+      "registration": "Active Planing Phase"
+    }
   },
   "schedule": {
-    "title": "Schedule",
-    "subtitle": "Your perfect day in Munich",
-    "morning": "Morning",
-    "afternoon": "Afternoon",
-    "evening": "Evening",
-    "departure": "Departure",
-    "arrival": "Arrival",
-    "breakfast": "Breakfast",
-    "sightseeing": "Sightseeing",
-    "lunch": "Lunch",
-    "museum": "Museum Visit",
-    "dinner": "Dinner",
-    "return": "Return Trip"
+    "title": "6-Day Schedule",
+    "subtitle": "Your complete Gamescom 2025 adventure timeline",
+    "notice": "Schedule may be subject to minor changes",
+    "days": [
+      {
+        "day": 1,
+        "date": "Aug 19",
+        "title": "Arrival & Camp Setup",
+        "activities": [
+          {
+            "time": "10:00",
+            "activity": "Meeting at Camp Site",
+            "icon": "Users"
+          },
+          {
+            "time": "11:00",
+            "activity": "Building tents & setup",
+            "icon": "Tent"
+          },
+          {
+            "time": "19:00",
+            "activity": "Dinner out together",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "date": "Aug 20",
+        "title": "Gamescom Day 1",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "First day at Gamescom",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Lunch at convention",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Dinner out",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "date": "Aug 21",
+        "title": "Gamescom Day 2",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Gamescom exploration",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Lunch at convention",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Dinner out",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 4,
+        "date": "Aug 22",
+        "title": "Gamescom Day 3",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Final Gamescom day",
+            "icon": "Gamepad2"
+          },
+          {
+            "time": "12:00",
+            "activity": "Lunch at convention",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Dinner out",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 5,
+        "date": "Aug 23",
+        "title": "Cologne Activity Day",
+        "activities": [
+          {
+            "time": "10:00",
+            "activity": "Activity day hosted by Vio & Charly",
+            "icon": "MapPin"
+          },
+          {
+            "time": "12:00",
+            "activity": "Lunch in Cologne",
+            "icon": "Utensils"
+          },
+          {
+            "time": "19:00",
+            "activity": "Dinner out",
+            "icon": "Utensils"
+          }
+        ]
+      },
+      {
+        "day": 6,
+        "date": "Aug 24",
+        "title": "Departure",
+        "activities": [
+          {
+            "time": "09:00",
+            "activity": "Remove tents & pack up",
+            "icon": "Tent"
+          },
+          {
+            "time": "11:00",
+            "activity": "Driving home",
+            "icon": "Car"
+          }
+        ]
+      }
+    ]
   },
-  "common": {
-    "loading": "Loading...",
-    "error": "Error",
-    "retry": "Retry",
-    "close": "Close",
-    "open": "Open",
-    "save": "Save",
-    "cancel": "Cancel",
-    "confirm": "Confirm"
+  "login": {
+    "title": "Welcome to the Gamescom 2025 Adventure",
+    "description": "Login with Discord to join the Clicker Spiele adventure",
+    "button": "Continue with Discord",
+    "loading": "Loading..."
   }
 }
