@@ -212,5 +212,10 @@
       "toConfirm": "to confirm",
       "deleteConfirmationPlaceholder": "Type DELETE to confirm"
     }
+  },
+  "LocaleSelector": {
+    "placeholder": "Select a locale",
+    "de": "German",
+    "en": "English"
   }
 }

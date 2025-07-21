@@ -212,5 +212,10 @@
       "toConfirm": "zum bestätigen",
       "deleteConfirmationPlaceholder": "Geben Sie DELETE ein, um dies zu bestätigen"
     }
+  },
+  "LocaleSelector": {
+    "placeholder": "Wählen Sie eine Sprache",
+    "de": "Deutsch",
+    "en": "Englisch"
   }
 }
