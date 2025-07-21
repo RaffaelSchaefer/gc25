@@ -181,8 +181,8 @@
     "logout": "Abmelden"
   },
   "nav-user": {
-    "account": "Konto",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "settings": "Einstellungen"
   },
   "settings": {
     "account": {

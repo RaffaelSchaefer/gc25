@@ -181,8 +181,8 @@
     "logout": "Log out"
   },
   "nav-user": {
-    "account": "account",
-    "notifications": "notifications"
+    "notifications": "notifications",
+    "settings": "Settings"
   },
   "settings": {
     "account": {

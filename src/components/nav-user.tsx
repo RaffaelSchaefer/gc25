@@ -86,9 +86,9 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/home/settings")}>
                 <BadgeCheck />
-                {t("account")}
+                {t("settings")}
               </DropdownMenuItem>
               <DropdownMenuItem disabled>
                 <Bell />
