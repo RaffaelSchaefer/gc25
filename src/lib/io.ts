@@ -1,4 +1,5 @@
-import { Server as IOServer } from "socket.io";
+import 'server-only';
+import type { Server as IOServer } from "socket.io";
 
 // Run a standalone Socket.IO server on its own port (default 3100)
 // This avoids tight coupling with Next.js request lifecycle.
@@ -12,10 +13,15 @@ export function getIO(): IOServer | null {
 }
 
 export async function ensureIOServer(): Promise<IOServer> {
+  // Ensure only on Node.js runtime
+  if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== 'nodejs') {
+    throw new Error('Socket.IO can only be started on the Node.js runtime');
+  }
   if (io && started) return io;
 
   // Start a standalone HTTP server with Socket.IO
-  io = new IOServer({
+  const { Server } = await import('socket.io');
+  io = new Server({
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
