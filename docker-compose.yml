@@ -18,8 +18,8 @@ services:
     restart: unless-stopped
     environment:
       # Construct DATABASE_URL from .env with safe defaults to avoid warnings
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-app}"
-      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-app}"
+      NODE_ENV: ${NODE_ENV:-development}^
       APP_PORT: ${APP_PORT:-3000}
       RESEND_API_KEY: ${RESEND_API_KEY}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}

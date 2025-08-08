@@ -71,7 +71,7 @@ export default function TimelineSchedule({ days }: Props) {
   // Socket.IO subscription with live data merging
   useEffect(() => {
     let unsubscribe = () => {};
-  (async () => {
+    (async () => {
       try {
         const { getClientSocket } = await import("@/lib/io-client");
         const socket = getClientSocket();

@@ -1,4 +1,4 @@
-import 'server-only';
+import "server-only";
 import type { Server as IOServer } from "socket.io";
 
 // Run a standalone Socket.IO server on its own port (default 3100)
@@ -14,13 +14,13 @@ export function getIO(): IOServer | null {
 
 export async function ensureIOServer(): Promise<IOServer> {
   // Ensure only on Node.js runtime
-  if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== 'nodejs') {
-    throw new Error('Socket.IO can only be started on the Node.js runtime');
+  if (process.env.NEXT_RUNTIME && process.env.NEXT_RUNTIME !== "nodejs") {
+    throw new Error("Socket.IO can only be started on the Node.js runtime");
   }
   if (io && started) return io;
 
   // Start a standalone HTTP server with Socket.IO
-  const { Server } = await import('socket.io');
+  const { Server } = await import("socket.io");
   io = new Server({
     cors: {
       origin: "*",

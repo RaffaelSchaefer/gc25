@@ -173,34 +173,31 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
       );
     };
 
-  (async () => {
+    (async () => {
       try {
         const { getClientSocket } = await import("@/lib/io-client");
-    const socket = getClientSocket();
-    const handler = (msg: BroadcastMessage) => {
-            if (msg?.type === "participant_changed") {
-              const { eventId, attendees } = msg;
-              setEvents((prev) =>
-                prev.map((d) => ({
-                  ...d,
-                  events: d.events.map((e) =>
-                    e.id === eventId ? { ...e, attendees } : e,
-                  ),
-                })),
-              );
-              return;
-            }
-            if (
-              msg?.type === "event_created" ||
-              msg?.type === "event_updated"
-            ) {
-              upsertEvent(msg.event);
-              return;
-            }
-            if (msg?.type === "event_deleted") {
-              deleteEventLocal(msg.id);
-              return;
-            }
+        const socket = getClientSocket();
+        const handler = (msg: BroadcastMessage) => {
+          if (msg?.type === "participant_changed") {
+            const { eventId, attendees } = msg;
+            setEvents((prev) =>
+              prev.map((d) => ({
+                ...d,
+                events: d.events.map((e) =>
+                  e.id === eventId ? { ...e, attendees } : e,
+                ),
+              })),
+            );
+            return;
+          }
+          if (msg?.type === "event_created" || msg?.type === "event_updated") {
+            upsertEvent(msg.event);
+            return;
+          }
+          if (msg?.type === "event_deleted") {
+            deleteEventLocal(msg.id);
+            return;
+          }
         };
         socket.on("events:update", handler);
         unsubscribe = () => socket.off("events:update", handler);
