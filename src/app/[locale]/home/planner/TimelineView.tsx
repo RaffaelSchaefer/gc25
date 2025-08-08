@@ -228,6 +228,21 @@ const getPriorityTone = (attendees: number) => {
   return "text-emerald-600";
 };
 
+// Einheitliche Zeitformatierung direkt aus startDate, in lokaler Zeitzone
+const formatEventTime = (iso?: string) => {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(d);
+  } catch {
+    return "";
+  }
+};
+
 export function TimelineView({
   events,
   viewMode,
@@ -740,7 +755,7 @@ export function TimelineView({
                                             className={`w-4 h-4 ${tone.text}`}
                                           />
                                           <span className="font-medium">
-                                            {merged.time}
+                                            {formatEventTime(merged.startDate)}
                                           </span>
                                         </div>
 
@@ -1405,17 +1420,6 @@ export function TimelineView({
               endDate: data.endDate,
               category: data.category,
               isPublic: data.isPublic,
-              time: (() => {
-                try {
-                  return new Date(data.startDate).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  });
-                } catch {
-                  return target.time;
-                }
-              })(),
             };
             setEventPatches((prev) => ({
               ...prev,
@@ -1457,7 +1461,7 @@ export function TimelineView({
               {deleteTarget &&
                 t("confirm.deleteMessage", {
                   title: deleteTarget.title,
-                  time: deleteTarget.time,
+                  time: formatEventTime(deleteTarget.startDate),
                 })}
             </AlertDialogDescription>
           </AlertDialogHeader>
