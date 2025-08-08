@@ -1,6 +1,16 @@
 import { createAuthClient } from "better-auth/react";
-export const authClient = createAuthClient({
-  /** The base URL of the server (optional if you're using the same domain) */
-  baseURL: "http://localhost:3000",
+
+function getBaseURL(): string | undefined {
+  // Prefer same-origin in the browser to avoid CORS
+  if (typeof window !== "undefined") return window.location.origin;
+  // On the server (SSR), allow overriding via env for production deployments
+  // e.g. https://gc.raffaelschaefer.de
+  return process.env.BETTER_AUTH_BASE_URL || undefined;
+}
+
+const client = createAuthClient({
+  baseURL: getBaseURL(),
 });
-export const { signIn, signUp, useSession } = createAuthClient();
+
+export const authClient = client;
+export const { signIn, signUp, useSession } = client;

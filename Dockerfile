@@ -46,8 +46,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 EXPOSE 3000
+EXPOSE 3100
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV SIO_PORT=3100
 
 CMD sh -c "npx prisma migrate deploy && node server.js"

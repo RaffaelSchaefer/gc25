@@ -4,6 +4,8 @@ import type { Server as IOServer } from "socket.io";
 // Run a standalone Socket.IO server on its own port (default 3100)
 // This avoids tight coupling with Next.js request lifecycle.
 const PORT = Number(process.env.SIO_PORT || 3100);
+const PATH = process.env.SIO_PATH || "/socket.io";
+const CORS_ORIGIN = process.env.SIO_CORS_ORIGIN || "*";
 
 let io: IOServer | null = null;
 let started = false;
@@ -22,8 +24,9 @@ export async function ensureIOServer(): Promise<IOServer> {
   // Start a standalone HTTP server with Socket.IO
   const { Server } = await import("socket.io");
   io = new Server({
+    path: PATH,
     cors: {
-      origin: "*",
+      origin: CORS_ORIGIN,
       methods: ["GET", "POST"],
     },
   });
