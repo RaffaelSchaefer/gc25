@@ -40,6 +40,9 @@ interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (eventData: CreateEventData) => void;
+  initialData?: Partial<CreateEventData>;
+  titleOverride?: string;
+  submitTextOverride?: string;
 }
 
 export interface CreateEventData {
@@ -71,6 +74,9 @@ export function CreateEventModal({
   isOpen,
   onClose,
   onSubmit,
+  initialData,
+  titleOverride,
+  submitTextOverride,
 }: CreateEventModalProps) {
   const t = useTranslations("planner");
     const locale = useLocale();
@@ -310,6 +316,55 @@ export function CreateEventModal({
         [t, formData, endTime]
   );
 
+  // Seed form with initial data when opening in edit mode
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+        name: initialData.name ?? prev.name,
+        description: initialData.description ?? prev.description,
+        startDate: initialData.startDate ?? prev.startDate,
+        endDate: initialData.endDate ?? prev.endDate,
+        location: initialData.location ?? prev.location,
+        url: initialData.url ?? prev.url,
+        category: initialData.category ?? prev.category,
+        isPublic: initialData.isPublic ?? prev.isPublic,
+        isFixed: initialData.isFixed ?? prev.isFixed,
+      }));
+      try {
+        if (initialData.startDate) {
+          const d = new Date(initialData.startDate);
+          setSelectedDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+          setStartTime(
+            d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+          );
+        }
+        if (initialData.endDate) {
+          const e = new Date(initialData.endDate);
+          const start = initialData.startDate ? new Date(initialData.startDate) : null;
+          const endStr = e.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+          // Only set endTime if it differs from start time
+          if (!start || start.getTime() !== e.getTime()) {
+            setEndTime(endStr);
+          } else {
+            setEndTime("");
+          }
+        }
+      } catch {}
+      setStep(0);
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
+
   const canContinue = useMemo(() => {
     if (step === 0) {
       return (
@@ -476,7 +531,7 @@ export function CreateEventModal({
                 id="create-event-title"
                 className={`text-2xl font-bold bg-gradient-to-r from-foreground ${categoryTokens[formData.category].titleTo} bg-clip-text text-transparent`}
               >
-                {t("modal.wizard.title")}
+                {titleOverride ?? t("modal.wizard.title")}
               </SheetTitle>
               <SheetDescription
                 id="create-event-subtitle"
@@ -1101,39 +1156,31 @@ export function CreateEventModal({
                     variant="secondary"
                     onClick={goBack}
                     className="flex-1"
-                    aria-label={
-                      `${t("modal.wizard.back")} – ${t("modal.steps.basic")}, ${t("modal.steps.details")}, ${t("modal.steps.review")}`.split(
-                                                ", "
-                      )[step - 1]
-                    }
+                    aria-label={t("modal.wizard.back")}
                   >
                     {t("modal.wizard.back")}
                   </Button>
                 )}
-                {step < 2 && (
+                {step < 2 ? (
                   <Button
+                    type="button"
                     onClick={goNext}
                     disabled={!canContinue}
                     aria-disabled={!canContinue}
                     className={`flex-1 bg-gradient-to-r ${categoryTokens[formData.category].btnFrom} ${categoryTokens[formData.category].btnTo} text-white ring-1 ${categoryTokens[formData.category].btnRing} ${categoryTokens[formData.category].btnHover}`}
-                    aria-label={
-                      `${t("modal.wizard.next")} – ${t("modal.steps.basic")}, ${t("modal.steps.details")}, ${t("modal.steps.review")}`.split(
-                                                ", "
-                      )[step + 1]
-                    }
+                    aria-label={`${t("modal.wizard.next")} – ${steps[step + 1]?.label ?? ""}`}
                   >
                     {t("modal.wizard.next")}
                   </Button>
-                )}
-                {step === 2 && (
+                ) : (
                   <Button
                     type="submit"
                     onClick={() => handleSubmit()}
                     className={`flex-1 bg-gradient-to-r ${categoryTokens[formData.category].btnFrom} ${categoryTokens[formData.category].btnTo} text-white ring-1 ${categoryTokens[formData.category].btnRing} ${categoryTokens[formData.category].btnHover}`}
-                    aria-label={t("modal.actions.create")}
+                    aria-label={submitTextOverride ?? t("modal.actions.create")}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    {t("modal.actions.create")}
+                    {submitTextOverride ?? t("modal.actions.create")}
                   </Button>
                 )}
               </div>

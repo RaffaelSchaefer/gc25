@@ -1,24 +1,14 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Calendar as ShadcnCalendar } from "@/components/ui/calendar";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { CreateEventModal } from "./CreateEventModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,7 +46,7 @@ import {
   Plane,
   Trophy,
 } from "lucide-react";
-import { EventCategory, EventStatus } from "@prisma/client";
+import { EventCategory } from "@prisma/client";
 import { AvatarStack } from "@/components/ui/kibo-ui/avatar-stack/AvatarStack";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -68,8 +58,6 @@ import {
   deleteCommentById as serverDeleteComment,
 } from "@/app/(server)/events.actions";
 import { toast } from "sonner";
-import { de as dfnsDe, enUS as dfnsEnUS } from "date-fns/locale";
-import { Switch } from "@/components/ui/switch";
 
 type TimelinedEvent = {
   id: string;
@@ -124,7 +112,7 @@ const categoryTokens = {
     bg: "bg-indigo-500/10",
     text: "text-indigo-600",
     ring: "ring-indigo-500/30",
-    gradFrom: "from-indigo-500/10",
+    gradFrom: "from-indigo-100",
     gradTo: "to-indigo-500/0",
     chipBg: "bg-indigo-500/10",
     btnBg: "bg-indigo-600",
@@ -132,13 +120,15 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-indigo-500/10",
     hoverText: "group-hover:text-indigo-600",
     linkText: "text-indigo-600",
-    linkHover: "hover:text-indigo-700",
+  linkHover: "hover:text-indigo-700",
+  fieldBg: "bg-indigo-50 dark:bg-indigo-900",
+  focusRing: "focus-visible:ring-indigo-500",
   },
   EXPO: {
     bg: "bg-violet-500/10",
     text: "text-violet-600",
     ring: "ring-violet-500/30",
-    gradFrom: "from-violet-500/10",
+    gradFrom: "from-violet-100",
     gradTo: "to-violet-500/0",
     chipBg: "bg-violet-500/10",
     btnBg: "bg-violet-600",
@@ -146,13 +136,15 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-violet-500/10",
     hoverText: "group-hover:text-violet-600",
     linkText: "text-violet-600",
-    linkHover: "hover:text-violet-700",
+  linkHover: "hover:text-violet-700",
+  fieldBg: "bg-violet-50 dark:bg-violet-900",
+  focusRing: "focus-visible:ring-violet-500",
   },
   FOOD: {
     bg: "bg-amber-500/10",
     text: "text-amber-700",
     ring: "ring-amber-500/30",
-    gradFrom: "from-amber-500/10",
+    gradFrom: "from-amber-100",
     gradTo: "to-amber-500/0",
     chipBg: "bg-amber-500/10",
     btnBg: "bg-amber-600",
@@ -160,13 +152,15 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-amber-500/10",
     hoverText: "group-hover:text-amber-600",
     linkText: "text-amber-700",
-    linkHover: "hover:text-amber-800",
+  linkHover: "hover:text-amber-800",
+  fieldBg: "bg-amber-50 dark:bg-amber-900",
+  focusRing: "focus-visible:ring-amber-500",
   },
   PARTY: {
     bg: "bg-pink-500/10",
     text: "text-pink-600",
     ring: "ring-pink-500/30",
-    gradFrom: "from-pink-500/10",
+    gradFrom: "from-pink-100",
     gradTo: "to-pink-500/0",
     chipBg: "bg-pink-500/10",
     btnBg: "bg-pink-600",
@@ -174,13 +168,15 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-pink-500/10",
     hoverText: "group-hover:text-pink-600",
     linkText: "text-pink-600",
-    linkHover: "hover:text-pink-700",
+  linkHover: "hover:text-pink-700",
+  fieldBg: "bg-pink-50 dark:bg-pink-900",
+  focusRing: "focus-visible:ring-pink-500",
   },
   TRAVEL: {
     bg: "bg-emerald-500/10",
     text: "text-emerald-600",
     ring: "ring-emerald-500/30",
-    gradFrom: "from-emerald-500/10",
+    gradFrom: "from-emerald-100",
     gradTo: "to-emerald-500/0",
     chipBg: "bg-emerald-500/10",
     btnBg: "bg-emerald-600",
@@ -188,13 +184,15 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-emerald-500/10",
     hoverText: "group-hover:text-emerald-600",
     linkText: "text-emerald-600",
-    linkHover: "hover:text-emerald-700",
+  linkHover: "hover:text-emerald-700",
+  fieldBg: "bg-emerald-50 dark:bg-emerald-900",
+  focusRing: "focus-visible:ring-emerald-500",
   },
   TOURNAMENT: {
     bg: "bg-rose-500/10",
     text: "text-rose-600",
     ring: "ring-rose-500/30",
-    gradFrom: "from-rose-500/10",
+    gradFrom: "from-rose-100",
     gradTo: "to-rose-500/0",
     chipBg: "bg-rose-500/10",
     btnBg: "bg-rose-600",
@@ -202,7 +200,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-rose-500/10",
     hoverText: "group-hover:text-rose-600",
     linkText: "text-rose-600",
-    linkHover: "hover:text-rose-700",
+  linkHover: "hover:text-rose-700",
+  fieldBg: "bg-rose-50 dark:bg-rose-900",
+  focusRing: "focus-visible:ring-rose-500",
   },
 } as const;
 
@@ -229,36 +229,15 @@ export function TimelineView({
   onToggleJoin,
 }: TimelineViewProps) {
   const t = useTranslations("planner");
-  const locale = useLocale();
-  const dayPickerLocale = useMemo(() => {
-    const code = (locale || "en").toLowerCase();
-    if (code.startsWith("de")) return dfnsDe;
-    return dfnsEnUS;
-  }, [locale]);
   const { data: session } = authClient.useSession();
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   // Optimistic overlays: patches per eventId and deletions set
   const [eventPatches, setEventPatches] = useState<Record<string, Partial<TimelinedEvent>>>({});
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-  // Edit sheet state
+  // Edit modal via CreateEventModal reuse
   const [editOpen, setEditOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<TimelinedEvent | null>(null);
-  const [editForm, setEditForm] = useState<{
-    title: string;
-    description: string;
-    location?: string | null;
-    url?: string | null;
-    startDate: string; // ISO
-    endDate: string; // ISO
-    category: EventCategory;
-    status?: EventStatus;
-    isPublic?: boolean;
-  } | null>(null);
-  const [editSelectedDay, setEditSelectedDay] = useState<Date | undefined>(undefined);
-  const [editStartTime, setEditStartTime] = useState<string>("");
-  const [editEndTime, setEditEndTime] = useState<string>("");
-  const [editError, setEditError] = useState<string | null>(null);
-  const [isEditing, startEditing] = useTransition();
+  // no dedicated editing transition needed here
   // Delete dialog state
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<TimelinedEvent | null>(null);
@@ -360,6 +339,7 @@ export function TimelineView({
     }
     setExpandedDays(next);
   };
+  // no longer needed: editTone handled by CreateEventModal itself
 
   const isExpanded = (dateISO: string) => expandedDays.has(dateISO);
 
@@ -370,24 +350,6 @@ export function TimelineView({
 
   const openEdit = (ev: TimelinedEvent) => {
     setEditTarget(ev);
-    setEditError(null);
-    setEditForm({
-      title: ev.title,
-      description: ev.description ?? "",
-      location: ev.location ?? "",
-      url: ev.url ?? "",
-      startDate: ev.startDate,
-      endDate: ev.endDate,
-      category: ev.category,
-      isPublic: ev.isPublic,
-    });
-    try {
-      const d = new Date(ev.startDate);
-      setEditSelectedDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
-      setEditStartTime(d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }));
-      const e = new Date(ev.endDate);
-      setEditEndTime(e.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }));
-    } catch {}
     setEditOpen(true);
   };
 
@@ -554,7 +516,7 @@ export function TimelineView({
                                 <div className="relative p-4 sm:p-5 border-b border-border/50 hover:bg-muted/20">
                                   <div className="relative z-10 flex items-start justify-between">
                                     <div className="min-w-0" />
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                       <Badge
                                         variant="outline"
                                         className={`h-6 px-2 text-[11px] ${tone.text} border-border/50 backdrop-blur-[2px] bg-background/40 hover:bg-background/60 inline-flex items-center gap-1`}
@@ -618,22 +580,24 @@ export function TimelineView({
                                         </TooltipTrigger>
                                         <TooltipContent>Comments</TooltipContent>
                                       </Tooltip>
-                                      <Button
-                                        variant={merged.userJoined ? "default" : "outline"}
-                                        size="sm"
-                                        className={`text-xs group-hover:scale-105 transition-transform shadow-sm hover:shadow ${
-                                          merged.userJoined
-                                            ? `${tone.btnBg} ${tone.btnHover} text-white border-0`
-                                            : `${tone.text} ${tone.btnOutlineHoverBg}`
-                                        }`}
-                                        onClick={() => {
-                                          if (onToggleJoin) {
-                                            onToggleJoin(merged.id, !merged.userJoined);
-                                          }
-                                        }}
-                                      >
-                                        {merged.userJoined ? t("joined") : t("join")}
-                                      </Button>
+                                      <div className="basis-full sm:basis-auto sm:ml-2">
+                                        <Button
+                                          variant={merged.userJoined ? "default" : "outline"}
+                                          size="sm"
+                                          className={`w-full sm:w-auto justify-center text-xs group-hover:scale-105 transition-transform shadow-sm hover:shadow ${
+                                            merged.userJoined
+                                              ? `${tone.btnBg} ${tone.btnHover} text-white border-0`
+                                              : `${tone.text} ${tone.btnOutlineHoverBg}`
+                                          }`}
+                                          onClick={() => {
+                                            if (onToggleJoin) {
+                                              onToggleJoin(merged.id, !merged.userJoined);
+                                            }
+                                          }}
+                                        >
+                                          {merged.userJoined ? t("joined") : t("join")}
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -757,7 +721,7 @@ export function TimelineView({
                                     const cs = commentsState[merged.id];
                                     if (!cs?.open) return null;
                                     return (
-                                      <div className="mt-4 rounded-lg border border-border/50 bg-muted/30 p-3">
+                                      <div className={`mt-4 rounded-lg border-0 ring-1 ${tone.ring} bg-background p-3`}>
                                         {cs.loading ? (
                                           <div className="text-sm text-muted-foreground">Loading comments…</div>
                                         ) : cs.error ? (
@@ -771,7 +735,7 @@ export function TimelineView({
                                                 const isOwner = currentUserId === c.createdById;
                                                 const isEditing = cs.editing[c.id] !== undefined;
                                                 return (
-                                                  <div key={c.id} className="rounded-md border border-border/40 bg-background/60 p-2">
+                                                  <div key={c.id} className={`rounded-md border-0 ring-1 ${tone.ring} bg-background p-2`}>
                                                     <div className="flex items-start justify-between gap-2">
                                                       <div className="flex items-start gap-2 min-w-0">
                                                         <Avatar className="w-6 h-6 mt-0.5">
@@ -802,10 +766,12 @@ export function TimelineView({
                                                                     },
                                                                   }))
                                                                 }
+                                                                className={`border-2 rounded-md border-border/50 bg-background ring-1 ${tone.ring}`}
                                                               />
                                                               <div className="flex gap-2">
                                                                 <Button
                                                                   size="sm"
+                                                                  className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
                                                                   onClick={async () => {
                                                                     const content = cs.editing[c.id] || "";
                                                                     try {
@@ -827,6 +793,7 @@ export function TimelineView({
                                                                 <Button
                                                                   variant="outline"
                                                                   size="sm"
+                                                                  className={`text-xs ${tone.text} ${tone.btnOutlineHoverBg}`}
                                                                   onClick={() =>
                                                                     setCommentsState((prev) => {
                                                                       const nextEditing = { ...prev[merged.id].editing };
@@ -840,7 +807,7 @@ export function TimelineView({
                                                               </div>
                                                             </div>
                                                           ) : (
-                                                            <p className="text-sm break-words whitespace-pre-wrap">{c.content}</p>
+                                                            <p className={`text-sm break-words whitespace-pre-wrap ${tone.text}`}>{c.content}</p>
                                                           )}
                                                         </div>
                                                       </div>
@@ -852,6 +819,7 @@ export function TimelineView({
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 aria-label="Edit comment"
+                                                                className={`${tone.btnOutlineHoverBg}`}
                                                                 onClick={() =>
                                                                   setCommentsState((prev) => ({
                                                                     ...prev,
@@ -862,7 +830,7 @@ export function TimelineView({
                                                                   }))
                                                                 }
                                                               >
-                                                                <Pencil className="w-4 h-4" />
+                                                                <Pencil className={`w-4 h-4 ${tone.text}`} />
                                                               </Button>
                                                             </TooltipTrigger>
                                                             <TooltipContent>Edit</TooltipContent>
@@ -874,6 +842,7 @@ export function TimelineView({
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 aria-label="Delete comment"
+                                                                className={`${tone.btnOutlineHoverBg}`}
                                                                 onClick={async () => {
                                                                   if (!confirm("Delete this comment?")) return;
                                                                   try {
@@ -888,7 +857,7 @@ export function TimelineView({
                                                                   }
                                                                 }}
                                                               >
-                                                                <Trash2 className="w-4 h-4" />
+                                                                <Trash2 className={`w-4 h-4 ${tone.text}`} />
                                                               </Button>
                                                             </TooltipTrigger>
                                                             <TooltipContent>Delete</TooltipContent>
@@ -912,12 +881,14 @@ export function TimelineView({
                                                       [merged.id]: { ...prev[merged.id], newContent: e.target.value },
                                                     }))
                                                   }
+                                                  className={`border-2 rounded-md border-border/50 bg-background`}
                                                 />
                                               </div>
                                               <div className="mt-2 flex justify-end">
                                                 <Button
                                                   size="sm"
                                                   disabled={!cs.newContent.trim() || cs.pending}
+                                                  className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
                                                   onClick={async () => {
                                                     setCommentsState((prev) => ({ ...prev, [merged.id]: { ...prev[merged.id], pending: true } }));
                                                     try {
@@ -993,245 +964,71 @@ export function TimelineView({
         );
       })}
 
-      {/* Edit Sheet */}
-      <Sheet open={editOpen} onOpenChange={setEditOpen}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-xl overflow-y-auto"
-          aria-labelledby="edit-event-title"
-        >
-          <SheetHeader>
-            <SheetTitle id="edit-event-title">{t("modal.titleEdit")}</SheetTitle>
-            <SheetDescription>{t("editEvent")}</SheetDescription>
-          </SheetHeader>
-          {editForm && (
-            <form
-              className="p-4 space-y-6"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!editTarget) return;
-                // Basic validation
-                const errs: string[] = [];
-                if (!editForm.title.trim()) errs.push(t("modal.validation.titleRequired"));
-                const s = new Date(editForm.startDate);
-                const eD = new Date(editForm.endDate);
-                if (Number.isNaN(s.getTime())) errs.push(t("modal.validation.startRequired"));
-                // end is optional; validate only if provided
-                if (!Number.isNaN(s.getTime()) && !Number.isNaN(eD.getTime()) && editEndTime && s >= eD) {
-                  errs.push(t("modal.validation.endAfterStart"));
+      {/* Edit Modal (reusing CreateEventModal) */}
+      {editTarget && (
+        <CreateEventModal
+          isOpen={editOpen}
+          onClose={() => setEditOpen(false)}
+          titleOverride={t("modal.titleEdit")}
+          submitTextOverride={t("modal.actions.save")}
+          initialData={{
+            name: editTarget.title,
+            description: editTarget.description ?? "",
+            location: editTarget.location ?? "",
+            url: editTarget.url ?? "",
+            startDate: editTarget.startDate,
+            endDate: editTarget.endDate,
+            category: editTarget.category,
+            isPublic: editTarget.isPublic,
+            isFixed: false,
+          }}
+          onSubmit={async (data) => {
+            const target = editTarget;
+            if (!target) return;
+            const optimistic: Partial<TimelinedEvent> = {
+              title: data.name,
+              description: data.description,
+              location: data.location,
+              url: data.url,
+              startDate: data.startDate,
+              endDate: data.endDate,
+              category: data.category,
+              isPublic: data.isPublic,
+              time: (() => {
+                try {
+                  return new Date(data.startDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+                } catch {
+                  return target.time;
                 }
-                if (errs.length) {
-                  setEditError(errs.join(". "));
-                  return;
-                }
-
-                setEditError(null);
-                startEditing(async () => {
-                  // Optimistic patch (title, description, location, start/end -> time)
-                  const optimistic: Partial<TimelinedEvent> = {
-                    title: editForm.title,
-                    description: editForm.description,
-                    location: editForm.location,
-                    startDate: editForm.startDate,
-                    endDate: editForm.endDate,
-                    category: editForm.category,
-                    time: (() => {
-                      try { return new Date(editForm.startDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }); } catch { return editTarget.time; }
-                    })(),
-                  };
-                  setEventPatches((prev) => ({ ...prev, [editTarget.id]: { ...(prev[editTarget.id] ?? {}), ...optimistic } }));
-                  try {
-                    await updateEvent(editTarget.id, {
-                      name: editForm.title,
-                      description: editForm.description,
-                      location: editForm.location ?? undefined,
-                      url: editForm.url ?? undefined,
-                      startDate: editForm.startDate,
-                      endDate: editForm.endDate,
-                      category: editForm.category,
-                      status: editForm.status,
-                      isPublic: editForm.isPublic,
-                    });
-                    toast.success(t("toast.updated"));
-                    setEditOpen(false);
-                  } catch (err) {
-                    // rollback
-                    setEventPatches((prev) => {
-                      const cp = { ...prev };
-                      delete cp[editTarget.id];
-                      return cp;
-                    });
-                    setEditError((err as Error)?.message || t("toast.update_error"));
-                    toast.error(t("toast.update_error"));
-                  }
-                });
-              }}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="edit-title">{t("modal.fields.title")}</Label>
-                <Input
-                  id="edit-title"
-                  value={editForm.title}
-                  onChange={(e) => setEditForm((f) => (f ? { ...f, title: e.target.value } : f))}
-                  aria-invalid={!editForm.title.trim()}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-url">{t("modal.fields.url")}</Label>
-                <Input
-                  id="edit-url"
-                  type="url"
-                  placeholder={t("modal.placeholders.url")}
-                  value={editForm.url ?? ""}
-                  onChange={(e) => setEditForm((f) => (f ? { ...f, url: e.target.value } : f))}
-                />
-              </div>
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div className="space-y-1">
-                  <Label className="font-medium">{t("modal.fields.public")}</Label>
-                  <p className="text-sm text-muted-foreground">{t("modal.help.public")}</p>
-                </div>
-                <Switch
-                  checked={Boolean(editForm.isPublic)}
-                  onCheckedChange={(checked) => setEditForm((f) => (f ? { ...f, isPublic: checked } : f))}
-                  aria-label={t("modal.fields.public")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">{t("modal.fields.description")}</Label>
-                <Textarea
-                  id="edit-description"
-                  value={editForm.description}
-                  onChange={(e) => setEditForm((f) => (f ? { ...f, description: e.target.value } : f))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-location">{t("modal.fields.location")}</Label>
-                <Input
-                  id="edit-location"
-                  value={editForm.location ?? ""}
-                  onChange={(e) => setEditForm((f) => (f ? { ...f, location: e.target.value } : f))}
-                />
-              </div>
-              {/* Category - chips like create modal */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">{t("stats.categories")}</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(EventCategory).map(([key, value]) => (
-                    <button
-                      type="button"
-                      key={value}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all text-left ${
-                        editForm.category === value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-border"
-                      }`}
-                      onClick={() => setEditForm((f) => (f ? { ...f, category: value as EventCategory } : f))}
-                      aria-pressed={editForm.category === (value as EventCategory)}
-                    >
-                      <div className="flex items-center gap-2">
-                        {(() => {
-                          const IconComp = categoryIcons[value as keyof typeof categoryIcons];
-                          const tone = categoryTokens[value as keyof typeof categoryTokens];
-                          return <IconComp className={`w-4 h-4 ${tone.text}`} />;
-                        })()}
-                        <span className="font-medium">{key}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Single-day date & times like create modal */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{t("modal.fields.date")} *</Label>
-                  <ShadcnCalendar
-                    mode="single"
-                    locale={dayPickerLocale}
-                    selected={editSelectedDay}
-                    onSelect={(d) => {
-                      setEditSelectedDay(d ?? undefined);
-                      if (!d || !editForm) return;
-                      // rebuild start/end from times
-                      const toISOAt = (day: Date, hhmm: string) => {
-                        const [hh = "0", mm = "0"] = (hhmm || "").split(":");
-                        const dt = new Date(day);
-                        dt.setHours(Math.min(23, +hh || 0), Math.min(59, +mm || 0), 0, 0);
-                        return dt.toISOString();
-                      };
-                      const sISO = editStartTime ? toISOAt(d, editStartTime) : toISOAt(d, "00:00");
-                      const eISO = editEndTime ? toISOAt(d, editEndTime) : sISO;
-                      setEditForm((f) => (f ? { ...f, startDate: sISO, endDate: eISO } : f));
-                    }}
-                    className="mx-auto border-0 shadow-none"
-                    captionLayout="dropdown"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-start-time">{t("modal.fields.time")} ({t("modal.fields.start")})</Label>
-                    <Input
-                      id="edit-start-time"
-                      type="time"
-                      value={editStartTime}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setEditStartTime(v);
-                        if (!editSelectedDay || !editForm) return;
-                        const d = new Date(editSelectedDay);
-                        const [hh = "0", mm = "0"] = (v || "").split(":");
-                        d.setHours(Math.min(23, +hh || 0), Math.min(59, +mm || 0), 0, 0);
-                        setEditForm((f) => (f ? { ...f, startDate: d.toISOString(), endDate: editEndTime ? f.endDate : d.toISOString() } : f));
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-end-time">{t("modal.fields.time")} ({t("modal.fields.end")})</Label>
-                    <Input
-                      id="edit-end-time"
-                      type="time"
-                      value={editEndTime}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setEditEndTime(v);
-                        if (!editSelectedDay || !editForm) return;
-                        if (!v) {
-                          // align end to start if cleared
-                          setEditForm((f) => (f ? { ...f, endDate: f.startDate } : f));
-                          return;
-                        }
-                        const d = new Date(editSelectedDay);
-                        const [hh = "0", mm = "0"] = (v || "").split(":");
-                        d.setHours(Math.min(23, +hh || 0), Math.min(59, +mm || 0), 0, 0);
-                        setEditForm((f) => (f ? { ...f, endDate: d.toISOString() } : f));
-                      }}
-                    />
-                  </div>
-                </div>
-                {editEndTime && editForm && new Date(editForm.startDate) >= new Date(editForm.endDate) && (
-                  <p className="text-sm text-destructive">{t("modal.validation.endAfterStart")}</p>
-                )}
-              </div>
-
-              {editError && (
-                <p className="text-sm text-destructive" role="alert">{editError}</p>
-              )}
-
-              <SheetFooter>
-                <div className="flex gap-2">
-                  <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
-                    {t("modal.actions.close")}
-                  </Button>
-                  <Button type="submit" disabled={isEditing}>
-                    {isEditing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    {t("modal.actions.save")}
-                  </Button>
-                </div>
-              </SheetFooter>
-            </form>
-          )}
-        </SheetContent>
-      </Sheet>
+              })(),
+            };
+            setEventPatches((prev) => ({ ...prev, [target.id]: { ...(prev[target.id] ?? {}), ...optimistic } }));
+            try {
+              await updateEvent(target.id, {
+                name: data.name,
+                description: data.description,
+                location: data.location ?? undefined,
+                url: data.url ?? undefined,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                category: data.category,
+                isPublic: data.isPublic,
+                isFixed: data.isFixed,
+              });
+              toast.success(t("toast.updated"));
+            } catch {
+              setEventPatches((prev) => {
+                const cp = { ...prev };
+                delete cp[target.id];
+                return cp;
+              });
+              toast.error(t("toast.update_error"));
+            } finally {
+              setEditOpen(false);
+            }
+          }}
+        />
+      )}
 
       {/* Delete Confirmation */}
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
