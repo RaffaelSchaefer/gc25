@@ -178,7 +178,8 @@
     "account": "Account",
     "billing": "Billing",
     "notifications": "Notifications",
-    "logout": "Log out"
+    "logout": "Log out",
+    "planner": "Trip Planner"
   },
   "nav-user": {
     "notifications": "notifications",
@@ -211,6 +212,170 @@
       "type": "Type",
       "toConfirm": "to confirm",
       "deleteConfirmationPlaceholder": "Type DELETE to confirm"
+    }
+  },
+  "planner": {
+    "title": "Trip Planner",
+    "addEvent": "Add event",
+    "addDay": "Add day",
+    "editEvent": "Edit event",
+    "noEvents": "No events yet. Use “Add event” to create your first one.",
+    "joined": "Joined",
+    "join": "Join",
+    "cancel": "Cancel",
+    "manage": "Manage",
+    "removeEvent": "Remove event",
+    "empty": {
+      "headline": "No events found",
+      "sub": "Try adjusting your search or filters to find events.",
+      "cta": "Create First Event"
+    },
+    "timeline": {
+      "eventsCount": "{count, plural, one {# event} other {# events}}",
+      "totalAttendees": "{count} total attendees",
+      "categories": "Categories:",
+      "popular": "Popular",
+      "attending": "{count, plural, one {# attending} other {# attending}}",
+      "createdBy": "Created by {name}",
+      "ctaStrip": {
+        "text": "Want to add an event to this day?",
+        "add": "Add Event"
+      }
+    },
+    "stats": {
+      "overview": "Overview",
+      "details": "Details",
+      "totalEvents": "Total events",
+      "acrossDays": "across {count} days",
+      "totalAttendees": "Total attendees",
+      "avgPerEvent": "avg. {value} per event",
+      "categories": "Categories",
+      "differentTypes": "{count} different types",
+      "popularEvents": "Popular events",
+      "mostPopularEvents": "Most popular events",
+      "attendees": "attendees",
+      "attendeeCount": "{count} attendees",
+      "eventCategories": "Event categories",
+      "noData": "No data available",
+      "totalAttendeesLabel": "{count} attendees total",
+      "avgPerEventShort": "avg. {value}/event",
+      "timeDistribution": "Time distribution",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "percentageLabel": "{value}%"
+    },
+    "categories": {
+      "meetup": "Meetup",
+      "expo": "Expo",
+      "food": "Food",
+      "party": "Party",
+      "travel": "Travel",
+      "tournament": "Tournament"
+    },
+    "modal": {
+      "titleAdd": "Add event",
+      "titleEdit": "Edit event",
+      "wizard": {
+        "title": "Create new event",
+        "subtitle": "Fill out the steps to create your event",
+        "back": "Back",
+        "next": "Next",
+        "ariaSteps": "Steps"
+      },
+      "steps": {
+        "basic": "Basic",
+        "details": "Details",
+        "review": "Review"
+      },
+      "sections": {
+        "datetime": "Date & Time",
+        "settings": "Event Settings"
+      },
+      "fields": {
+        "title": "Title",
+        "time": "Time",
+        "location": "Location",
+        "url": "URL",
+        "description": "Description",
+        "date": "Date",
+        "start": "Start Date & Time",
+        "end": "End Date & Time",
+        "public": "Public Event",
+        "fixed": "Fixed Schedule",
+        "status": "Publish",
+        "date": "Date"
+      },
+      "placeholders": {
+        "title": "What’s the event?",
+        "time": "HH:mm",
+        "location": "Where is it?",
+        "url": "https://example.com",
+        "description": "Add more details..."
+      },
+      "help": {
+        "public": "Make this event visible to everyone",
+        "fixed": "Event time cannot be changed after creation",
+        "status": "Toggle to publish or unpublish this event"
+      },
+      "badges": {
+        "public": "Public"
+      },
+      "preview": {
+        "titleFallback": "Event Name",
+        "descriptionFallback": "Event description will appear here..."
+      },
+      "validation": {
+        "titleRequired": "Event name is required",
+        "descriptionRequired": "Description is required",
+        "startRequired": "Start date is required",
+        "endRequired": "End date is required",
+        "endAfterStart": "End date must be after start date"
+      },
+      "actions": {
+        "close": "Close",
+        "save": "Save changes",
+        "create": "Add event"
+      }
+    },
+    "banner": "This planner uses local state. Changes won’t persist after a refresh.",
+    "attendees": "{count, plural, one {# going} other {# going}}",
+    "toast": {
+      "created": "Event created",
+      "create_error": "Event could not be made",
+      "updated": "Event updated",
+      "update_error": "Event could not be updated",
+      "deleted": "Event deleted",
+      "delete_error": "Event could not be deleted",
+      "joined": "Successfully joined",
+      "left": "Successfully left",
+      "join_error": "Failed to join event"
+    },
+    "tabs": {
+      "timeline": "Timeline",
+      "analytics": "Analytics"
+    },
+    "filters": {
+      "clear": "Reset filters"
+    },
+    "actions": {
+      "new": "New Event",
+      "creating": "creating...",
+      "createNew": "Create new Event",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "tooltips": {
+      "edit": "Edit event",
+      "delete": "Delete event",
+      "notAuthor": "Only the creator can manage this event",
+      "authRequired": "Please sign in to manage"
+    },
+    "confirm": {
+      "deleteTitle": "Delete event?",
+      "deleteMessage": "\u201C{title}\u201D at {time} will be permanently removed. This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     }
   },
   "LocaleSelector": {

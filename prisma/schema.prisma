@@ -22,6 +22,7 @@ model User {
   createdEvents Event[]   @relation("CreatedEvents")
   updatedEvents Event[]   @relation("UpdatedEvents")
   comments      Comment[]
+  participants  EventParticipant[]
 
   @@map("user")
 }
@@ -79,6 +80,15 @@ enum EventStatus {
   CANCELED
 }
 
+enum EventCategory {
+  MEETUP
+  EXPO
+  FOOD
+  PARTY
+  TRAVEL
+  TOURNAMENT
+}
+
 model Event {
   id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
@@ -89,9 +99,10 @@ model Event {
   updatedById String?
   updatedBy   User?    @relation("UpdatedEvents", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  status   EventStatus @default(DRAFT)
-  isPublic Boolean     @default(false)
-  isFixed  Boolean     @default(false)
+  status    EventStatus   @default(DRAFT)
+  isPublic  Boolean       @default(false)
+  isFixed   Boolean       @default(false)
+  category  EventCategory @default(MEETUP)
 
   name        String  @db.VarChar(120)
   slug        String? @unique
@@ -104,7 +115,8 @@ model Event {
   url       String?
 
   // Relations
-  comments Comment[]
+  comments      Comment[]
+  participants  EventParticipant[]
 
   @@index([createdById])
   @@index([updatedById])
@@ -126,4 +138,19 @@ model Comment {
 
   @@index([createdById])
   @@map("comment")
+}
+
+model EventParticipant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  eventId   String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_participant")
 }

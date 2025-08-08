@@ -21,7 +21,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-0 ring-1 ring-indigo-500/20 bg-gradient-to-b from-indigo-500/5 via-background to-background/95"
       {...props}
     >
       <SidebarHeader>
@@ -29,13 +29,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/home">
-                <div className="bg-white text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg border-1">
+                <div className="relative text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg border-0 ring-1 ring-indigo-500/30 bg-gradient-to-br from-indigo-500/15 to-transparent">
                   <Image
                     src="/logo.png"
                     alt={t("company_name")}
                     width={64}
                     height={64}
                   />
+                  <div aria-hidden className="pointer-events-none absolute -right-3 -top-3 h-8 w-8 rounded-full bg-indigo-500/20 blur-xl" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
@@ -43,6 +44,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </span>
                   <span className="truncate text-xs">{t("product_name")}</span>
                 </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/home/planner">
+                <span className="truncate text-sm">{t("planner")}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

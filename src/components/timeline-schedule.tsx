@@ -1,32 +1,182 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  Calendar,
-  MapPin,
-  Users,
-  Utensils,
-  Tent,
-  Car,
-  Gamepad2,
-} from "lucide-react";
+import { Calendar, MapPin, Gamepad2, Users, Utensils, Car } from "lucide-react";
 
-const iconMap = {
-  Users,
-  Tent,
-  Utensils,
-  Gamepad2,
-  MapPin,
-  Car,
+type TimelinedEvent = {
+  id: string;
+  title: string;
+  time: string; // HH:mm
+  dateISO: string;
+  location?: string | null;
+  description?: string | null;
+  attendees: number;
+  userJoined: boolean;
+  startDate: string;
+  endDate: string;
+  createdById: string;
+  // New: event category identifier (string or enum name)
+  category?: string;
 };
 
-export default function TimelineSchedule() {
+type DayBucket = {
+  dateISO: string;
+  dayLabel: string;
+  events: TimelinedEvent[];
+  // whether user is authenticated on server request (optional)
+  isAuthenticated?: boolean;
+};
+
+type Props = {
+  days: DayBucket[];
+};
+
+function iconForCategory(category?: string) {
+  switch (category) {
+    case "MEETUP":
+      return Users;
+    case "EXPO":
+      return Gamepad2;
+    case "FOOD":
+      return Utensils;
+    case "TRAVEL":
+      return Car;
+    case "TOURNAMENT":
+      return Gamepad2;
+    case "PARTY":
+      return Gamepad2;
+    default:
+      // If a location is present we prefer MapPin elsewhere; keep generic Gamepad2 here
+      return Gamepad2;
+  }
+}
+
+export default function TimelineSchedule({ days }: Props) {
   const t = useTranslations("schedule");
-  const scheduleData = t.raw("days");
   const [activeDay, setActiveDay] = useState(1);
   const [scrollProgress, setScrollProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
+
+  // Keep a local, live-updating copy for realtime WS merges
+  const [liveDays, setLiveDays] = useState<DayBucket[]>(days);
+  const totalDays = liveDays.length;
+
+  // Merge initial props when they change (SSR -> CSR hydration)
+  useEffect(() => {
+    setLiveDays(days);
+  }, [days]);
+
+  // WebSocket subscription with live data merging
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+    try {
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      ws = new WebSocket(
+        `${protocol}://${window.location.host}/api/events/stream`,
+      );
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg?.type === "participant_changed") {
+            const { eventId, attendees } = msg;
+            setLiveDays((prev) =>
+              prev.map((d) => ({
+                ...d,
+                events: d.events.map((e) =>
+                  e.id === eventId ? { ...e, attendees } : e,
+                ),
+              })),
+            );
+          } else if (msg?.type === "event_deleted") {
+            const { id } = msg;
+            setLiveDays((prev) =>
+              prev
+                .map((d) => ({
+                  ...d,
+                  events: d.events.filter((e) => e.id !== id),
+                }))
+                .filter((d) => d.events.length > 0 || true),
+            );
+          } else if (
+            msg?.type === "event_created" ||
+            msg?.type === "event_updated"
+          ) {
+            const e = msg.event;
+            const start = new Date(e.startDate);
+            const label = start.toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            });
+            const hhmm = start
+              .toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })
+              .toString();
+
+            setLiveDays((prev) => {
+              // Remove existing instance if event_updated might have moved across days
+              const withoutOld = prev.map((d) => ({
+                ...d,
+                events: d.events.filter((ev) => ev.id !== e.id),
+              }));
+              // Find or create bucket by day label
+              let idx = withoutOld.findIndex((d) => d.dayLabel === label);
+              const next = [...withoutOld];
+              if (idx === -1) {
+                next.push({
+                  dateISO: start.toISOString().slice(0, 10),
+                  dayLabel: label,
+                  events: [],
+                  isAuthenticated: withoutOld[0]?.isAuthenticated,
+                });
+                idx = next.length - 1;
+              }
+              const cat = e.category as string | undefined;
+              next[idx] = {
+                ...next[idx],
+                events: [
+                  ...next[idx].events,
+                  {
+                    id: e.id,
+                    title: e.title,
+                    time: hhmm,
+                    dateISO: start.toISOString().slice(0, 10),
+                    location: e.location ?? null,
+                    description: e.description ?? null,
+                    attendees:
+                      next[idx].events.find((x) => x.id === e.id)?.attendees ??
+                      0,
+                    userJoined: false,
+                    startDate: e.startDate,
+                    endDate: e.endDate,
+                    createdById: e.createdById,
+                    category: cat,
+                  },
+                ].sort((a, b) => a.time.localeCompare(b.time)),
+              };
+              // Keep days sorted by date
+              next.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+              return next;
+            });
+          }
+        } catch {
+          // ignore malformed frames
+        }
+      };
+    } catch {
+      // ignore WS construction errors
+    }
+    return () => {
+      try {
+        ws?.close();
+      } catch {
+        // ignore
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,8 +195,8 @@ export default function TimelineSchedule() {
         );
         setScrollProgress(progress);
 
-        const dayIndex = Math.floor(progress * scheduleData.length);
-        setActiveDay(Math.min(scheduleData.length, Math.max(1, dayIndex + 1)));
+        const dayIndex = Math.floor(progress * totalDays);
+        setActiveDay(Math.min(totalDays, Math.max(1, dayIndex + 1)));
       }
     };
 
@@ -54,7 +204,25 @@ export default function TimelineSchedule() {
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [scheduleData.length]);
+  }, [totalDays]);
+
+  const scheduleData = useMemo(() => {
+    return liveDays.map((bucket, idx) => ({
+      day: idx + 1,
+      date: bucket.dayLabel,
+      title: bucket.dayLabel,
+      activities: bucket.events.map((e) => ({
+        time: e.time,
+        activity: e.title + (e.location ? ` • ${e.location}` : ""),
+        // prefer category icon; fallback to location-based icon
+        icon: e.category
+          ? `cat:${e.category}`
+          : e.location
+            ? "MapPin"
+            : "Gamepad2",
+      })),
+    }));
+  }, [liveDays]);
 
   return (
     <div
@@ -142,17 +310,21 @@ export default function TimelineSchedule() {
                               },
                               activityIndex: number,
                             ) => {
-                              const ActivityIcon =
-                                iconMap[activity.icon as keyof typeof iconMap];
+                              let Icon = Gamepad2;
+                              if (activity.icon.startsWith("cat:")) {
+                                Icon = iconForCategory(activity.icon.slice(4));
+                              } else if (activity.icon === "MapPin") {
+                                Icon = MapPin;
+                              } else {
+                                Icon = Gamepad2;
+                              }
                               return (
                                 <div
                                   key={activityIndex}
                                   className="flex items-center gap-3 p-3 rounded-lg bg-gray-700/30 hover:bg-gray-700/50 transition-colors"
                                 >
                                   <div className="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                                    {ActivityIcon && (
-                                      <ActivityIcon className="w-4 h-4 text-purple-400" />
-                                    )}
+                                    <Icon className="w-4 h-4 text-purple-400" />
                                   </div>
                                   <div>
                                     <div className="text-purple-300 text-sm font-medium">

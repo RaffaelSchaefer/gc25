@@ -32,24 +32,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(147,51,234,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(147,51,234,0.1)_1px,transparent_1px)] bg-[size:50px_50px] animate-pulse" />
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-background">
+      {/* Background effects aligned with app palette */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent" />
+      <div aria-hidden className="absolute -z-10 -right-20 -top-20 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
 
-      <Card className="relative z-10 w-full max-w-md bg-gray-800/50 border-purple-500/20 backdrop-blur-sm">
+      <Card className="relative z-10 w-full max-w-md border-0 ring-1 ring-indigo-500/20 backdrop-blur-sm bg-gradient-to-br from-background/80 via-background/60 to-background/50">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-indigo-500/70 bg-clip-text text-transparent">
             {t("title")}
           </CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardDescription className="text-muted-foreground">
             {t("description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Button
             disabled={isLoading}
-            className="w-full h-12 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-3"
+            className="w-full h-12 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/10"
             onClick={signIn}
           >
             <>

@@ -178,7 +178,8 @@
     "account": "Konto",
     "billing": "Abrechnung",
     "notifications": "Benachrichtigungen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "planner": "Reiseplaner"
   },
   "nav-user": {
     "notifications": "Benachrichtigungen",
@@ -217,5 +218,177 @@
     "placeholder": "Wählen Sie eine Sprache",
     "de": "Deutsch",
     "en": "Englisch"
+  },
+  "planner": {
+    "title": "Reiseplaner",
+    "addEvent": "Event hinzufügen",
+    "addDay": "Tag hinzufügen",
+    "editEvent": "Event bearbeiten",
+    "noEvents": "Noch keine Events. Verwende „Event hinzufügen“, um dein erstes zu erstellen.",
+    "joined": "Teilgenommen",
+    "join": "Teilnehmen",
+    "cancel": "Abmelden",
+    "manage": "Verwalten",
+    "removeEvent": "Event entfernen",
+    "empty": {
+      "headline": "Keine Events gefunden",
+      "sub": "Passe deine Suche oder Filter an, um Events zu finden.",
+      "cta": "Erstes Event erstellen"
+    },
+    "timeline": {
+      "eventsCount": "{count, plural, one {# Event} other {# Events}}",
+      "totalAttendees": "{count} Teilnahmen gesamt",
+      "categories": "Kategorien:",
+      "popular": "Beliebt",
+      "attending": "{count, plural, one {# nimmt teil} other {# nehmen teil}}",
+      "createdBy": "Erstellt von {name}",
+      "ctaStrip": {
+        "text": "Möchtest du ein Event für diesen Tag hinzufügen?",
+        "add": "Event hinzufügen"
+      }
+    },
+    "stats": {
+      "overview": "Übersicht",
+      "details": "Details",
+      "totalEvents": "Events gesamt",
+      "acrossDays": "über {count} Tage",
+      "totalAttendees": "Teilnahmen gesamt",
+      "avgPerEvent": "ø {value} pro Event",
+      "categories": "Kategorien",
+      "differentTypes": "{count} verschiedene Typen",
+      "popularEvents": "Beliebte Events",
+      "mostPopularEvents": "Beliebteste Events",
+      "attendees": "Teilnahmen",
+      "attendeeCount": "{count} Teilnahmen",
+      "eventCategories": "Event-Kategorien",
+      "noData": "Keine Daten verfügbar",
+      "totalAttendeesLabel": "{count} Teilnahmen gesamt",
+      "avgPerEventShort": "ø {value}/Event",
+      "timeDistribution": "Zeitliche Verteilung",
+      "morning": "Morgen",
+      "afternoon": "Nachmittag",
+      "evening": "Abend",
+      "percentageLabel": "{value}%"
+    },
+    "categories": {
+      "meetup": "Meetup",
+      "expo": "Messe",
+      "food": "Essen",
+      "party": "Party",
+      "travel": "Reise",
+      "tournament": "Turnier"
+    },
+    "modal": {
+      "titleAdd": "Event hinzufügen",
+      "titleEdit": "Event bearbeiten",
+      "wizard": {
+        "title": "Neues Event erstellen",
+        "subtitle": "Fülle die Schritte aus, um dein Event zu erstellen",
+        "back": "Zurück",
+        "next": "Weiter",
+        "ariaSteps": "Schritte"
+      },
+      "steps": {
+        "basic": "Basis",
+        "details": "Details",
+        "review": "Übersicht"
+      },
+      "sections": {
+        "datetime": "Datum & Zeit",
+        "settings": "Event-Einstellungen"
+      },
+      "fields": {
+        "title": "Titel",
+        "time": "Zeit",
+        "location": "Ort",
+        "url": "URL",
+        "description": "Beschreibung",
+        "date": "Datum",
+        "start": "Start (Datum & Zeit)",
+        "end": "Ende (Datum & Zeit)",
+        "public": "Öffentliches Event",
+        "fixed": "Fester Zeitplan",
+        "status": "Veröffentlichen",
+        "date": "Datum"
+      },
+      "placeholders": {
+        "title": "Was ist das Event?",
+        "time": "HH:mm",
+        "location": "Wo findet es statt?",
+        "url": "https://beispiel.de",
+        "description": "Weitere Details hinzufügen..."
+      },
+      "help": {
+        "public": "Mache dieses Event für alle sichtbar",
+        "fixed": "Die Eventzeit kann nach Erstellung nicht mehr geändert werden",
+        "status": "Umschalten zum Veröffentlichen oder Zurückziehen"
+      },
+      "badges": {
+        "public": "Öffentlich"
+      },
+      "preview": {
+        "titleFallback": "Event-Name",
+        "descriptionFallback": "Die Eventbeschreibung erscheint hier..."
+      },
+      "validation": {
+        "titleRequired": "Event-Name ist erforderlich",
+        "descriptionRequired": "Beschreibung ist erforderlich",
+        "startRequired": "Startdatum ist erforderlich",
+        "endRequired": "Enddatum ist erforderlich",
+        "endAfterStart": "Das Enddatum muss nach dem Startdatum liegen"
+      },
+      "actions": {
+        "close": "Schließen",
+        "save": "Änderungen speichern",
+        "create": "Event hinzufügen"
+      }
+    },
+    "banner": "Dieser Planer verwendet lokalen Zustand. Änderungen bleiben nach einem Reload nicht erhalten.",
+    "attendees": "{count, plural, one {# nimmt teil} other {# nehmen teil}}",
+    "filters": {
+      "clear": "Filter zurücksetzen"
+    },
+    "actions": {
+      "new": "Neues Event",
+      "creating": "Wird erstellt…",
+      "createNew": "Neues Event erstellen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "tooltips": {
+      "edit": "Event bearbeiten",
+      "delete": "Event löschen",
+      "notAuthor": "Nur der Ersteller kann dieses Event verwalten",
+      "authRequired": "Bitte anmelden, um zu verwalten"
+    },
+    "confirm": {
+      "deleteTitle": "Event löschen?",
+      "deleteMessage": "„{title}“ am {time} wird dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirm": "Löschen",
+      "cancel": "Abbrechen"
+    },
+    "tabs": {
+      "timeline": "Zeitleiste",
+      "analytics": "Analytik"
+    },
+    "toast": {
+      "created": "Event erstellt",
+      "create_error": "Event konnte nicht erstellt werden",
+      "updated": "Event aktualisiert",
+      "update_error": "Event konnte nicht aktualisiert werden",
+      "deleted": "Event gelöscht",
+      "delete_error": "Event konnte nicht gelöscht werden",
+      "joined": "Erfolgreich angemeldet",
+      "left": "Erfolgreich abgemeldet",
+      "join_error": "Anmeldung fehlgeschlagen"
+    }
+  },
+  "categories": {
+    "meetup": "Meetup",
+    "expo": "Expo",
+    "food": "Essen",
+    "party": "Party",
+    "travel": "Reise",
+    "tournament": "Turnier"
   }
 }
