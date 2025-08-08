@@ -6,18 +6,29 @@ let socket: Socket | null = null;
 export function getClientSocket(): Socket {
   if (socket) return socket;
   const isBrowser = typeof window !== "undefined";
-  // 1) Explicit URL wins (e.g., wss://gc.raffaelschaefer.de:3100)
+  // 1) Explicit URL wins (e.g., wss://gc.raffaelschaefer.de)
   const explicit = process.env.NEXT_PUBLIC_SIO_URL;
-  // 2) Else use host + configured port (default 3100)
-  const protocol = isBrowser && window.location.protocol === "https:" ? "wss:" : "ws:";
-  const host = isBrowser ? window.location.hostname : "localhost";
-  const port = process.env.NEXT_PUBLIC_SIO_PORT || "3100";
-  // 3) Else fallback to same-origin (no URL): relies on reverse proxy mapping /socket.io
-  const base = explicit || `${protocol}//${host}:${port}`;
+  // 2) Decide base: in prod use same-origin (behind reverse proxy on /socket.io),
+  //    in local dev fall back to ws(s)://localhost:3100
+  let base: string | undefined = explicit;
 
-  socket = io(base, {
-    transports: ["websocket"],
-  path: process.env.NEXT_PUBLIC_SIO_PATH || "/socket.io",
-  });
+  if (!base && isBrowser) {
+    const host = window.location.hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1";
+    if (isLocal) {
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const port = process.env.NEXT_PUBLIC_SIO_PORT || "3100";
+      base = `${protocol}//${host}:${port}`;
+    } else {
+      // Same-origin: let socket.io-client infer the current origin (no port)
+      base = undefined;
+    }
+  }
+
+  const path = process.env.NEXT_PUBLIC_SIO_PATH || "/socket.io";
+
+  socket = base
+    ? io(base, { transports: ["websocket"], path })
+    : io({ transports: ["websocket"], path });
   return socket;
 }
