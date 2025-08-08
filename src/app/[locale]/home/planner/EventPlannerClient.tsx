@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { BroadcastMessage } from "@/types/realtime";
 import { useTranslations } from "next-intl";
 import { Calendar, Users, Plus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,10 +74,9 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
   const [, setIsCreating] = useState(false);
   const [isCmdOpen] = useState(false);
 
-  // WebSocket connection for real-time updates
+  // Socket.IO connection for real-time updates
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let unsubscribe = () => {};
 
     const toHHmmLocal = (d: Date) => {
       try {
@@ -173,21 +173,11 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
       );
     };
 
-    const connect = () => {
+  (async () => {
       try {
-        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        ws = new WebSocket(
-          `${protocol}://${window.location.host}/api/events/stream`,
-        );
-        ws.onopen = () => {
-          if (reconnectTimer) {
-            clearTimeout(reconnectTimer);
-            reconnectTimer = null;
-          }
-        };
-        ws.onmessage = (ev) => {
-          try {
-            const msg = JSON.parse(ev.data);
+        const { getClientSocket } = await import("@/lib/io-client");
+    const socket = getClientSocket();
+    const handler = (msg: BroadcastMessage) => {
             if (msg?.type === "participant_changed") {
               const { eventId, attendees } = msg;
               setEvents((prev) =>
@@ -211,27 +201,13 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
               deleteEventLocal(msg.id);
               return;
             }
-          } catch {}
         };
-        ws.onclose = () => {
-          if (!reconnectTimer) reconnectTimer = setTimeout(connect, 1500);
-        };
-        ws.onerror = () => {
-          try {
-            ws?.close();
-          } catch {}
-        };
+        socket.on("events:update", handler);
+        unsubscribe = () => socket.off("events:update", handler);
       } catch {}
-    };
+    })();
 
-    connect();
-
-    return () => {
-      try {
-        ws?.close();
-      } catch {}
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-    };
+    return () => unsubscribe();
   }, []);
 
   // Filter events based on search and filters

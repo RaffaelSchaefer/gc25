@@ -28,6 +28,7 @@ services:
       - db
     ports:
       - "${APP_PORT:-3000}:3000"
+      - "${SIO_PORT:-3100}:3100"
 
 volumes:
   db_data: {}

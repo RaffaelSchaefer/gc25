@@ -62,6 +62,8 @@ import {
   deleteCommentById as serverDeleteComment,
 } from "@/app/(server)/events.actions";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import type { BroadcastMessage } from "@/types/realtime";
 
 type TimelinedEvent = {
   id: string;
@@ -372,6 +374,64 @@ export function TimelineView({
   };
 
   // Global loading skeletons - removed since loading is handled upstream
+  // Socket.IO comment live updates
+  useEffect(() => {
+    let unsubscribe = () => {};
+    (async () => {
+      try {
+        const { getClientSocket } = await import("@/lib/io-client");
+        const socket = getClientSocket();
+        const handler = (msg: BroadcastMessage) => {
+          if (
+            msg.type === "comment_created" ||
+            msg.type === "comment_updated" ||
+            msg.type === "comment_deleted"
+          ) {
+            const { eventId } = msg;
+            setCommentsState((prev) => {
+              const cs = prev[eventId];
+              if (!cs || !cs.loaded) return prev; // only update if comments panel loaded
+              if (msg.type === "comment_created" && msg.comment) {
+                return {
+                  ...prev,
+                  [eventId]: {
+                    ...cs,
+                    items: [msg.comment, ...cs.items],
+                  },
+                };
+              }
+              if (msg.type === "comment_updated" && msg.comment) {
+                return {
+                  ...prev,
+                  [eventId]: {
+                    ...cs,
+                    items: cs.items.map((c) =>
+                      c.id === msg.comment!.id
+                        ? { ...c, content: msg.comment!.content }
+                        : c,
+                    ),
+                  },
+                };
+              }
+              if (msg.type === "comment_deleted" && msg.commentId) {
+                return {
+                  ...prev,
+                  [eventId]: {
+                    ...cs,
+                    items: cs.items.filter((c) => c.id !== msg.commentId),
+                  },
+                };
+              }
+              return prev;
+            });
+          }
+        };
+        socket.on("events:update", handler);
+        unsubscribe = () => socket.off("events:update", handler);
+      } catch {}
+    })();
+    return () => unsubscribe();
+  }, []);
   if (events.length === 0) {
     return (
       <Card className="border border-border/60 shadow-sm shadow-black/5 dark:shadow-black/20 backdrop-blur-xl bg-background/70">

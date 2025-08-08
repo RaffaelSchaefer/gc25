@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { BroadcastMessage } from "@/types/realtime";
 import { useTranslations } from "next-intl";
 import { Calendar, MapPin, Gamepad2, Users, Utensils, Car } from "lucide-react";
 
@@ -67,17 +68,14 @@ export default function TimelineSchedule({ days }: Props) {
     setLiveDays(days);
   }, [days]);
 
-  // WebSocket subscription with live data merging
+  // Socket.IO subscription with live data merging
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    try {
-      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-      ws = new WebSocket(
-        `${protocol}://${window.location.host}/api/events/stream`,
-      );
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
+    let unsubscribe = () => {};
+  (async () => {
+      try {
+        const { getClientSocket } = await import("@/lib/io-client");
+        const socket = getClientSocket();
+        const handler = (msg: BroadcastMessage) => {
           if (msg?.type === "participant_changed") {
             const { eventId, attendees } = msg;
             setLiveDays((prev) =>
@@ -162,20 +160,14 @@ export default function TimelineSchedule({ days }: Props) {
               return next;
             });
           }
-        } catch {
-          // ignore malformed frames
-        }
-      };
-    } catch {
-      // ignore WS construction errors
-    }
-    return () => {
-      try {
-        ws?.close();
-      } catch {
-        // ignore
-      }
-    };
+        };
+        socket.on("events:update", handler);
+        unsubscribe = () => {
+          socket.off("events:update", handler);
+        };
+      } catch {}
+    })();
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

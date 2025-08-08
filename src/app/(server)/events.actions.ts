@@ -406,7 +406,7 @@ export async function cancelJoin(eventId: string) {
  * Simple in-memory pub/sub broadcasting for WS consumers.
  * A dedicated WS route will register sockets in this set.
  */
-type BroadcastMessage =
+export type BroadcastMessage =
   | {
       type: "event_created" | "event_updated";
       event: {
@@ -458,6 +458,16 @@ async function broadcast(msg: BroadcastMessage) {
       // Remove dead clients defensively
       subscribers.delete(ws);
     }
+  }
+
+  // Mirror to Socket.IO if available
+  try {
+    const { emitToClients } = await import("@/lib/io");
+    // Das Socket.IO-Protokoll sendet rohe Objekte, nicht Strings
+    const objectPayload = typeof msg === "string" ? JSON.parse(msg) : msg;
+    emitToClients("events:update", objectPayload);
+  } catch {
+    // ignore if socket.io not initialized
   }
 }
 
