@@ -1,11 +1,11 @@
-export default function HomePage() {
+import DashboardOverview from "@/components/dashboard/overview";
+import { listPublishedEvents } from "../../(server)/events.actions";
+
+export default async function HomePage() {
+  const days = await listPublishedEvents();
   return (
-    <div>
-      <h1>Willkommen bei Clicker Spiele</h1>
-      <p>
-        Erlebe die neuesten Spiele und treffe Gleichgesinnte auf der Gamescom
-        2025!
-      </p>
-    </div>
+    <>
+      <DashboardOverview days={days} />
+    </>
   );
 }

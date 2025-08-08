@@ -1,5 +1,5 @@
-import { Children, type ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { Children, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export type AvatarStackProps = {
   children: ReactNode;
@@ -17,9 +17,9 @@ export const AvatarStack = ({
 }: AvatarStackProps) => (
   <div
     className={cn(
-      '-space-x-1 flex items-center',
-      animate && 'hover:space-x-0 [&>*]:transition-all',
-      className
+      "-space-x-1 flex items-center",
+      animate && "hover:space-x-0 [&>*]:transition-all",
+      className,
     )}
     {...props}
   >
@@ -31,16 +31,16 @@ export const AvatarStack = ({
       return (
         <div
           className={cn(
-            'size-full shrink-0 overflow-hidden rounded-full',
+            "size-full shrink-0 overflow-hidden rounded-full",
             '[&_[data-slot="avatar"]]:size-full',
-            className
+            className,
           )}
           style={{
             width: size,
             height: size,
             maskImage: index
               ? `radial-gradient(circle ${size / 2}px at -${size / 4 + size / 10}px 50%, transparent 99%, white 100%)`
-              : '',
+              : "",
           }}
         >
           {child}

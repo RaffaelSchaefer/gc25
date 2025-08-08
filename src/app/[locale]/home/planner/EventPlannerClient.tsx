@@ -18,7 +18,11 @@ import { EventCategory } from "@prisma/client";
 import { CreateEventModal, CreateEventData } from "./CreateEventModal";
 import { TimelineView } from "./TimelineView";
 import { EventStats } from "./EventStats";
-import { createEvent, joinEvent, cancelJoin } from "../../../(server)/events.actions";
+import {
+  createEvent,
+  joinEvent,
+  cancelJoin,
+} from "../../../(server)/events.actions";
 import { toast } from "sonner";
 
 type TimelinedEvent = {
@@ -76,7 +80,11 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
 
     const toHHmmLocal = (d: Date) => {
       try {
-        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+        return d.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
       } catch {
         return d.toISOString().slice(11, 16);
       }
@@ -84,7 +92,10 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
 
     const formatDayLabel = (d: Date) => {
       try {
-        return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        return d.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        });
       } catch {
         const mm = String(d.getMonth() + 1).padStart(2, "0");
         const dd = String(d.getDate()).padStart(2, "0");
@@ -126,31 +137,48 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
 
       setEvents((prev) => {
         // Remove any previous instance
-        const stripped = prev.map((b) => ({ ...b, events: b.events.filter((e) => e.id !== payload.id) }));
+        const stripped = prev.map((b) => ({
+          ...b,
+          events: b.events.filter((e) => e.id !== payload.id),
+        }));
         // Insert to correct bucket
         const idx = stripped.findIndex((b) => b.dateISO === dateISO);
         let next = stripped;
         if (idx === -1) {
-          next = [...stripped, { dateISO, dayLabel: formatDayLabel(start), events: [newEvent] }];
+          next = [
+            ...stripped,
+            { dateISO, dayLabel: formatDayLabel(start), events: [newEvent] },
+          ];
         } else {
           const bucket = { ...stripped[idx] };
           bucket.events = [...bucket.events, newEvent];
-          next = [...stripped.slice(0, idx), bucket, ...stripped.slice(idx + 1)];
+          next = [
+            ...stripped.slice(0, idx),
+            bucket,
+            ...stripped.slice(idx + 1),
+          ];
         }
         next.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
-        for (const b of next) b.events.sort((a, c) => a.time.localeCompare(c.time));
+        for (const b of next)
+          b.events.sort((a, c) => a.time.localeCompare(c.time));
         return next;
       });
     };
 
     const deleteEventLocal = (id: string) => {
-      setEvents((prev) => prev.map((b) => ({ ...b, events: b.events.filter((e) => e.id !== id) })).filter((b) => b.events.length > 0));
+      setEvents((prev) =>
+        prev
+          .map((b) => ({ ...b, events: b.events.filter((e) => e.id !== id) }))
+          .filter((b) => b.events.length > 0),
+      );
     };
 
     const connect = () => {
       try {
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        ws = new WebSocket(`${protocol}://${window.location.host}/api/events/stream`);
+        ws = new WebSocket(
+          `${protocol}://${window.location.host}/api/events/stream`,
+        );
         ws.onopen = () => {
           if (reconnectTimer) {
             clearTimeout(reconnectTimer);
@@ -162,10 +190,20 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
             const msg = JSON.parse(ev.data);
             if (msg?.type === "participant_changed") {
               const { eventId, attendees } = msg;
-              setEvents((prev) => prev.map((d) => ({ ...d, events: d.events.map((e) => (e.id === eventId ? { ...e, attendees } : e)) })));
+              setEvents((prev) =>
+                prev.map((d) => ({
+                  ...d,
+                  events: d.events.map((e) =>
+                    e.id === eventId ? { ...e, attendees } : e,
+                  ),
+                })),
+              );
               return;
             }
-            if (msg?.type === "event_created" || msg?.type === "event_updated") {
+            if (
+              msg?.type === "event_created" ||
+              msg?.type === "event_updated"
+            ) {
               upsertEvent(msg.event);
               return;
             }
@@ -179,7 +217,9 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
           if (!reconnectTimer) reconnectTimer = setTimeout(connect, 1500);
         };
         ws.onerror = () => {
-          try { ws?.close(); } catch {}
+          try {
+            ws?.close();
+          } catch {}
         };
       } catch {}
     };
@@ -233,7 +273,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
       if (nextJoined) {
         const result = await joinEvent(eventId);
         toast.success(t("toast.joined"));
-        
+
         // Update local state immediately for better UX
         setEvents((prev) =>
           prev.map((day) => ({
@@ -248,7 +288,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
       } else {
         const result = await cancelJoin(eventId);
         toast.success(t("toast.left"));
-        
+
         // Update local state immediately for better UX
         setEvents((prev) =>
           prev.map((day) => ({
@@ -296,7 +336,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
     0,
   );
   const categoriesCount = Array.from(
-    new Set(events.flatMap((d) => d.events.map((e) => e.category)))
+    new Set(events.flatMap((d) => d.events.map((e) => e.category))),
   ).length;
 
   return (
@@ -337,7 +377,10 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
                       <div className="mt-1 text-4xl md:text-6xl font-extrabold tracking-tight text-indigo-700 dark:text-indigo-300">
                         {totalEvents}
                       </div>
-                      <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-indigo-500/20 blur-3xl" />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-indigo-500/20 blur-3xl"
+                      />
                     </CardContent>
                   </Card>
                   {/* Total Attendees */}
@@ -352,7 +395,10 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
                       <div className="mt-1 text-4xl md:text-6xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-300">
                         {totalAttendees}
                       </div>
-                      <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-500/20 blur-3xl" />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-500/20 blur-3xl"
+                      />
                     </CardContent>
                   </Card>
                   {/* Categories */}
@@ -367,7 +413,10 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
                       <div className="mt-1 text-4xl md:text-6xl font-extrabold tracking-tight text-orange-700 dark:text-orange-300">
                         {categoriesCount}
                       </div>
-                      <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-orange-500/20 blur-3xl" />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-orange-500/20 blur-3xl"
+                      />
                     </CardContent>
                   </Card>
                 </>

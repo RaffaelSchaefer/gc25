@@ -19,7 +19,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Collapsible,
   CollapsibleContent,
@@ -120,9 +124,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-indigo-500/10",
     hoverText: "group-hover:text-indigo-600",
     linkText: "text-indigo-600",
-  linkHover: "hover:text-indigo-700",
-  fieldBg: "bg-indigo-50 dark:bg-indigo-900",
-  focusRing: "focus-visible:ring-indigo-500",
+    linkHover: "hover:text-indigo-700",
+    fieldBg: "bg-indigo-50 dark:bg-indigo-900",
+    focusRing: "focus-visible:ring-indigo-500",
   },
   EXPO: {
     bg: "bg-violet-500/10",
@@ -136,9 +140,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-violet-500/10",
     hoverText: "group-hover:text-violet-600",
     linkText: "text-violet-600",
-  linkHover: "hover:text-violet-700",
-  fieldBg: "bg-violet-50 dark:bg-violet-900",
-  focusRing: "focus-visible:ring-violet-500",
+    linkHover: "hover:text-violet-700",
+    fieldBg: "bg-violet-50 dark:bg-violet-900",
+    focusRing: "focus-visible:ring-violet-500",
   },
   FOOD: {
     bg: "bg-amber-500/10",
@@ -152,9 +156,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-amber-500/10",
     hoverText: "group-hover:text-amber-600",
     linkText: "text-amber-700",
-  linkHover: "hover:text-amber-800",
-  fieldBg: "bg-amber-50 dark:bg-amber-900",
-  focusRing: "focus-visible:ring-amber-500",
+    linkHover: "hover:text-amber-800",
+    fieldBg: "bg-amber-50 dark:bg-amber-900",
+    focusRing: "focus-visible:ring-amber-500",
   },
   PARTY: {
     bg: "bg-pink-500/10",
@@ -168,9 +172,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-pink-500/10",
     hoverText: "group-hover:text-pink-600",
     linkText: "text-pink-600",
-  linkHover: "hover:text-pink-700",
-  fieldBg: "bg-pink-50 dark:bg-pink-900",
-  focusRing: "focus-visible:ring-pink-500",
+    linkHover: "hover:text-pink-700",
+    fieldBg: "bg-pink-50 dark:bg-pink-900",
+    focusRing: "focus-visible:ring-pink-500",
   },
   TRAVEL: {
     bg: "bg-emerald-500/10",
@@ -184,9 +188,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-emerald-500/10",
     hoverText: "group-hover:text-emerald-600",
     linkText: "text-emerald-600",
-  linkHover: "hover:text-emerald-700",
-  fieldBg: "bg-emerald-50 dark:bg-emerald-900",
-  focusRing: "focus-visible:ring-emerald-500",
+    linkHover: "hover:text-emerald-700",
+    fieldBg: "bg-emerald-50 dark:bg-emerald-900",
+    focusRing: "focus-visible:ring-emerald-500",
   },
   TOURNAMENT: {
     bg: "bg-rose-500/10",
@@ -200,9 +204,9 @@ const categoryTokens = {
     btnOutlineHoverBg: "hover:bg-rose-500/10",
     hoverText: "group-hover:text-rose-600",
     linkText: "text-rose-600",
-  linkHover: "hover:text-rose-700",
-  fieldBg: "bg-rose-50 dark:bg-rose-900",
-  focusRing: "focus-visible:ring-rose-500",
+    linkHover: "hover:text-rose-700",
+    fieldBg: "bg-rose-50 dark:bg-rose-900",
+    focusRing: "focus-visible:ring-rose-500",
   },
 } as const;
 
@@ -232,7 +236,9 @@ export function TimelineView({
   const { data: session } = authClient.useSession();
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   // Optimistic overlays: patches per eventId and deletions set
-  const [eventPatches, setEventPatches] = useState<Record<string, Partial<TimelinedEvent>>>({});
+  const [eventPatches, setEventPatches] = useState<
+    Record<string, Partial<TimelinedEvent>>
+  >({});
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   // Edit modal via CreateEventModal reuse
   const [editOpen, setEditOpen] = useState(false);
@@ -245,16 +251,21 @@ export function TimelineView({
   const [isDeleting, startDeleting] = useTransition();
 
   // Comments state per event
-  const [commentsState, setCommentsState] = useState<Record<string, {
-    open: boolean;
-    loading: boolean;
-    loaded: boolean;
-    error?: string | null;
-    items: EventComment[];
-    newContent: string;
-    editing: Record<string, string>; // commentId -> content being edited
-    pending: boolean;
-  }>>({});
+  const [commentsState, setCommentsState] = useState<
+    Record<
+      string,
+      {
+        open: boolean;
+        loading: boolean;
+        loaded: boolean;
+        error?: string | null;
+        items: EventComment[];
+        newContent: string;
+        editing: Record<string, string>; // commentId -> content being edited
+        pending: boolean;
+      }
+    >
+  >({});
 
   const toggleComments = (eventId: string) => {
     let shouldFetch = false;
@@ -345,7 +356,8 @@ export function TimelineView({
 
   // Helpers
   const currentUserId = session?.user?.id ?? null;
-  const canManage = (ev: TimelinedEvent) => !!currentUserId && ev.createdById === currentUserId;
+  const canManage = (ev: TimelinedEvent) =>
+    !!currentUserId && ev.createdById === currentUserId;
   // no-op helper removed; keep local formatting inline to avoid tz pitfalls
 
   const openEdit = (ev: TimelinedEvent) => {
@@ -381,7 +393,7 @@ export function TimelineView({
   }
 
   return (
-  <div className="space-y-8">
+    <div className="space-y-8">
       {/* Optional future: show skeletons if loading state is present */}
       {/* Example: if (loading) return ( ...many skeletons... ) */}
       {events.map((day) => {
@@ -412,12 +424,15 @@ export function TimelineView({
                               <Calendar className="w-6 h-6" />
                             </div>
                           </div>
-                                       <div className="min-w-0">
+                          <div className="min-w-0">
                             <CardTitle className="text-sm sm:text-base font-semibold truncate">
                               {day.dayLabel}
                             </CardTitle>
-                              <div className="flex flex-wrap items-center gap-2 mt-2">
-                              <Badge variant="secondary" className="h-6 backdrop-blur-[2px] bg-background/50 border-border/50">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <Badge
+                                variant="secondary"
+                                className="h-6 backdrop-blur-[2px] bg-background/50 border-border/50"
+                              >
                                 {t("timeline.eventsCount", {
                                   count: day.events.length,
                                 })}
@@ -440,7 +455,9 @@ export function TimelineView({
                                       className={`inline-flex items-center gap-1 h-6 px-2 rounded-full border ${categoryTokens[cat].chipBg} ${categoryTokens[cat].text} border-border/50 backdrop-blur-[2px]`}
                                       aria-label={`${t("timeline.categories")} ${cat}`}
                                     >
-                                      <IconComp className={`w-3.5 h-3.5 ${categoryTokens[cat].text}`} />
+                                      <IconComp
+                                        className={`w-3.5 h-3.5 ${categoryTokens[cat].text}`}
+                                      />
                                       <span className="text-xs font-medium">
                                         {t(`categories.${cat.toLowerCase()}`)}
                                       </span>
@@ -451,7 +468,7 @@ export function TimelineView({
                             </div>
                           </div>
                         </div>
- 
+
                         <div className="flex items-center gap-2">
                           {isExpanded(day.dateISO) ? (
                             <ChevronUp className="w-5 h-5 text-muted-foreground" />
@@ -467,17 +484,17 @@ export function TimelineView({
                 <CollapsibleContent>
                   <CardContent className="mt-4">
                     {/* Per-day body: loading -> skeletons, not loading -> events or compact empty */}
-                      <div
-                        className={
-                          viewMode === "grid"
-                            ? "columns-1 md:columns-2 lg:columns-3 gap-x-6"
-                            : "space-y-6"
-                        }
-                      >
+                    <div
+                      className={
+                        viewMode === "grid"
+                          ? "columns-1 md:columns-2 lg:columns-3 gap-x-6"
+                          : "space-y-6"
+                      }
+                    >
                       {day.events.length === 0 ? (
                         <div className="col-span-full">
                           <div className="flex items-center justify-between p-4 rounded-md border bg-muted/40">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="w-4 h-4" />
                               <span>
                                 {t("timeline.eventsCount", { count: 0 })}
@@ -487,7 +504,7 @@ export function TimelineView({
                               variant="outline"
                               size="sm"
                               onClick={onCreateEvent}
-                            className="backdrop-blur-[2px] bg-gradient-to-r from-indigo-600 to-indigo-500 text-white ring-1 ring-indigo-400/40 hover:from-indigo-500 hover:to-indigo-600 shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 border-0"
+                              className="backdrop-blur-[2px] bg-gradient-to-r from-indigo-600 to-indigo-500 text-white ring-1 ring-indigo-400/40 hover:from-indigo-500 hover:to-indigo-600 shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 border-0"
                             >
                               <Plus className="w-4 h-4 mr-2" />
                               {t("timeline.ctaStrip.add")}
@@ -498,441 +515,772 @@ export function TimelineView({
                         day.events
                           .filter((e) => !deletedIds.has(e.id))
                           .map((event) => {
-                          const tone = categoryTokens[event.category];
-                          const priorityTone = getPriorityTone(event.attendees);
-                          const patched = eventPatches[event.id] ?? {};
-                          const merged: TimelinedEvent = {
-                            ...event,
-                            ...patched,
-                          } as TimelinedEvent;
+                            const tone = categoryTokens[event.category];
+                            const priorityTone = getPriorityTone(
+                              event.attendees,
+                            );
+                            const patched = eventPatches[event.id] ?? {};
+                            const merged: TimelinedEvent = {
+                              ...event,
+                              ...patched,
+                            } as TimelinedEvent;
 
-                          return (
-                            <div key={merged.id} className={viewMode === "grid" ? "break-inside-avoid mb-6" : ""}>
-                              <Card
-                                className={`group relative transition-all duration-200 border-0 ring-1 ${tone.ring} overflow-hidden shadow-[0_1px_0_rgba(255,255,255,0.05)] dark:shadow-[0_1px_0_rgba(0,0,0,0.4)] hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/30 backdrop-blur-lg bg-gradient-to-br ${tone.gradFrom} via-background/60 ${tone.gradTo} pt-0`}
+                            return (
+                              <div
+                                key={merged.id}
+                                className={
+                                  viewMode === "grid"
+                                    ? "break-inside-avoid mb-6"
+                                    : ""
+                                }
                               >
-                              <CardContent className="p-0">
-                                {/* Event Header - compact */}
-                                <div className="relative p-4 sm:p-5 border-b border-border/50 hover:bg-muted/20">
-                                  <div className="relative z-10 flex items-start justify-between">
-                                    <div className="min-w-0" />
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <Badge
-                                        variant="outline"
-                                        className={`h-6 px-2 text-[11px] ${tone.text} border-border/50 backdrop-blur-[2px] bg-background/40 hover:bg-background/60 inline-flex items-center gap-1`}
-                                      >
-                                        {(() => {
-                                          const IconComp = categoryIcons[merged.category];
-                                          return <IconComp className={`w-3.5 h-3.5 ${tone.text}`} />;
-                                        })()}
-                                        <span>
-                                          {t(
-                                            `categories.${merged.category.toLowerCase()}`,
-                                          )}
-                                        </span>
-                                      </Badge>
-                                      {merged.attendees > 20 && (
-                                        <Star
-                                          className={`w-4 h-4 ${priorityTone}`}
-                                          aria-label={t("timeline.popular")}
-                                        />
-                                      )}
-                                      {canManage(merged) && (
-                                        <div className="flex items-center gap-1">
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                aria-label={t("tooltips.edit")}
-                                                onClick={() => openEdit(merged)}
-                                              >
-                                                <Pencil className={`w-4 h-4 ${tone.text}`} />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>{t("tooltips.edit")}</TooltipContent>
-                                          </Tooltip>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                aria-label={t("tooltips.delete")}
-                                                onClick={() => confirmDelete(merged)}
-                                              >
-                                                <Trash2 className={`w-4 h-4 ${tone.text}`} />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>{t("tooltips.delete")}</TooltipContent>
-                                          </Tooltip>
-                                        </div>
-                                      )}
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        aria-label="Comments"
-                                        onClick={() => toggleComments(merged.id)}
-                                      >
-                                        <MessageSquare className={`w-4 h-4 ${tone.text}`} />
-                                      </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>Comments</TooltipContent>
-                                      </Tooltip>
-                                      <div className="basis-full sm:basis-auto sm:ml-2">
-                                        <Button
-                                          variant={merged.userJoined ? "default" : "outline"}
-                                          size="sm"
-                                          className={`w-full sm:w-auto justify-center text-xs group-hover:scale-105 transition-transform shadow-sm hover:shadow ${
-                                            merged.userJoined
-                                              ? `${tone.btnBg} ${tone.btnHover} text-white border-0`
-                                              : `${tone.text} ${tone.btnOutlineHoverBg}`
-                                          }`}
-                                          onClick={() => {
-                                            if (onToggleJoin) {
-                                              onToggleJoin(merged.id, !merged.userJoined);
-                                            }
-                                          }}
-                                        >
-                                          {merged.userJoined ? t("joined") : t("join")}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Event Content */}
-                                <div className="p-5">
-                                  {/* Title */}
-                                  <h3 className={`font-bold text-lg sm:text-xl mb-3 transition-colors line-clamp-2 drop-shadow-[0_1px_0_rgba(255,255,255,0.25)] dark:drop-shadow-none ${tone.text}`}>
-                                    {merged.title}
-                                  </h3>
-
-                                  {/* Details */}
-                                  <div className="space-y-2.5 text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-2">
-                                      <Clock className={`w-4 h-4 ${tone.text}`} />
-                                      <span className="font-medium">
-                                        {merged.time}
-                                      </span>
-                                    </div>
-
-                                    {merged.location && (
-                                      <div className="flex items-center gap-2">
-                                        <MapPin className={`w-4 h-4 ${tone.text}`} />
-                                        <span className="truncate">
-                                          {merged.location}
-                                        </span>
-                                      </div>
-                                    )}
-
-                                    {merged.attendees > 0 && (
-                                      <div className="flex flex-wrap items-center gap-2">
-                                        <Users className={`w-4 h-4 ${tone.text}`} />
-                                        <AvatarStack
-                                          avatars={
-                                            merged.participants && merged.participants.length > 0
-                                              ? merged.participants.map((u) => ({
-                                                  id: u.id,
-                                                  name: u.name,
-                                                  image: u.image ?? undefined,
-                                                  fallback: u.name
-                                                    .split(" ")
-                                                    .map((n) => n[0])
-                                                    .join("")
-                                                    .slice(0, 2)
-                                                    .toUpperCase(),
-                                                }))
-                                              : Array.from(
-                                                  { length: Math.min(merged.attendees, 5) },
-                                                  (_, i) => ({
-                                                    id: `attendee-${i}`,
-                                                    name: `Attendee ${i + 1}`,
-                                                    fallback: `A${i + 1}`,
-                                                  }),
-                                                )
-                                          }
-                                          size="sm"
-                                        />
-                                        {merged.attendees > 10 && (
+                                <Card
+                                  className={`group relative transition-all duration-200 border-0 ring-1 ${tone.ring} overflow-hidden shadow-[0_1px_0_rgba(255,255,255,0.05)] dark:shadow-[0_1px_0_rgba(0,0,0,0.4)] hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/30 backdrop-blur-lg bg-gradient-to-br ${tone.gradFrom} via-background/60 ${tone.gradTo} pt-0`}
+                                >
+                                  <CardContent className="p-0">
+                                    {/* Event Header - compact */}
+                                    <div className="relative p-4 sm:p-5 border-b border-border/50 hover:bg-muted/20">
+                                      <div className="relative z-10 flex items-start justify-between">
+                                        <div className="min-w-0" />
+                                        <div className="flex items-center gap-2 flex-wrap">
                                           <Badge
                                             variant="outline"
-                                            className="text-xs backdrop-blur-[2px] bg-background/40 border-border/50"
+                                            className={`h-6 px-2 text-[11px] ${tone.text} border-border/50 backdrop-blur-[2px] bg-background/40 hover:bg-background/60 inline-flex items-center gap-1`}
                                           >
-                                            {t("timeline.popular")}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Description */}
-                                  {(merged.description || merged.url) && (
-                                    <>
-                                      <Separator className="my-4" />
-                                      {merged.description && (
-                                        <p className="text-sm text-muted-foreground line-clamp-2 group-hover:line-clamp-none transition-all">
-                                          {merged.description}
-                                        </p>
-                                      )}
-                                      {merged.url && (
-                                        <div className="mt-2">
-                                          <a
-                                            href={merged.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`text-sm break-all inline-flex items-center gap-1 underline-offset-4 hover:underline ${tone.linkText} ${tone.linkHover}`}
-                                          >
-                                            <ExternalLink className={`w-4 h-4 ${tone.text}`} />
-                                            {merged.url}
-                                          </a>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-
-                                  {/* Avatare oben in Details angezeigt; unten keine zweite Anzeige */}
-
-                                  {/* Creator */}
-                                  {merged.createdBy && (
-                                    <div className="flex items-center gap-2 mt-3">
-                                      <Avatar className="w-5 h-5">
-                                        <AvatarImage src={merged.createdBy.image || ""} />
-                                        <AvatarFallback className="text-xs">
-                                          {merged.createdBy.name
-                                            .split(' ')
-                                            .map(n => n[0])
-                                            .join('')
-                                            .slice(0, 2)
-                                            .toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <span className="text-xs text-muted-foreground">
-                                        {t("timeline.createdBy", {
-                                          name: merged.createdBy.name,
-                                        })}
-                                      </span>
-                                    </div>
-                                  )}
-
-                                  {/* Comments */}
-                                  {(() => {
-                                    const cs = commentsState[merged.id];
-                                    if (!cs?.open) return null;
-                                    return (
-                                      <div className={`mt-4 rounded-lg border-0 ring-1 ${tone.ring} bg-background p-3`}>
-                                        {cs.loading ? (
-                                          <div className="text-sm text-muted-foreground">Loading comments…</div>
-                                        ) : cs.error ? (
-                                          <div className="text-sm text-destructive">{cs.error}</div>
-                                        ) : (
-                                          <div className="space-y-3">
-                                            {cs.items.length === 0 ? (
-                                              <div className="text-sm text-muted-foreground">No comments yet</div>
-                                            ) : (
-                                              cs.items.map((c) => {
-                                                const isOwner = currentUserId === c.createdById;
-                                                const isEditing = cs.editing[c.id] !== undefined;
-                                                return (
-                                                  <div key={c.id} className={`rounded-md border-0 ring-1 ${tone.ring} bg-background p-2`}>
-                                                    <div className="flex items-start justify-between gap-2">
-                                                      <div className="flex items-start gap-2 min-w-0">
-                                                        <Avatar className="w-6 h-6 mt-0.5">
-                                                          <AvatarImage src={c.createdBy?.image || ""} />
-                                                          <AvatarFallback className="text-[10px]">
-                                                            {(c.createdBy?.name || "?")
-                                                              .split(" ")
-                                                              .map((n) => n[0])
-                                                              .join("")
-                                                              .slice(0, 2)
-                                                              .toUpperCase()}
-                                                          </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="min-w-0">
-                                                          <div className="text-xs text-muted-foreground truncate">
-                                                            {c.createdBy?.name || "Anonymous"} · {new Date(c.createdAt).toLocaleString()}
-                                                          </div>
-                                                          {isEditing ? (
-                                                            <div className="mt-2 space-y-2">
-                                                              <Textarea
-                                                                value={cs.editing[c.id]}
-                                                                onChange={(e) =>
-                                                                  setCommentsState((prev) => ({
-                                                                    ...prev,
-                                                                    [merged.id]: {
-                                                                      ...prev[merged.id],
-                                                                      editing: { ...prev[merged.id].editing, [c.id]: e.target.value },
-                                                                    },
-                                                                  }))
-                                                                }
-                                                                className={`border-2 rounded-md border-border/50 bg-background ring-1 ${tone.ring}`}
-                                                              />
-                                                              <div className="flex gap-2">
-                                                                <Button
-                                                                  size="sm"
-                                                                  className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
-                                                                  onClick={async () => {
-                                                                    const content = cs.editing[c.id] || "";
-                                                                    try {
-                                                                      const updated = await serverUpdateComment(c.id, content);
-                                                                      setCommentsState((prev) => {
-                                                                        const list = prev[merged.id].items.map((it) => (it.id === c.id ? { ...it, content: updated.content } : it));
-                                                                        const nextEditing = { ...prev[merged.id].editing };
-                                                                        delete nextEditing[c.id];
-                                                                        return { ...prev, [merged.id]: { ...prev[merged.id], items: list, editing: nextEditing } };
-                                                                      });
-                                                                      toast.success("Comment updated");
-                                                                    } catch (err) {
-                                                                      toast.error((err as Error)?.message || "Failed to update");
-                                                                    }
-                                                                  }}
-                                                                >
-                                                                  Save
-                                                                </Button>
-                                                                <Button
-                                                                  variant="outline"
-                                                                  size="sm"
-                                                                  className={`text-xs ${tone.text} ${tone.btnOutlineHoverBg}`}
-                                                                  onClick={() =>
-                                                                    setCommentsState((prev) => {
-                                                                      const nextEditing = { ...prev[merged.id].editing };
-                                                                      delete nextEditing[c.id];
-                                                                      return { ...prev, [merged.id]: { ...prev[merged.id], editing: nextEditing } };
-                                                                    })
-                                                                  }
-                                                                >
-                                                                  Cancel
-                                                                </Button>
-                                                              </div>
-                                                            </div>
-                                                          ) : (
-                                                            <p className={`text-sm break-words whitespace-pre-wrap ${tone.text}`}>{c.content}</p>
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                      {isOwner && !isEditing && (
-                                                        <div className="flex items-center gap-1">
-                                                          <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                              <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                aria-label="Edit comment"
-                                                                className={`${tone.btnOutlineHoverBg}`}
-                                                                onClick={() =>
-                                                                  setCommentsState((prev) => ({
-                                                                    ...prev,
-                                                                    [merged.id]: {
-                                                                      ...prev[merged.id],
-                                                                      editing: { ...prev[merged.id].editing, [c.id]: c.content },
-                                                                    },
-                                                                  }))
-                                                                }
-                                                              >
-                                                                <Pencil className={`w-4 h-4 ${tone.text}`} />
-                                                              </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>Edit</TooltipContent>
-                                                          </Tooltip>
-
-                                                          <Tooltip>
-                                                            <TooltipTrigger asChild>
-                                                              <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                aria-label="Delete comment"
-                                                                className={`${tone.btnOutlineHoverBg}`}
-                                                                onClick={async () => {
-                                                                  if (!confirm("Delete this comment?")) return;
-                                                                  try {
-                                                                    await serverDeleteComment(c.id);
-                                                                    setCommentsState((prev) => ({
-                                                                      ...prev,
-                                                                      [merged.id]: { ...prev[merged.id], items: prev[merged.id].items.filter((it) => it.id !== c.id) },
-                                                                    }));
-                                                                    toast.success("Comment deleted");
-                                                                  } catch (err) {
-                                                                    toast.error((err as Error)?.message || "Failed to delete");
-                                                                  }
-                                                                }}
-                                                              >
-                                                                <Trash2 className={`w-4 h-4 ${tone.text}`} />
-                                                              </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>Delete</TooltipContent>
-                                                          </Tooltip>
-                                                        </div>
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                );
-                                              })
-                                            )}
-                                            {/* Add comment */}
-                                            <div className="pt-2 mt-2 border-t border-border/40">
-                                              <div className="flex items-start gap-2">
-                                                <Textarea
-                                                  placeholder="Write a comment…"
-                                                  value={cs.newContent}
-                                                  onChange={(e) =>
-                                                    setCommentsState((prev) => ({
-                                                      ...prev,
-                                                      [merged.id]: { ...prev[merged.id], newContent: e.target.value },
-                                                    }))
-                                                  }
-                                                  className={`border-2 rounded-md border-border/50 bg-background`}
+                                            {(() => {
+                                              const IconComp =
+                                                categoryIcons[merged.category];
+                                              return (
+                                                <IconComp
+                                                  className={`w-3.5 h-3.5 ${tone.text}`}
                                                 />
-                                              </div>
-                                              <div className="mt-2 flex justify-end">
-                                                <Button
-                                                  size="sm"
-                                                  disabled={!cs.newContent.trim() || cs.pending}
-                                                  className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
-                                                  onClick={async () => {
-                                                    setCommentsState((prev) => ({ ...prev, [merged.id]: { ...prev[merged.id], pending: true } }));
-                                                    try {
-                                                      const created = await serverAddComment(merged.id, cs.newContent);
-                                                      setCommentsState((prev) => ({
-                                                        ...prev,
-                                                        [merged.id]: {
-                                                          ...prev[merged.id],
-                                                          items: [created, ...prev[merged.id].items],
-                                                          newContent: "",
-                                                          pending: false,
-                                                        },
-                                                      }));
-                                                      toast.success("Comment added");
-                                                    } catch (err) {
-                                                      setCommentsState((prev) => ({ ...prev, [merged.id]: { ...prev[merged.id], pending: false } }));
-                                                      toast.error((err as Error)?.message || "Failed to add comment");
+                                              );
+                                            })()}
+                                            <span>
+                                              {t(
+                                                `categories.${merged.category.toLowerCase()}`,
+                                              )}
+                                            </span>
+                                          </Badge>
+                                          {merged.attendees > 20 && (
+                                            <Star
+                                              className={`w-4 h-4 ${priorityTone}`}
+                                              aria-label={t("timeline.popular")}
+                                            />
+                                          )}
+                                          {canManage(merged) && (
+                                            <div className="flex items-center gap-1">
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    aria-label={t(
+                                                      "tooltips.edit",
+                                                    )}
+                                                    onClick={() =>
+                                                      openEdit(merged)
                                                     }
-                                                  }}
-                                                >
-                                                  Add comment
-                                                </Button>
-                                              </div>
+                                                  >
+                                                    <Pencil
+                                                      className={`w-4 h-4 ${tone.text}`}
+                                                    />
+                                                  </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  {t("tooltips.edit")}
+                                                </TooltipContent>
+                                              </Tooltip>
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    aria-label={t(
+                                                      "tooltips.delete",
+                                                    )}
+                                                    onClick={() =>
+                                                      confirmDelete(merged)
+                                                    }
+                                                  >
+                                                    <Trash2
+                                                      className={`w-4 h-4 ${tone.text}`}
+                                                    />
+                                                  </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                  {t("tooltips.delete")}
+                                                </TooltipContent>
+                                              </Tooltip>
                                             </div>
+                                          )}
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                aria-label="Comments"
+                                                onClick={() =>
+                                                  toggleComments(merged.id)
+                                                }
+                                              >
+                                                <MessageSquare
+                                                  className={`w-4 h-4 ${tone.text}`}
+                                                />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              Comments
+                                            </TooltipContent>
+                                          </Tooltip>
+                                          <div className="basis-full sm:basis-auto">
+                                            <Button
+                                              variant={
+                                                merged.userJoined
+                                                  ? "default"
+                                                  : "outline"
+                                              }
+                                              size="sm"
+                                              className={`w-full sm:w-auto justify-center text-xs group-hover:scale-105 transition-transform shadow-sm hover:shadow ${
+                                                merged.userJoined
+                                                  ? `${tone.btnBg} ${tone.btnHover} text-white border-0`
+                                                  : `${tone.text} ${tone.btnOutlineHoverBg}`
+                                              }`}
+                                              onClick={() => {
+                                                if (onToggleJoin) {
+                                                  onToggleJoin(
+                                                    merged.id,
+                                                    !merged.userJoined,
+                                                  );
+                                                }
+                                              }}
+                                            >
+                                              {merged.userJoined
+                                                ? t("joined")
+                                                : t("join")}
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Event Content */}
+                                    <div className="p-5">
+                                      {/* Title */}
+                                      <h3
+                                        className={`font-bold text-lg sm:text-xl mb-3 transition-colors line-clamp-2 drop-shadow-[0_1px_0_rgba(255,255,255,0.25)] dark:drop-shadow-none ${tone.text}`}
+                                      >
+                                        {merged.title}
+                                      </h3>
+
+                                      {/* Details */}
+                                      <div className="space-y-2.5 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2">
+                                          <Clock
+                                            className={`w-4 h-4 ${tone.text}`}
+                                          />
+                                          <span className="font-medium">
+                                            {merged.time}
+                                          </span>
+                                        </div>
+
+                                        {merged.location && (
+                                          <div className="flex items-center gap-2">
+                                            <MapPin
+                                              className={`w-4 h-4 ${tone.text}`}
+                                            />
+                                            <span className="truncate">
+                                              {merged.location}
+                                            </span>
+                                          </div>
+                                        )}
+
+                                        {merged.attendees > 0 && (
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <Users
+                                              className={`w-4 h-4 ${tone.text}`}
+                                            />
+                                            <AvatarStack
+                                              avatars={
+                                                merged.participants &&
+                                                merged.participants.length > 0
+                                                  ? merged.participants.map(
+                                                      (u) => ({
+                                                        id: u.id,
+                                                        name: u.name,
+                                                        image:
+                                                          u.image ?? undefined,
+                                                        fallback: u.name
+                                                          .split(" ")
+                                                          .map((n) => n[0])
+                                                          .join("")
+                                                          .slice(0, 2)
+                                                          .toUpperCase(),
+                                                      }),
+                                                    )
+                                                  : Array.from(
+                                                      {
+                                                        length: Math.min(
+                                                          merged.attendees,
+                                                          5,
+                                                        ),
+                                                      },
+                                                      (_, i) => ({
+                                                        id: `attendee-${i}`,
+                                                        name: `Attendee ${i + 1}`,
+                                                        fallback: `A${i + 1}`,
+                                                      }),
+                                                    )
+                                              }
+                                              size="sm"
+                                            />
+                                            {merged.attendees > 10 && (
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs backdrop-blur-[2px] bg-background/40 border-border/50"
+                                              >
+                                                {t("timeline.popular")}
+                                              </Badge>
+                                            )}
                                           </div>
                                         )}
                                       </div>
+
+                                      {/* Description */}
+                                      {(merged.description || merged.url) && (
+                                        <>
+                                          <Separator className="my-4" />
+                                          {merged.description && (
+                                            <p className="text-sm text-muted-foreground line-clamp-2 group-hover:line-clamp-none transition-all">
+                                              {merged.description}
+                                            </p>
+                                          )}
+                                          {merged.url && (
+                                            <div className="mt-2">
+                                              <a
+                                                href={merged.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`text-sm break-all inline-flex items-center gap-1 underline-offset-4 hover:underline ${tone.linkText} ${tone.linkHover}`}
+                                              >
+                                                <ExternalLink
+                                                  className={`w-4 h-4 ${tone.text}`}
+                                                />
+                                                {merged.url}
+                                              </a>
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+
+                                      {/* Avatare oben in Details angezeigt; unten keine zweite Anzeige */}
+
+                                      {/* Creator */}
+                                      {merged.createdBy && (
+                                        <div className="flex items-center gap-2 mt-3">
+                                          <Avatar className="w-5 h-5">
+                                            <AvatarImage
+                                              src={merged.createdBy.image || ""}
+                                            />
+                                            <AvatarFallback className="text-xs">
+                                              {merged.createdBy.name
+                                                .split(" ")
+                                                .map((n) => n[0])
+                                                .join("")
+                                                .slice(0, 2)
+                                                .toUpperCase()}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <span className="text-xs text-muted-foreground">
+                                            {t("timeline.createdBy", {
+                                              name: merged.createdBy.name,
+                                            })}
+                                          </span>
+                                        </div>
+                                      )}
+
+                                      {/* Comments */}
+                                      {(() => {
+                                        const cs = commentsState[merged.id];
+                                        if (!cs?.open) return null;
+                                        return (
+                                          <div
+                                            className={`mt-4 rounded-lg border-0 ring-1 ${tone.ring} bg-background p-3`}
+                                          >
+                                            {cs.loading ? (
+                                              <div className="text-sm text-muted-foreground">
+                                                Loading comments…
+                                              </div>
+                                            ) : cs.error ? (
+                                              <div className="text-sm text-destructive">
+                                                {cs.error}
+                                              </div>
+                                            ) : (
+                                              <div className="space-y-3">
+                                                {cs.items.length === 0 ? (
+                                                  <div className="text-sm text-muted-foreground">
+                                                    No comments yet
+                                                  </div>
+                                                ) : (
+                                                  cs.items.map((c) => {
+                                                    const isOwner =
+                                                      currentUserId ===
+                                                      c.createdById;
+                                                    const isEditing =
+                                                      cs.editing[c.id] !==
+                                                      undefined;
+                                                    return (
+                                                      <div
+                                                        key={c.id}
+                                                        className={`rounded-md border-0 ring-1 ${tone.ring} bg-background p-2`}
+                                                      >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                          <div className="flex items-start gap-2 min-w-0">
+                                                            <Avatar className="w-6 h-6 mt-0.5">
+                                                              <AvatarImage
+                                                                src={
+                                                                  c.createdBy
+                                                                    ?.image ||
+                                                                  ""
+                                                                }
+                                                              />
+                                                              <AvatarFallback className="text-[10px]">
+                                                                {(
+                                                                  c.createdBy
+                                                                    ?.name ||
+                                                                  "?"
+                                                                )
+                                                                  .split(" ")
+                                                                  .map(
+                                                                    (n) => n[0],
+                                                                  )
+                                                                  .join("")
+                                                                  .slice(0, 2)
+                                                                  .toUpperCase()}
+                                                              </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="min-w-0">
+                                                              <div className="text-xs text-muted-foreground truncate">
+                                                                {c.createdBy
+                                                                  ?.name ||
+                                                                  "Anonymous"}{" "}
+                                                                ·{" "}
+                                                                {new Date(
+                                                                  c.createdAt,
+                                                                ).toLocaleString()}
+                                                              </div>
+                                                              {isEditing ? (
+                                                                <div className="mt-2 space-y-2">
+                                                                  <Textarea
+                                                                    value={
+                                                                      cs
+                                                                        .editing[
+                                                                        c.id
+                                                                      ]
+                                                                    }
+                                                                    onChange={(
+                                                                      e,
+                                                                    ) =>
+                                                                      setCommentsState(
+                                                                        (
+                                                                          prev,
+                                                                        ) => ({
+                                                                          ...prev,
+                                                                          [merged.id]:
+                                                                            {
+                                                                              ...prev[
+                                                                                merged
+                                                                                  .id
+                                                                              ],
+                                                                              editing:
+                                                                                {
+                                                                                  ...prev[
+                                                                                    merged
+                                                                                      .id
+                                                                                  ]
+                                                                                    .editing,
+                                                                                  [c.id]:
+                                                                                    e
+                                                                                      .target
+                                                                                      .value,
+                                                                                },
+                                                                            },
+                                                                        }),
+                                                                      )
+                                                                    }
+                                                                    className={`border-2 rounded-md border-border/50 bg-background ring-1 ${tone.ring}`}
+                                                                  />
+                                                                  <div className="flex gap-2">
+                                                                    <Button
+                                                                      size="sm"
+                                                                      className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
+                                                                      onClick={async () => {
+                                                                        const content =
+                                                                          cs
+                                                                            .editing[
+                                                                            c.id
+                                                                          ] ||
+                                                                          "";
+                                                                        try {
+                                                                          const updated =
+                                                                            await serverUpdateComment(
+                                                                              c.id,
+                                                                              content,
+                                                                            );
+                                                                          setCommentsState(
+                                                                            (
+                                                                              prev,
+                                                                            ) => {
+                                                                              const list =
+                                                                                prev[
+                                                                                  merged
+                                                                                    .id
+                                                                                ].items.map(
+                                                                                  (
+                                                                                    it,
+                                                                                  ) =>
+                                                                                    it.id ===
+                                                                                    c.id
+                                                                                      ? {
+                                                                                          ...it,
+                                                                                          content:
+                                                                                            updated.content,
+                                                                                        }
+                                                                                      : it,
+                                                                                );
+                                                                              const nextEditing =
+                                                                                {
+                                                                                  ...prev[
+                                                                                    merged
+                                                                                      .id
+                                                                                  ]
+                                                                                    .editing,
+                                                                                };
+                                                                              delete nextEditing[
+                                                                                c
+                                                                                  .id
+                                                                              ];
+                                                                              return {
+                                                                                ...prev,
+                                                                                [merged.id]:
+                                                                                  {
+                                                                                    ...prev[
+                                                                                      merged
+                                                                                        .id
+                                                                                    ],
+                                                                                    items:
+                                                                                      list,
+                                                                                    editing:
+                                                                                      nextEditing,
+                                                                                  },
+                                                                              };
+                                                                            },
+                                                                          );
+                                                                          toast.success(
+                                                                            "Comment updated",
+                                                                          );
+                                                                        } catch (err) {
+                                                                          toast.error(
+                                                                            (
+                                                                              err as Error
+                                                                            )
+                                                                              ?.message ||
+                                                                              "Failed to update",
+                                                                          );
+                                                                        }
+                                                                      }}
+                                                                    >
+                                                                      Save
+                                                                    </Button>
+                                                                    <Button
+                                                                      variant="outline"
+                                                                      size="sm"
+                                                                      className={`text-xs ${tone.text} ${tone.btnOutlineHoverBg}`}
+                                                                      onClick={() =>
+                                                                        setCommentsState(
+                                                                          (
+                                                                            prev,
+                                                                          ) => {
+                                                                            const nextEditing =
+                                                                              {
+                                                                                ...prev[
+                                                                                  merged
+                                                                                    .id
+                                                                                ]
+                                                                                  .editing,
+                                                                              };
+                                                                            delete nextEditing[
+                                                                              c
+                                                                                .id
+                                                                            ];
+                                                                            return {
+                                                                              ...prev,
+                                                                              [merged.id]:
+                                                                                {
+                                                                                  ...prev[
+                                                                                    merged
+                                                                                      .id
+                                                                                  ],
+                                                                                  editing:
+                                                                                    nextEditing,
+                                                                                },
+                                                                            };
+                                                                          },
+                                                                        )
+                                                                      }
+                                                                    >
+                                                                      Cancel
+                                                                    </Button>
+                                                                  </div>
+                                                                </div>
+                                                              ) : (
+                                                                <p
+                                                                  className={`text-sm break-words whitespace-pre-wrap ${tone.text}`}
+                                                                >
+                                                                  {c.content}
+                                                                </p>
+                                                              )}
+                                                            </div>
+                                                          </div>
+                                                          {isOwner &&
+                                                            !isEditing && (
+                                                              <div className="flex items-center gap-1">
+                                                                <Tooltip>
+                                                                  <TooltipTrigger
+                                                                    asChild
+                                                                  >
+                                                                    <Button
+                                                                      variant="ghost"
+                                                                      size="icon"
+                                                                      aria-label="Edit comment"
+                                                                      className={`${tone.btnOutlineHoverBg}`}
+                                                                      onClick={() =>
+                                                                        setCommentsState(
+                                                                          (
+                                                                            prev,
+                                                                          ) => ({
+                                                                            ...prev,
+                                                                            [merged.id]:
+                                                                              {
+                                                                                ...prev[
+                                                                                  merged
+                                                                                    .id
+                                                                                ],
+                                                                                editing:
+                                                                                  {
+                                                                                    ...prev[
+                                                                                      merged
+                                                                                        .id
+                                                                                    ]
+                                                                                      .editing,
+                                                                                    [c.id]:
+                                                                                      c.content,
+                                                                                  },
+                                                                              },
+                                                                          }),
+                                                                        )
+                                                                      }
+                                                                    >
+                                                                      <Pencil
+                                                                        className={`w-4 h-4 ${tone.text}`}
+                                                                      />
+                                                                    </Button>
+                                                                  </TooltipTrigger>
+                                                                  <TooltipContent>
+                                                                    Edit
+                                                                  </TooltipContent>
+                                                                </Tooltip>
+
+                                                                <Tooltip>
+                                                                  <TooltipTrigger
+                                                                    asChild
+                                                                  >
+                                                                    <Button
+                                                                      variant="ghost"
+                                                                      size="icon"
+                                                                      aria-label="Delete comment"
+                                                                      className={`${tone.btnOutlineHoverBg}`}
+                                                                      onClick={async () => {
+                                                                        if (
+                                                                          !confirm(
+                                                                            "Delete this comment?",
+                                                                          )
+                                                                        )
+                                                                          return;
+                                                                        try {
+                                                                          await serverDeleteComment(
+                                                                            c.id,
+                                                                          );
+                                                                          setCommentsState(
+                                                                            (
+                                                                              prev,
+                                                                            ) => ({
+                                                                              ...prev,
+                                                                              [merged.id]:
+                                                                                {
+                                                                                  ...prev[
+                                                                                    merged
+                                                                                      .id
+                                                                                  ],
+                                                                                  items:
+                                                                                    prev[
+                                                                                      merged
+                                                                                        .id
+                                                                                    ].items.filter(
+                                                                                      (
+                                                                                        it,
+                                                                                      ) =>
+                                                                                        it.id !==
+                                                                                        c.id,
+                                                                                    ),
+                                                                                },
+                                                                            }),
+                                                                          );
+                                                                          toast.success(
+                                                                            "Comment deleted",
+                                                                          );
+                                                                        } catch (err) {
+                                                                          toast.error(
+                                                                            (
+                                                                              err as Error
+                                                                            )
+                                                                              ?.message ||
+                                                                              "Failed to delete",
+                                                                          );
+                                                                        }
+                                                                      }}
+                                                                    >
+                                                                      <Trash2
+                                                                        className={`w-4 h-4 ${tone.text}`}
+                                                                      />
+                                                                    </Button>
+                                                                  </TooltipTrigger>
+                                                                  <TooltipContent>
+                                                                    Delete
+                                                                  </TooltipContent>
+                                                                </Tooltip>
+                                                              </div>
+                                                            )}
+                                                        </div>
+                                                      </div>
+                                                    );
+                                                  })
+                                                )}
+                                                {/* Add comment */}
+                                                <div className="pt-2 mt-2 border-t border-border/40">
+                                                  <div className="flex items-start gap-2">
+                                                    <Textarea
+                                                      placeholder="Write a comment…"
+                                                      value={cs.newContent}
+                                                      onChange={(e) =>
+                                                        setCommentsState(
+                                                          (prev) => ({
+                                                            ...prev,
+                                                            [merged.id]: {
+                                                              ...prev[
+                                                                merged.id
+                                                              ],
+                                                              newContent:
+                                                                e.target.value,
+                                                            },
+                                                          }),
+                                                        )
+                                                      }
+                                                      className={`border-2 rounded-md border-border/50 bg-background`}
+                                                    />
+                                                  </div>
+                                                  <div className="mt-2 flex justify-end">
+                                                    <Button
+                                                      size="sm"
+                                                      disabled={
+                                                        !cs.newContent.trim() ||
+                                                        cs.pending
+                                                      }
+                                                      className={`text-xs ${tone.btnBg} ${tone.btnHover} text-white border-0 ring-1 ${tone.ring} shadow-sm hover:shadow`}
+                                                      onClick={async () => {
+                                                        setCommentsState(
+                                                          (prev) => ({
+                                                            ...prev,
+                                                            [merged.id]: {
+                                                              ...prev[
+                                                                merged.id
+                                                              ],
+                                                              pending: true,
+                                                            },
+                                                          }),
+                                                        );
+                                                        try {
+                                                          const created =
+                                                            await serverAddComment(
+                                                              merged.id,
+                                                              cs.newContent,
+                                                            );
+                                                          setCommentsState(
+                                                            (prev) => ({
+                                                              ...prev,
+                                                              [merged.id]: {
+                                                                ...prev[
+                                                                  merged.id
+                                                                ],
+                                                                items: [
+                                                                  created,
+                                                                  ...prev[
+                                                                    merged.id
+                                                                  ].items,
+                                                                ],
+                                                                newContent: "",
+                                                                pending: false,
+                                                              },
+                                                            }),
+                                                          );
+                                                          toast.success(
+                                                            "Comment added",
+                                                          );
+                                                        } catch (err) {
+                                                          setCommentsState(
+                                                            (prev) => ({
+                                                              ...prev,
+                                                              [merged.id]: {
+                                                                ...prev[
+                                                                  merged.id
+                                                                ],
+                                                                pending: false,
+                                                              },
+                                                            }),
+                                                          );
+                                                          toast.error(
+                                                            (err as Error)
+                                                              ?.message ||
+                                                              "Failed to add comment",
+                                                          );
+                                                        }
+                                                      }}
+                                                    >
+                                                      Add comment
+                                                    </Button>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  </CardContent>
+                                  {(() => {
+                                    const BgIcon =
+                                      categoryIcons[merged.category];
+                                    return (
+                                      <BgIcon
+                                        aria-hidden
+                                        className={`pointer-events-none absolute -right-6 -bottom-6 w-56 h-56 sm:w-64 sm:h-64 rotate-12 opacity-10 blur-xs ${tone.text}`}
+                                      />
                                     );
                                   })()}
-                                </div>
-                               </CardContent>
-                               {(() => {
-                                 const BgIcon = categoryIcons[merged.category];
-                                 return (
-                                   <BgIcon
-                                     aria-hidden
-                                     className={`pointer-events-none absolute -right-6 -bottom-6 w-56 h-56 sm:w-64 sm:h-64 rotate-12 opacity-10 blur-xs ${tone.text}`}
-                                   />
-                                 );
-                               })()}
-                              </Card>
-                            </div>
-                          );
-                        })
+                                </Card>
+                              </div>
+                            );
+                          })
                       )}
                     </div>
 
@@ -958,7 +1306,10 @@ export function TimelineView({
                   </CardContent>
                 </CollapsibleContent>
               </Collapsible>
-              <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl" />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl"
+              />
             </Card>
           </div>
         );
@@ -996,13 +1347,20 @@ export function TimelineView({
               isPublic: data.isPublic,
               time: (() => {
                 try {
-                  return new Date(data.startDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+                  return new Date(data.startDate).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  });
                 } catch {
                   return target.time;
                 }
               })(),
             };
-            setEventPatches((prev) => ({ ...prev, [target.id]: { ...(prev[target.id] ?? {}), ...optimistic } }));
+            setEventPatches((prev) => ({
+              ...prev,
+              [target.id]: { ...(prev[target.id] ?? {}), ...optimistic },
+            }));
             try {
               await updateEvent(target.id, {
                 name: data.name,
@@ -1036,11 +1394,17 @@ export function TimelineView({
           <AlertDialogHeader>
             <AlertDialogTitle>{t("confirm.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTarget && t("confirm.deleteMessage", { title: deleteTarget.title, time: deleteTarget.time })}
+              {deleteTarget &&
+                t("confirm.deleteMessage", {
+                  title: deleteTarget.title,
+                  time: deleteTarget.time,
+                })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {deleteError && (
-            <p className="text-sm text-destructive" role="alert">{deleteError}</p>
+            <p className="text-sm text-destructive" role="alert">
+              {deleteError}
+            </p>
           )}
           <AlertDialogFooter>
             <AlertDialogCancel>{t("confirm.cancel")}</AlertDialogCancel>
@@ -1063,7 +1427,9 @@ export function TimelineView({
                       next.delete(id);
                       return next;
                     });
-                    setDeleteError((err as Error)?.message || t("toast.delete_error"));
+                    setDeleteError(
+                      (err as Error)?.message || t("toast.delete_error"),
+                    );
                     toast.error(t("toast.delete_error"));
                   }
                 });
@@ -1081,4 +1447,3 @@ export function TimelineView({
 
 // Inline edit sheet kept local to this file for cohesion with TimelineView UI.
 // It reuses the design system components and mirrors a subset of the create modal fields for editing.
-

@@ -24,7 +24,10 @@ vi.mock("@/app/(server)/events.actions", () => ({
 
 function wrap(ui: React.ReactNode) {
   return (
-  <NextIntlClientProvider locale="en" messages={en as unknown as Record<string, unknown>}>
+    <NextIntlClientProvider
+      locale="en"
+      messages={en as unknown as Record<string, unknown>}
+    >
       {ui}
     </NextIntlClientProvider>
   );
@@ -76,9 +79,7 @@ describe("TimelineView", () => {
 
   it("shows edit/delete buttons only for creator events", () => {
     render(
-      wrap(
-  <TimelineView events={sample as unknown as any} viewMode="grid" />
-      )
+      wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />),
     );
     // expand day
     fireEvent.click(screen.getByText("Aug 21"));
@@ -94,9 +95,7 @@ describe("TimelineView", () => {
 
   it("edits an event and updates UI optimistically", async () => {
     render(
-      wrap(
-  <TimelineView events={sample as unknown as any} viewMode="grid" />
-      )
+      wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />),
     );
     fireEvent.click(screen.getByText("Aug 21"));
 
@@ -115,7 +114,9 @@ describe("TimelineView", () => {
   });
 
   it("confirms delete and removes from timeline", async () => {
-  render(wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />));
+    render(
+      wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />),
+    );
     fireEvent.click(screen.getByText("Aug 21"));
 
     const delBtn = screen.getByLabelText(/Delete event/i);
@@ -130,11 +131,15 @@ describe("TimelineView", () => {
 
   it("shows error when edit fails", async () => {
     updateEventMock.mockRejectedValueOnce(new Error("Update failed"));
-    render(wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />));
+    render(
+      wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />),
+    );
     fireEvent.click(screen.getByText("Aug 21"));
 
     fireEvent.click(screen.getByLabelText(/Edit event/i));
-    const saveBtn = await screen.findByRole("button", { name: /Save changes/i });
+    const saveBtn = await screen.findByRole("button", {
+      name: /Save changes/i,
+    });
     fireEvent.click(saveBtn);
 
     expect(await screen.findByText(/Update failed/i)).toBeTruthy();
@@ -142,7 +147,9 @@ describe("TimelineView", () => {
 
   it("rolls back when delete fails", async () => {
     deleteEventMock.mockRejectedValueOnce(new Error("Delete failed"));
-    render(wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />));
+    render(
+      wrap(<TimelineView events={sample as unknown as any} viewMode="grid" />),
+    );
     fireEvent.click(screen.getByText("Aug 21"));
 
     fireEvent.click(screen.getByLabelText(/Delete event/i));

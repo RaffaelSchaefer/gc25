@@ -79,12 +79,12 @@ export function CreateEventModal({
   submitTextOverride,
 }: CreateEventModalProps) {
   const t = useTranslations("planner");
-    const locale = useLocale();
-    const dayPickerLocale = useMemo(() => {
-        const code = (locale || "en").toLowerCase();
-        if (code.startsWith("de")) return dfnsDe;
-        return dfnsEnUS;
-    }, [locale]);
+  const locale = useLocale();
+  const dayPickerLocale = useMemo(() => {
+    const code = (locale || "en").toLowerCase();
+    if (code.startsWith("de")) return dfnsDe;
+    return dfnsEnUS;
+  }, [locale]);
   const [step, setStep] = useState<Step>(0);
 
   const categoryText: Record<EventCategory, string> = {
@@ -96,25 +96,28 @@ export function CreateEventModal({
     TOURNAMENT: "text-rose-600",
   };
 
-  const categoryTokens: Record<EventCategory, {
-    text: string;
-    ring: string;
-    gradFrom: string;
-    gradTo: string;
-    fieldBg: string;
-    stepFrom: string;
-    stepTo: string;
-    titleTo: string;
-    btnFrom: string;
-    btnTo: string;
-    btnRing: string;
-    btnHover: string;
-    glowBg: string;
-    focusRing: string;
-    switchChecked: string;
-    solidBg: string;
-    solidBorder: string;
-  }> = {
+  const categoryTokens: Record<
+    EventCategory,
+    {
+      text: string;
+      ring: string;
+      gradFrom: string;
+      gradTo: string;
+      fieldBg: string;
+      stepFrom: string;
+      stepTo: string;
+      titleTo: string;
+      btnFrom: string;
+      btnTo: string;
+      btnRing: string;
+      btnHover: string;
+      glowBg: string;
+      focusRing: string;
+      switchChecked: string;
+      solidBg: string;
+      solidBorder: string;
+    }
+  > = {
     MEETUP: {
       text: "text-indigo-600",
       ring: "ring-indigo-500/30",
@@ -246,10 +249,10 @@ export function CreateEventModal({
   const startDateRef = useRef<HTMLInputElement | null>(null);
   const endDateRef = useRef<HTMLInputElement | null>(null);
 
-    // Single-day selection and times
-    const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
-    const [startTime, setStartTime] = useState<string>("");
-    const [endTime, setEndTime] = useState<string>("");
+  // Single-day selection and times
+  const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
 
   const [formData, setFormData] = useState<CreateEventData>({
     name: "",
@@ -265,19 +268,19 @@ export function CreateEventModal({
 
   const [errors, setErrors] = useState<Partial<CreateEventData>>({});
 
-    // helper to build ISO string for the selected single day with HH:mm
-    const toISOAt = useCallback((day: Date, hhmm: string) => {
-        const [hhStr = "0", mmStr = "0"] = (hhmm || "").split(":");
-        const hours = Math.min(23, Math.max(0, Number(hhStr)));
-        const minutes = Math.min(59, Math.max(0, Number(mmStr)));
-        const d = new Date(day);
-        d.setHours(hours, minutes, 0, 0);
-        return d.toISOString();
-    }, []);
+  // helper to build ISO string for the selected single day with HH:mm
+  const toISOAt = useCallback((day: Date, hhmm: string) => {
+    const [hhStr = "0", mmStr = "0"] = (hhmm || "").split(":");
+    const hours = Math.min(23, Math.max(0, Number(hhStr)));
+    const minutes = Math.min(59, Math.max(0, Number(mmStr)));
+    const d = new Date(day);
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  }, []);
 
   const handleInputChange = (
     field: keyof CreateEventData,
-        value: string | boolean
+    value: string | boolean,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -293,27 +296,25 @@ export function CreateEventModal({
         if (!formData.name.trim())
           newErrors.name = t("modal.validation.titleRequired");
         if (!formData.description.trim())
-                    newErrors.description = t(
-                        "modal.validation.descriptionRequired"
-                    );
+          newErrors.description = t("modal.validation.descriptionRequired");
       }
       if (s === 1) {
-                if (!formData.startDate) {
+        if (!formData.startDate) {
           newErrors.startDate = t("modal.validation.startRequired");
-                }
-                // Optional end time: validate ordering only when provided
-                if (formData.startDate && formData.endDate && endTime) {
+        }
+        // Optional end time: validate ordering only when provided
+        if (formData.startDate && formData.endDate && endTime) {
           const start = new Date(formData.startDate);
           const end = new Date(formData.endDate);
-                    if (!(start < end)) {
+          if (!(start < end)) {
             newErrors.endDate = t("modal.validation.endAfterStart");
-                    }
+          }
         }
       }
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     },
-        [t, formData, endTime]
+    [t, formData, endTime],
   );
 
   // Seed form with initial data when opening in edit mode
@@ -341,12 +342,14 @@ export function CreateEventModal({
               hour: "2-digit",
               minute: "2-digit",
               hour12: false,
-            })
+            }),
           );
         }
         if (initialData.endDate) {
           const e = new Date(initialData.endDate);
-          const start = initialData.startDate ? new Date(initialData.startDate) : null;
+          const start = initialData.startDate
+            ? new Date(initialData.startDate)
+            : null;
           const endStr = e.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -373,16 +376,14 @@ export function CreateEventModal({
       );
     }
     if (step === 1) {
-            if (!formData.startDate) return false;
-            if (endTime && formData.endDate) {
-                return (
-                    new Date(formData.startDate) < new Date(formData.endDate)
-                );
+      if (!formData.startDate) return false;
+      if (endTime && formData.endDate) {
+        return new Date(formData.startDate) < new Date(formData.endDate);
+      }
+      return true;
     }
     return true;
-        }
-        return true;
-    }, [step, formData, endTime]);
+  }, [step, formData, endTime]);
 
   const goNext = () => {
     if (validateStep(step)) {
@@ -422,7 +423,7 @@ export function CreateEventModal({
       setErrors({});
       setStep(0);
     },
-        [formData, onClose, onSubmit, validateStep]
+    [formData, onClose, onSubmit, validateStep],
   );
 
   // Stepper header
@@ -447,7 +448,6 @@ export function CreateEventModal({
       }
     }
   }, [step]);
-
 
   // Tasten-Handling: Esc schließt immer, Enter triggert Next/Submit
   useEffect(() => {
@@ -511,7 +511,7 @@ export function CreateEventModal({
       <SheetContent
         side="right"
         className={`w-full sm:max-w-2xl h-[100dvh] overflow-y-auto overflow-x-hidden border-0 ring-1 ${categoryTokens[formData.category].ring} bg-gradient-to-br ${categoryTokens[formData.category].gradFrom} to-background`}
-          aria-labelledby="create-event-title"
+        aria-labelledby="create-event-title"
         role="dialog"
         aria-modal="true"
         aria-describedby="create-event-subtitle step-announcer error-announcer"
@@ -541,22 +541,16 @@ export function CreateEventModal({
               </SheetDescription>
             </div>
           </div>
-          <div aria-hidden className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full ${categoryTokens[formData.category].glowBg} blur-2xl`} />
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full ${categoryTokens[formData.category].glowBg} blur-2xl`}
+          />
 
           {/* Live regions for SR announcements */}
-                    <p
-                        id="step-announcer"
-                        className="sr-only"
-                        aria-live="polite"
-                    >
-                        {t("modal.wizard.title")}:{" "}
-                        {steps.find((s) => s.id === step)?.label}
-                    </p>
-                    <div
-                        id="error-announcer"
-                        className="sr-only"
-                        aria-live="polite"
-                    >
+          <p id="step-announcer" className="sr-only" aria-live="polite">
+            {t("modal.wizard.title")}: {steps.find((s) => s.id === step)?.label}
+          </p>
+          <div id="error-announcer" className="sr-only" aria-live="polite">
             {Object.values(errors).filter(Boolean).join(". ")}
           </div>
 
@@ -564,26 +558,18 @@ export function CreateEventModal({
           <div
             className="flex items-center gap-2 mt-2"
             role="tablist"
-                        aria-label={
-                            t("modal.wizard.ariaSteps") ??
-                            t("modal.wizard.title")
-                        }
+            aria-label={t("modal.wizard.ariaSteps") ?? t("modal.wizard.title")}
           >
             {steps.map((s, idx) => {
               const isActive = step === s.id;
               const isDone = step > s.id;
               return (
-                                <div
-                                    key={s.id}
-                                    className="flex items-center gap-2"
-                                >
+                <div key={s.id} className="flex items-center gap-2">
                   <div
                     role="tab"
                     aria-selected={isActive}
-                                        aria-current={
-                                            isActive ? "step" : undefined
-                                        }
-                  className={`inline-flex items-center justify-center w-8 h-8 rounded-full border text-sm ${
+                    aria-current={isActive ? "step" : undefined}
+                    className={`inline-flex items-center justify-center w-8 h-8 rounded-full border text-sm ${
                       isActive
                         ? `bg-gradient-to-br ${categoryTokens[formData.category].stepFrom} ${categoryTokens[formData.category].stepTo} text-white ${categoryTokens[formData.category].solidBorder}`
                         : isDone
@@ -592,11 +578,7 @@ export function CreateEventModal({
                     } ring-1 ${isActive || isDone ? categoryTokens[formData.category].ring : "ring-border"}`}
                     aria-label={s.label}
                   >
-                                        {isDone ? (
-                                            <Check className="w-4 h-4" />
-                                        ) : (
-                                            idx + 1
-                                        )}
+                    {isDone ? <Check className="w-4 h-4" /> : idx + 1}
                   </div>
                   <span
                     className={`text-sm ${isActive ? "font-medium text-foreground" : "text-muted-foreground"}`}
@@ -604,7 +586,9 @@ export function CreateEventModal({
                     {s.label}
                   </span>
                   {idx < steps.length - 1 && (
-                    <ChevronRight className={`w-4 h-4 ${isDone ? categoryTokens[formData.category].text : "text-muted-foreground"}`} />
+                    <ChevronRight
+                      className={`w-4 h-4 ${isDone ? categoryTokens[formData.category].text : "text-muted-foreground"}`}
+                    />
                   )}
                 </div>
               );
@@ -624,40 +608,26 @@ export function CreateEventModal({
                 role="region"
                 aria-labelledby="basic-section-title"
               >
-                                <h3
-                                    id="basic-section-title"
-                                    className="sr-only"
-                                >
+                <h3 id="basic-section-title" className="sr-only">
                   {t("modal.steps.basic")}
                 </h3>
                 {/* Title */}
                 <div className="space-y-2">
-                      <Label
-                                        htmlFor="name"
-                        className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
-                                    >
+                  <Label
+                    htmlFor="name"
+                    className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
+                  >
                     {t("modal.fields.title")} *
                   </Label>
                   <Input
                     id="name"
                     ref={nameRef}
-                                        placeholder={t(
-                                            "modal.placeholders.title"
-                                        )}
+                    placeholder={t("modal.placeholders.title")}
                     value={formData.name}
-                                        onChange={(e) =>
-                                            handleInputChange(
-                                                "name",
-                                                e.target.value
-                                            )
-                                        }
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     aria-invalid={!!errors.name}
                     className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} ${categoryTokens[formData.category].fieldBg}`}
-                                        aria-describedby={
-                                            errors.name
-                                                ? "name-error"
-                                                : undefined
-                                        }
+                    aria-describedby={errors.name ? "name-error" : undefined}
                   />
                   {errors.name && (
                     <p
@@ -676,8 +646,7 @@ export function CreateEventModal({
                     {t("stats.categories")}
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
-                                        {Object.entries(EventCategory).map(
-                                            ([key, value]) => (
+                    {Object.entries(EventCategory).map(([key, value]) => (
                       <button
                         type="button"
                         key={value}
@@ -685,32 +654,28 @@ export function CreateEventModal({
                           categoryTokens[value as EventCategory].ring
                         } bg-background bg-gradient-to-br ${
                           categoryTokens[value as EventCategory].gradFrom
-                        } ${
-                          categoryTokens[value as EventCategory].gradTo
-                        } ${
+                        } ${categoryTokens[value as EventCategory].gradTo} ${
                           formData.category === value
                             ? "ring-2"
                             : "hover:ring-2"
                         }`}
-                                                    onClick={() =>
-                                                        handleInputChange(
-                                                            "category",
-                                                            value
-                                                        )
-                                                    }
-                                                    aria-pressed={
-                                                        formData.category ===
-                                                        value
-                                                    }
+                        onClick={() => handleInputChange("category", value)}
+                        aria-pressed={formData.category === value}
                       >
                         <div className="relative z-10 flex items-center justify-between">
-                          <span className={`font-semibold ${categoryTokens[value as EventCategory].text}`}>
+                          <span
+                            className={`font-semibold ${categoryTokens[value as EventCategory].text}`}
+                          >
                             {key}
                           </span>
                         </div>
                         {(() => {
-                          const IconComp = categoryIconsMap[value as keyof typeof categoryIconsMap];
-                          const tone = categoryTokens[value as EventCategory].text;
+                          const IconComp =
+                            categoryIconsMap[
+                              value as keyof typeof categoryIconsMap
+                            ];
+                          const tone =
+                            categoryTokens[value as EventCategory].text;
                           return (
                             <IconComp
                               aria-hidden
@@ -719,39 +684,31 @@ export function CreateEventModal({
                           );
                         })()}
                       </button>
-                                            )
-                                        )}
+                    ))}
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
                   <Label
-                                        htmlFor="description"
-                      className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
-                                    >
+                    htmlFor="description"
+                    className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
+                  >
                     {t("modal.fields.description")} *
                   </Label>
                   <Textarea
                     id="description"
                     ref={descriptionRef}
-                                        placeholder={t(
-                                            "modal.placeholders.description"
-                                        )}
+                    placeholder={t("modal.placeholders.description")}
                     value={formData.description}
                     onChange={(e) =>
-                                            handleInputChange(
-                                                "description",
-                                                e.target.value
-                                            )
+                      handleInputChange("description", e.target.value)
                     }
                     rows={4}
                     aria-invalid={!!errors.description}
                     className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} ${categoryTokens[formData.category].fieldBg}`}
                     aria-describedby={
-                                            errors.description
-                                                ? "description-error"
-                                                : undefined
+                      errors.description ? "description-error" : undefined
                     }
                   />
                   {errors.description && (
@@ -773,10 +730,7 @@ export function CreateEventModal({
                 role="region"
                 aria-labelledby="details-section-title"
               >
-                                <h3
-                                    id="details-section-title"
-                                    className="sr-only"
-                                >
+                <h3 id="details-section-title" className="sr-only">
                   {t("modal.steps.details")}
                 </h3>
                 {/* Date & Time */}
@@ -785,66 +739,50 @@ export function CreateEventModal({
                     id="datetime-section-title"
                     className={`font-semibold text-lg flex items-center gap-2 ${categoryTokens[formData.category].text}`}
                   >
-                    <CalendarIcon className={`w-5 h-5 ${categoryTokens[formData.category].text}`} />
+                    <CalendarIcon
+                      className={`w-5 h-5 ${categoryTokens[formData.category].text}`}
+                    />
                     {t("modal.sections.datetime")}
                   </h3>
 
-                                    {/* Single date selection using Shadcn Calendar */}
-                    <div className="space-y-2">
-                      <Label className={`text-sm font-medium ${categoryTokens[formData.category].text}`}>
-                                            {t("modal.fields.date")} *
-                      </Label>
+                  {/* Single date selection using Shadcn Calendar */}
+                  <div className="space-y-2">
+                    <Label
+                      className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
+                    >
+                      {t("modal.fields.date")} *
+                    </Label>
 
-                                        <ShadcnCalendar
-                                            mode="single"
-                                            locale={dayPickerLocale}
-                                            selected={selectedDay}
-                                            onSelect={(d) => {
-                                                setSelectedDay(d ?? undefined);
-                                                if (!d) return;
-                                                if (startTime) {
-                                                    const sISO = toISOAt(
-                                                        d,
-                                                        startTime
-                                                    );
-                                                    handleInputChange(
-                                                        "startDate",
-                                                        sISO
-                                                    );
-                                                    const eISO = endTime
-                                                        ? toISOAt(d, endTime)
-                                                        : sISO;
-                                                    handleInputChange(
-                                                        "endDate",
-                                                        eISO
-                                                    );
-                                                } else {
-                                                    const midnight = toISOAt(
-                                                        d,
-                                                        "00:00"
-                                                    );
-                                                    handleInputChange(
-                                                        "startDate",
-                                                        midnight
-                                                    );
-                                                    handleInputChange(
-                                                        "endDate",
-                                                        midnight
-                                                    );
-                                                }
-                                            }}
-                                            className="mx-auto border rounded-md shadow-none"
-                                            captionLayout="dropdown"
-                                        />
-                                    </div>
-                      {errors.startDate && (
-                                        <p className="text-sm text-destructive flex items-center gap-1">
-                          <X className="w-3 h-3" />
-                          {errors.startDate}
-                        </p>
-                      )}
+                    <ShadcnCalendar
+                      mode="single"
+                      locale={dayPickerLocale}
+                      selected={selectedDay}
+                      onSelect={(d) => {
+                        setSelectedDay(d ?? undefined);
+                        if (!d) return;
+                        if (startTime) {
+                          const sISO = toISOAt(d, startTime);
+                          handleInputChange("startDate", sISO);
+                          const eISO = endTime ? toISOAt(d, endTime) : sISO;
+                          handleInputChange("endDate", eISO);
+                        } else {
+                          const midnight = toISOAt(d, "00:00");
+                          handleInputChange("startDate", midnight);
+                          handleInputChange("endDate", midnight);
+                        }
+                      }}
+                      className="mx-auto border rounded-md shadow-none"
+                      captionLayout="dropdown"
+                    />
+                  </div>
+                  {errors.startDate && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <X className="w-3 h-3" />
+                      {errors.startDate}
+                    </p>
+                  )}
 
-                                    {/* Time inputs */}
+                  {/* Time inputs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     {/* Start time */}
                     <div className="space-y-2">
@@ -852,40 +790,25 @@ export function CreateEventModal({
                         htmlFor="startTime"
                         className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
                       >
-                                                {t("modal.fields.time")} (
-                                                {t("modal.fields.start")})
+                        {t("modal.fields.time")} ({t("modal.fields.start")})
                       </Label>
                       <Input
                         id="startTime"
-                                                type="time"
-                                                ref={startDateRef}
-                                                placeholder={t(
-                                                    "modal.placeholders.time"
-                                                )}
+                        type="time"
+                        ref={startDateRef}
+                        placeholder={t("modal.placeholders.time")}
                         value={startTime}
                         className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} bg-background`}
                         onChange={(e) => {
-                                                    const v = e.target.value;
-                                                    setStartTime(v);
-                                                    if (!selectedDay) return;
-                                                    const sISO = toISOAt(
-                                                        selectedDay,
-                                                        v
-                                                    );
-                                                    handleInputChange(
-                                                        "startDate",
-                                                        sISO
-                                                    );
-                                                    const eISO = endTime
-                                                        ? toISOAt(
-                                                              selectedDay,
-                                                              endTime
-                                                          )
-                                                        : sISO;
-                                                    handleInputChange(
-                                                        "endDate",
-                                                        eISO
-                                                    );
+                          const v = e.target.value;
+                          setStartTime(v);
+                          if (!selectedDay) return;
+                          const sISO = toISOAt(selectedDay, v);
+                          handleInputChange("startDate", sISO);
+                          const eISO = endTime
+                            ? toISOAt(selectedDay, endTime)
+                            : sISO;
+                          handleInputChange("endDate", eISO);
                         }}
                       />
                     </div>
@@ -893,56 +816,45 @@ export function CreateEventModal({
                     {/* End time */}
                     <div className="space-y-2">
                       <Label
-                                                htmlFor="endTime"
+                        htmlFor="endTime"
                         className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
-                                            >
-                                                {t("modal.fields.time")} (
-                                                {t("modal.fields.end")})
+                      >
+                        {t("modal.fields.time")} ({t("modal.fields.end")})
                       </Label>
                       <Input
                         id="endTime"
-                                                type="time"
-                                                ref={endDateRef}
-                                                placeholder={t(
-                                                    "modal.placeholders.time"
-                                                )}
+                        type="time"
+                        ref={endDateRef}
+                        placeholder={t("modal.placeholders.time")}
                         value={endTime}
                         className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} bg-background`}
-                                                onChange={(e) => {
-                                                    const v = e.target.value; // optional
-                                                    setEndTime(v);
-                                                    if (!selectedDay) return;
-                                                    if (v) {
-                                                        handleInputChange(
-                                                            "endDate",
-                                                            toISOAt(
-                                                                selectedDay,
-                                                                v
-                                                            )
-                                                        );
-                                                    } else {
-                                                        if (formData.startDate)
-                                                            handleInputChange(
-                                                                "endDate",
-                                                                formData.startDate
-                                                            );
-                                                    }
+                        onChange={(e) => {
+                          const v = e.target.value; // optional
+                          setEndTime(v);
+                          if (!selectedDay) return;
+                          if (v) {
+                            handleInputChange(
+                              "endDate",
+                              toISOAt(selectedDay, v),
+                            );
+                          } else {
+                            if (formData.startDate)
+                              handleInputChange("endDate", formData.startDate);
+                          }
                         }}
                       />
                     </div>
                   </div>
 
                   {/* Combined range violation hint */}
-                                    {endTime &&
-                                        formData.startDate &&
+                  {endTime &&
+                    formData.startDate &&
                     formData.endDate &&
                     new Date(formData.startDate) >=
                       new Date(formData.endDate) && (
                       <p className="text-sm text-destructive flex items-center gap-1 mt-2">
                         <X className="w-3 h-3" />
-                                                {t(
-                                                    "modal.validation.endAfterStart"
-                                                )}
+                        {t("modal.validation.endAfterStart")}
                       </p>
                     )}
                 </div>
@@ -953,39 +865,37 @@ export function CreateEventModal({
                     htmlFor="location"
                     className={`text-sm font-medium flex items-center gap-2 ${categoryTokens[formData.category].text}`}
                   >
-                    <MapPin className={`w-4 h-4 ${categoryTokens[formData.category].text}`} />
+                    <MapPin
+                      className={`w-4 h-4 ${categoryTokens[formData.category].text}`}
+                    />
                     {t("modal.fields.location")}
                   </Label>
                   <Input
                     id="location"
-                                        placeholder={t(
-                                            "modal.placeholders.location"
-                                        )}
+                    placeholder={t("modal.placeholders.location")}
                     value={formData.location}
                     className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} ${categoryTokens[formData.category].fieldBg}`}
                     onChange={(e) =>
-                                            handleInputChange(
-                                                "location",
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-                                </div>
-
-                                {/* URL */}
-                                <div className="space-y-2">
-                    <Label htmlFor="url" className={`text-sm font-medium ${categoryTokens[formData.category].text}`}>
-                                        {t("modal.fields.url")}
-                                    </Label>
-                    <Input
-                                        id="url"
-                                        type="url"
-                                        placeholder={t("modal.placeholders.url")}
-                      value={formData.url ?? ""}
-                      className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} ${categoryTokens[formData.category].fieldBg}`}
-                                        onChange={(e) =>
-                                            handleInputChange("url", e.target.value)
+                      handleInputChange("location", e.target.value)
                     }
+                  />
+                </div>
+
+                {/* URL */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="url"
+                    className={`text-sm font-medium ${categoryTokens[formData.category].text}`}
+                  >
+                    {t("modal.fields.url")}
+                  </Label>
+                  <Input
+                    id="url"
+                    type="url"
+                    placeholder={t("modal.placeholders.url")}
+                    value={formData.url ?? ""}
+                    className={`border-2 rounded-lg border-border/60 hover:border-border focus-visible:ring-2 focus-visible:ring-offset-0 ${categoryTokens[formData.category].focusRing} ${categoryTokens[formData.category].fieldBg}`}
+                    onChange={(e) => handleInputChange("url", e.target.value)}
                   />
                 </div>
 
@@ -995,7 +905,9 @@ export function CreateEventModal({
                     id="settings-section-title"
                     className={`font-semibold text-lg flex items-center gap-2 ${categoryTokens[formData.category].text}`}
                   >
-                    <Star className={`w-5 h-5 ${categoryTokens[formData.category].text}`} />
+                    <Star
+                      className={`w-5 h-5 ${categoryTokens[formData.category].text}`}
+                    />
                     {t("modal.sections.settings")}
                   </h3>
 
@@ -1012,14 +924,9 @@ export function CreateEventModal({
                       <Switch
                         checked={formData.isPublic}
                         onCheckedChange={(checked) =>
-                                                    handleInputChange(
-                                                        "isPublic",
-                                                        checked
-                                                    )
+                          handleInputChange("isPublic", checked)
                         }
-                        aria-label={t(
-                                                    "modal.fields.public"
-                                                )}
+                        aria-label={t("modal.fields.public")}
                         className={`${categoryTokens[formData.category].switchChecked}`}
                       />
                     </div>
@@ -1036,14 +943,9 @@ export function CreateEventModal({
                       <Switch
                         checked={formData.isFixed}
                         onCheckedChange={(checked) =>
-                                                    handleInputChange(
-                                                        "isFixed",
-                                                        checked
-                                                    )
+                          handleInputChange("isFixed", checked)
                         }
-                        aria-label={t(
-                                                    "modal.fields.fixed"
-                                                )}
+                        aria-label={t("modal.fields.fixed")}
                         className={`${categoryTokens[formData.category].switchChecked}`}
                       />
                     </div>
@@ -1058,10 +960,7 @@ export function CreateEventModal({
                 role="region"
                 aria-labelledby="review-section-title"
               >
-                                <h3
-                                    id="review-section-title"
-                                    className="sr-only"
-                                >
+                <h3 id="review-section-title" className="sr-only">
                   {t("modal.steps.review")}
                 </h3>
                 {/* Preview Card */}
@@ -1070,13 +969,13 @@ export function CreateEventModal({
                     <div className="flex items-center gap-3 mb-4">
                       {(() => {
                         const IconComp = categoryIconsMap[formData.category];
-                        return <IconComp className={`w-6 h-6 ${categoryText[formData.category]}`} />;
+                        return (
+                          <IconComp
+                            className={`w-6 h-6 ${categoryText[formData.category]}`}
+                          />
+                        );
                       })()}
-                      <Badge
-                        className={
-                          categoryColors[formData.category]
-                        }
-                      >
+                      <Badge className={categoryColors[formData.category]}>
                         {formData.category}
                       </Badge>
                       {formData.isPublic && (
@@ -1088,47 +987,37 @@ export function CreateEventModal({
                         </Badge>
                       )}
                     </div>
-                    <h3 className={`font-bold text-xl md:text-2xl mb-3 ${categoryText[formData.category]}`}>
-                                            {formData.name ||
-                                                t(
-                                                    "modal.preview.titleFallback"
-                                                )}
+                    <h3
+                      className={`font-bold text-xl md:text-2xl mb-3 ${categoryText[formData.category]}`}
+                    >
+                      {formData.name || t("modal.preview.titleFallback")}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       {formData.description ||
-                                                t(
-                                                    "modal.preview.descriptionFallback"
-                                                )}
+                        t("modal.preview.descriptionFallback")}
                     </p>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       {formData.startDate && (
                         <div className="flex items-center gap-1">
-                                                    <CalendarIcon className="w-4 h-4" />
+                          <CalendarIcon className="w-4 h-4" />
                           <span>
-                                                        {new Date(
-                                                            formData.startDate
-                                                        ).toLocaleString()}
+                            {new Date(formData.startDate).toLocaleString()}
                           </span>
                         </div>
                       )}
-                                            {formData.endDate &&
-                                                formData.endDate !==
-                                                    formData.startDate && (
-                        <div className="flex items-center gap-1">
-                                                        <CalendarIcon className="w-4 h-4" />
-                          <span>
-                                                            {new Date(
-                                                                formData.endDate
-                                                            ).toLocaleString()}
-                          </span>
-                        </div>
-                      )}
+                      {formData.endDate &&
+                        formData.endDate !== formData.startDate && (
+                          <div className="flex items-center gap-1">
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>
+                              {new Date(formData.endDate).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
                       {formData.location && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                                                    <span>
-                                                        {formData.location}
-                                                    </span>
+                          <span>{formData.location}</span>
                         </div>
                       )}
                     </div>

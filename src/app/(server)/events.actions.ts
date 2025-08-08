@@ -156,7 +156,9 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
       isPublic: e.isPublic,
       participants: e.participants
         .map((p) => p.user)
-        .filter((u): u is { id: string; name: string; image: string | null } => Boolean(u)),
+        .filter((u): u is { id: string; name: string; image: string | null } =>
+          Boolean(u),
+        ),
     });
   }
 
@@ -496,7 +498,10 @@ export async function listComments(eventId: string): Promise<EventComment[]> {
 }
 
 /** Create a comment on an event. Requires authentication. */
-export async function addComment(eventId: string, content: string): Promise<EventComment> {
+export async function addComment(
+  eventId: string,
+  content: string,
+): Promise<EventComment> {
   const userId = await getSessionUserId();
   if (!userId) throw new Error("Unauthorized");
   const trimmed = (content ?? "").trim();
@@ -531,7 +536,10 @@ export async function addComment(eventId: string, content: string): Promise<Even
 }
 
 /** Update a comment's content. Only the author can edit. */
-export async function updateComment(commentId: string, content: string): Promise<EventComment> {
+export async function updateComment(
+  commentId: string,
+  content: string,
+): Promise<EventComment> {
   const userId = await getSessionUserId();
   if (!userId) throw new Error("Unauthorized");
   const trimmed = (content ?? "").trim();
@@ -574,7 +582,9 @@ export async function updateComment(commentId: string, content: string): Promise
 }
 
 /** Delete a comment. Only the author can delete. */
-export async function deleteCommentById(commentId: string): Promise<{ ok: true }> {
+export async function deleteCommentById(
+  commentId: string,
+): Promise<{ ok: true }> {
   const userId = await getSessionUserId();
   if (!userId) throw new Error("Unauthorized");
 

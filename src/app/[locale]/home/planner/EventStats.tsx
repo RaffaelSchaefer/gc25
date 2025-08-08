@@ -161,7 +161,10 @@ export function EventStats({ events }: EventStatsProps) {
             <p className="text-xs text-indigo-800/70 dark:text-indigo-200/70">
               {t("stats.acrossDays", { count: totalDays })}
             </p>
-            <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-indigo-500/20 blur-3xl" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-indigo-500/20 blur-3xl"
+            />
           </CardContent>
         </Card>
 
@@ -187,7 +190,10 @@ export function EventStats({ events }: EventStatsProps) {
                     : 0,
               })}
             </p>
-            <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-emerald-500/20 blur-3xl"
+            />
           </CardContent>
         </Card>
 
@@ -208,7 +214,10 @@ export function EventStats({ events }: EventStatsProps) {
             <p className="text-xs text-orange-800/70 dark:text-orange-200/70">
               {t("stats.differentTypes", { count: categoryStats.length })}
             </p>
-            <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-orange-500/20 blur-3xl" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-orange-500/20 blur-3xl"
+            />
           </CardContent>
         </Card>
 
@@ -229,7 +238,10 @@ export function EventStats({ events }: EventStatsProps) {
             <p className="text-xs text-violet-800/70 dark:text-violet-200/70">
               20+ {t("stats.attendees")}
             </p>
-            <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-violet-500/20 blur-3xl" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-violet-500/20 blur-3xl"
+            />
           </CardContent>
         </Card>
       </div>

@@ -36,7 +36,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     width={64}
                     height={64}
                   />
-                  <div aria-hidden className="pointer-events-none absolute -right-3 -top-3 h-8 w-8 rounded-full bg-indigo-500/20 blur-xl" />
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-3 -top-3 h-8 w-8 rounded-full bg-indigo-500/20 blur-xl"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
