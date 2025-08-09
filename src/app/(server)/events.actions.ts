@@ -84,7 +84,10 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
   const isAuthenticated = Boolean(userId);
 
   const events = await prisma.event.findMany({
-    where: { status: EventStatus.PUBLISHED },
+    where: {
+      status: EventStatus.PUBLISHED,
+      ...(isAuthenticated ? {} : { isPublic: true }),
+    },
     orderBy: [{ startDate: "asc" }],
     select: {
       id: true,
