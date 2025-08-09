@@ -413,15 +413,15 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
               <Separator className="hidden md:block" />
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+              <div className="flex h-9 items-center gap-2 rounded-md border bg-background px-3">
+                <Label htmlFor="joined-only" className="text-sm font-medium">
+                  {t("filters.mine")}
+                </Label>
                 <Switch
                   id="joined-only"
                   checked={showJoinedOnly}
                   onCheckedChange={setShowJoinedOnly}
                 />
-                <Label htmlFor="joined-only" className="text-sm">
-                  {t("filters.mine")}
-                </Label>
               </div>
               <Button
                 size="sm"

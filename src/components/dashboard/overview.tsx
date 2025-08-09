@@ -1,3 +1,5 @@
+"use client";
+
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,15 +27,18 @@ type Props = {
 function formatDateTime(iso: string) {
   try {
     const d = new Date(iso);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const date = d.toLocaleDateString(undefined, {
       weekday: "short",
       month: "short",
       day: "numeric",
+      timeZone,
     });
     const time = d.toLocaleTimeString(undefined, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+      timeZone,
     });
     return `${date} · ${time}`;
   } catch {
@@ -44,10 +49,12 @@ function formatDateTime(iso: string) {
 function formatTime(iso: string) {
   try {
     const d = new Date(iso);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     return d.toLocaleTimeString(undefined, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+      timeZone,
     });
   } catch {
     return iso;
