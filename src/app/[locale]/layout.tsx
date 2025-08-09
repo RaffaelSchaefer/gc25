@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PWAInstall } from "@/components/pwa-install";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,6 +22,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "GC25",
   description: "Clicker Spiele GamesCom Tour 2025",
+  manifest: "/manifest.json",
+  themeColor: "#ffffff",
+  appleWebApp: {
+    capable: true,
+    title: "GC25",
+    statusBarStyle: "default",
+  },
 };
 
 export function generateStaticParams() {
@@ -44,6 +52,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <PWAInstall />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
