@@ -1,0 +1,10 @@
+{
+  "name": "GC25",
+  "short_name": "GC25",
+  "description": "Clicker Spiele GamesCom Tour 2025",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
