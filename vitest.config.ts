@@ -1,10 +1,14 @@
 import { defineConfig } from "vitest/config";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: [],
+    setupFiles: ["./vitest.setup.ts"],
     include: [
       "src/**/*.test.ts",
       "src/**/*.test.tsx",
@@ -15,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": "/Users/raffaelschaefer/Projekte/gc25/src",
+      "@": path.resolve(__dirname, "src"),
     },
   },
 });
