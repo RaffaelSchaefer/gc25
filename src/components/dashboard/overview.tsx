@@ -41,6 +41,19 @@ function formatDateTime(iso: string) {
   }
 }
 
+function formatTime(iso: string) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  } catch {
+    return iso;
+  }
+}
+
 export default function DashboardOverview({ days }: Props) {
   const allEvents = days.flatMap((d) => d.events);
   const totalEvents = allEvents.length;
@@ -51,6 +64,9 @@ export default function DashboardOverview({ days }: Props) {
     .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
     .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
     .sort((a, b) => a.ts - b.ts)[0]?.e;
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayEvents = days.find((d) => d.dateISO === todayISO)?.events ?? [];
 
   return (
     <section className="relative -mt-24 z-10">
@@ -122,12 +138,52 @@ export default function DashboardOverview({ days }: Props) {
                   </div>
                 )}
               </CardContent>
-            </Card>
-          </div>
+          </Card>
+        </div>
 
-          {/* Spotify */}
-          <div className="break-inside-avoid mb-6">
-            <Card className="group relative overflow-hidden border-0 ring-1 ring-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-background/60 to-background/50 backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20">
+        {/* Today's Plan */}
+        <div className="break-inside-avoid mb-6">
+          <Card className="group relative overflow-hidden border-0 ring-1 ring-indigo-500/20 bg-gradient-to-br from-indigo-500/5 via-background/60 to-background/50 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl text-indigo-700 dark:text-indigo-300">
+                  Tagesplan
+                </CardTitle>
+                <CardDescription className="text-indigo-600 dark:text-indigo-200">
+                  Heutige Events im Überblick
+                </CardDescription>
+              </div>
+              <div className="rounded-lg bg-indigo-500/15 p-2 border border-indigo-500/30">
+                <Calendar className="w-6 h-6 text-indigo-300" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {todayEvents.length > 0 ? (
+                <ul className="space-y-2">
+                  {todayEvents.map((e) => (
+                    <li
+                      key={e.id}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span>{e.title}</span>
+                      <span className="text-muted-foreground">
+                        {formatTime(e.startDate)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  Heute stehen keine Events an.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Spotify */}
+        <div className="break-inside-avoid mb-6">
+          <Card className="group relative overflow-hidden border-0 ring-1 ring-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-background/60 to-background/50 backdrop-blur-xl transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -right-12 -top-12 size-56 rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.25)_0%,transparent_60%)]"

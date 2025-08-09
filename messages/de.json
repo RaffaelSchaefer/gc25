@@ -346,7 +346,8 @@
     "banner": "Dieser Planer verwendet lokalen Zustand. Änderungen bleiben nach einem Reload nicht erhalten.",
     "attendees": "{count, plural, one {# nimmt teil} other {# nehmen teil}}",
     "filters": {
-      "clear": "Filter zurücksetzen"
+      "clear": "Filter zurücksetzen",
+      "mine": "Meine Events"
     },
     "actions": {
       "new": "Neues Event",

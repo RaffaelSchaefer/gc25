@@ -356,7 +356,8 @@
       "analytics": "Analytics"
     },
     "filters": {
-      "clear": "Reset filters"
+      "clear": "Reset filters",
+      "mine": "My events"
     },
     "actions": {
       "new": "New Event",
