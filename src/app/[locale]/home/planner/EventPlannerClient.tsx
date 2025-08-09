@@ -5,6 +5,8 @@ import type { BroadcastMessage } from "@/types/realtime";
 import { useTranslations } from "next-intl";
 import { Calendar, Users, Plus, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -70,6 +72,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
   const [searchTerm] = useState("");
   const [selectedCategory] = useState<string>("all");
   const [selectedDate] = useState<string>("all");
+  const [showJoinedOnly, setShowJoinedOnly] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [, setIsCreating] = useState(false);
   const [isCmdOpen] = useState(false);
@@ -221,8 +224,14 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
           selectedCategory === "all" || event.category === selectedCategory;
         const matchesDate =
           selectedDate === "all" || day.dateISO === selectedDate;
+        const matchesJoined = !showJoinedOnly || event.userJoined;
 
-        return matchesSearch && matchesCategory && matchesDate;
+        return (
+          matchesSearch &&
+          matchesCategory &&
+          matchesDate &&
+          matchesJoined
+        );
       }),
     }))
     .filter((day) => day.events.length > 0);
@@ -403,7 +412,17 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
               {/* This is just spacing to align with filters below */}
               <Separator className="hidden md:block" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="joined-only"
+                  checked={showJoinedOnly}
+                  onCheckedChange={setShowJoinedOnly}
+                />
+                <Label htmlFor="joined-only" className="text-sm">
+                  {t("filters.mine")}
+                </Label>
+              </div>
               <Button
                 size="sm"
                 onClick={() => setIsCreateModalOpen(true)}
