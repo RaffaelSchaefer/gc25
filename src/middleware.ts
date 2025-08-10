@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import i18nMiddleware from "./middlewares/i18n-middleware";
-import { middleware as securePathsMiddleware } from "./middlewares/secure-paths-middleware";
+import { middleware as homeSecureMiddleware } from "./middlewares/secure-paths-middleware";
+import { middleware as adminSecureMiddleware } from "./middlewares/admin-secure-middleware";
 
 /**
  * @author Raffael Elias Schäfer
@@ -13,9 +14,11 @@ export async function middleware(request: NextRequest) {
     return i18nResponse;
   }
 
-  if (pathname.match(/^\/(en|de)\/(home|admin)/)) {
-    const secureResponse = await securePathsMiddleware(request);
-    return secureResponse;
+  if (pathname.match(/^\/(en|de)\/home/)) {
+    return await homeSecureMiddleware(request);
+  }
+  if (pathname.match(/^\/(en|de)\/admin/)) {
+    return await adminSecureMiddleware(request);
   }
 
   return i18nResponse;
