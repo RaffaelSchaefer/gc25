@@ -2,6 +2,7 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -12,12 +13,11 @@ const navItems: { label: string; href: string; segment: string }[] = [
 
 export default async function AdminDashboardLayout({
   children,
-  params,
 }: {
   children: ReactNode;
-  params: { locale: string };
 }) {
-  const base = `/${params.locale}/admin/dashboard`;
+  const locale = await getLocale();
+  const base = `/${locale}/admin/dashboard`;
   // We cannot know pathname on server for active state per segment without extra params; keep simple styling and let client refine later.
 
   return (
