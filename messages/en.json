@@ -31,11 +31,9 @@
   "schedule": {
     "title": "6-Day Schedule",
     "subtitle": "Your complete Gamescom 2025 adventure timeline",
-    "notice": "Schedule may be subject to minor changes",
     "days": [
       {
         "day": 1,
-        "date": "Aug 19",
         "title": "Arrival & Camp Setup",
         "activities": [
           {
@@ -179,7 +177,8 @@
     "billing": "Billing",
     "notifications": "Notifications",
     "logout": "Log out",
-    "planner": "Trip Planner"
+  "planner": "Trip Planner",
+  "goodie_tracker": "Goodie Tracker"
   },
   "nav-user": {
     "notifications": "notifications",
@@ -298,13 +297,12 @@
         "location": "Location",
         "url": "URL",
         "description": "Description",
-        "date": "Date",
+  "date": "Date",
         "start": "Start Date & Time",
         "end": "End Date & Time",
         "public": "Public Event",
         "fixed": "Fixed Schedule",
-        "status": "Publish",
-        "date": "Date"
+  "status": "Publish"
       },
       "placeholders": {
         "title": "What’s the event?",
@@ -383,5 +381,37 @@
     "placeholder": "Select a locale",
     "de": "German",
     "en": "English"
+  }
+  ,"goodies": {
+    "title": "Goodie Tracker",
+    "subtitle": "Discover and share freebies, gifts, snacks and drinks around Gamescom.",
+    "add_new": "Add Goodie",
+    "created": "Goodie created",
+    "deleted": "Goodie deleted",
+    "creating": "Creating...",
+    "deleting": "Deleting...",
+    "create": "Create",
+    "check": "Collected",
+    "uncheck": "Un-collect",
+    "collected": "Collected",
+  "score": "Score {score}",
+    "register_link": "Registration / Claim Link",
+    "filters": {"show_collected": "Show collected"},
+    "fields": {"name": "Name", "location": "Location", "instructions": "Instructions", "registrationUrl": "Registration URL", "image": "Image"},
+    "types": {"gift": "Gift", "food": "Food", "drink": "Drink"},
+  "errors": {"vote": "Vote failed", "collect": "Collection toggle failed", "create": "Creation failed", "delete": "Deletion failed"},
+  "confirm": {"delete_title": "Delete Goodie?", "delete_message": "\u201C{name}\u201D will be permanently removed.", "delete_confirm": "Delete", "cancel": "Cancel"},
+  "modal": {"title": "Add Goodie", "edit_title": "Edit {name}", "create": "Create Goodie", "save_changes": "Save changes", "cancel": "Cancel"},
+  "placeholders": {"name": "Sticker pack...", "location": "Hall 7 Booth B12", "instructions": "Explain how to obtain...", "registrationUrl": "https://..."},
+  "validation": {
+    "name_required": "Name is required",
+    "location_required": "Location is required",
+    "instructions_required": "Instructions are required",
+    "url_invalid": "Enter a valid URL (https://...)",
+    "image_too_large": "Image exceeds {size} KB",
+    "image_type": "Unsupported image type"
+  },
+  "updating": "Updating...",
+  "stats": {"total": "Total", "collected": "Collected", "types": "Types"}
   }
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { EventStatus, EventCategory } from "@prisma/client";
+import { EventStatus, EventCategory, GoodieType } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -410,6 +410,7 @@ export async function cancelJoin(eventId: string) {
  * A dedicated WS route will register sockets in this set.
  */
 export type BroadcastMessage =
+  // Event lifecycle
   | {
       type: "event_created" | "event_updated";
       event: {
@@ -426,6 +427,7 @@ export type BroadcastMessage =
     }
   | { type: "event_deleted"; id: string }
   | { type: "participant_changed"; eventId: string; attendees: number }
+  // Event comments
   | {
       type: "comment_created" | "comment_updated" | "comment_deleted";
       eventId: string;
@@ -437,6 +439,43 @@ export type BroadcastMessage =
         createdBy?: { id: string; name: string; image: string | null };
       };
       commentId?: string;
+    }
+  // Goodies
+  | {
+      type: "goodie_created";
+      goodie: {
+        id: string;
+        name: string;
+        location: string;
+        instructions: string;
+        type: GoodieType;
+        date?: string | null;
+        registrationUrl?: string | null;
+        totalScore: number;
+        createdAt: string;
+      };
+    }
+  | {
+      type: "goodie_updated";
+      goodie: {
+        id: string;
+        totalScore: number;
+      };
+    }
+  | { type: "goodie_collected"; goodieId: string; collectedCount: number }
+  | { type: "goodie_deleted"; id: string }
+  | {
+      type: "goodie_edited";
+      goodie: {
+        id: string;
+        name: string;
+        location: string;
+        instructions: string;
+        type: GoodieType;
+        date?: string | null;
+        registrationUrl?: string | null;
+        updatedAt: string;
+      };
     };
 
 type WSClient = {
@@ -452,7 +491,7 @@ function registerWsSubscriber(client: WSClient) {
   return () => subscribers.delete(client);
 }
 
-async function broadcast(msg: BroadcastMessage) {
+export async function broadcast(msg: BroadcastMessage) {
   const payload = JSON.stringify(msg);
   for (const ws of subscribers) {
     try {
@@ -469,6 +508,15 @@ async function broadcast(msg: BroadcastMessage) {
     // Das Socket.IO-Protokoll sendet rohe Objekte, nicht Strings
     const objectPayload = typeof msg === "string" ? JSON.parse(msg) : msg;
     emitToClients("events:update", objectPayload);
+    if (
+      msg.type === "goodie_created" ||
+      msg.type === "goodie_updated" ||
+      msg.type === "goodie_collected" ||
+      msg.type === "goodie_deleted" ||
+      msg.type === "goodie_edited"
+    ) {
+      emitToClients("goodies:update", objectPayload);
+    }
   } catch {
     // ignore if socket.io not initialized
   }
