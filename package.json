@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "test": "vitest",
+  "test": "vitest",
+  "pwa:icons": "tsx scripts/generate-icons.ts",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate"
   },
   "dependencies": {
@@ -71,6 +72,7 @@
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5",
+  "sharp": "^0.33.5",
     "vitest": "^3.2.4"
   }
 }
