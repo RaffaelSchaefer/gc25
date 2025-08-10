@@ -22,6 +22,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
@@ -243,6 +244,7 @@ export default function GoodieTrackerClient({
                   date: g.date,
                   registrationUrl: g.registrationUrl,
                   createdById: "", // unknown; could extend payload
+                  createdBy: g.createdBy || null,
                   createdAt: g.createdAt,
                   updatedAt: g.createdAt,
                   totalScore: g.totalScore,
@@ -292,6 +294,13 @@ export default function GoodieTrackerClient({
           date: data.date || null,
           registrationUrl: data.registrationUrl || null,
           createdById: currentUserId || "",
+          createdBy: created.createdBy
+            ? {
+                id: created.createdBy.id,
+                name: created.createdBy.name,
+                image: created.createdBy.image || undefined,
+              }
+            : null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           totalScore: 0,
@@ -585,35 +594,62 @@ export default function GoodieTrackerClient({
                     )}
                   </CardContent>
                   <CardFooter className="pt-0 pb-2 mt-auto">
-                    <div className="flex w-full items-stretch gap-2">
-                      <Button
-                        size="sm"
-                        aria-pressed={collected}
-                        onClick={() => onToggleCollected(g.id)}
-                        className={`flex-1 justify-center transition-colors border flex items-center ${
-                          collected
-                            ? "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow shadow-emerald-600/30 focus-visible:ring focus-visible:ring-emerald-500/50"
-                            : "border-emerald-300 hover:border-emerald-400 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 dark:bg-emerald-500/20 hover:bg-emerald-500/25 focus-visible:ring focus-visible:ring-emerald-400/50"
-                        }`}
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-1" />{" "}
-                        {collected ? t("uncheck") : t("check")}
-                      </Button>
-                      {currentUserId && g.createdById === currentUserId && (
+                    <div className="flex w-full items-center justify-between gap-3 flex-wrap">
+                      {g.createdBy && (
+                        <div className="flex items-center gap-1 leading-none order-1">
+                          <Avatar className="size-6 ring ring-border/40">
+                            {g.createdBy.image && (
+                              <AvatarImage
+                                src={g.createdBy.image}
+                                alt={g.createdBy.name}
+                              />
+                            )}
+                            <AvatarFallback className="text-[9px] font-medium">
+                              {g.createdBy.name
+                                .split(/\s+/)
+                                .map((p) => p[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span
+                            className="text-[11px] text-muted-foreground"
+                            title={g.createdBy.name}
+                          >
+                            {t("createdBy", { name: g.createdBy.name })}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-stretch gap-2 flex-1 justify-end order-2">
                         <Button
                           size="sm"
-                          aria-label={t("confirm.delete_title")}
-                          disabled={deletingId === g.id}
-                          onClick={() => onDelete(g.id, g.name)}
-                          className={`h-8 px-3 justify-center flex items-center border transition-colors bg-red-600/90 hover:bg-red-600 text-white border-red-600 shadow shadow-red-600/30 focus-visible:ring focus-visible:ring-red-500/50 disabled:opacity-60`}
+                          aria-pressed={collected}
+                          onClick={() => onToggleCollected(g.id)}
+                          className={`flex-1 justify-center transition-colors border flex items-center ${
+                            collected
+                              ? "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-600 shadow shadow-emerald-600/30 focus-visible:ring focus-visible:ring-emerald-500/50"
+                              : "border-emerald-300 hover:border-emerald-400 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 dark:bg-emerald-500/20 hover:bg-emerald-500/25 focus-visible:ring focus-visible:ring-emerald-400/50"
+                          }`}
                         >
-                          {deletingId === g.id ? (
-                            <span className="animate-spin w-4 h-4">⌛</span>
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
+                          <CheckCircle2 className="w-4 h-4 mr-1" /> {collected ? t("uncheck") : t("check")}
                         </Button>
-                      )}
+                        {currentUserId && g.createdById === currentUserId && (
+                          <Button
+                            size="sm"
+                            aria-label={t("confirm.delete_title")}
+                            disabled={deletingId === g.id}
+                            onClick={() => onDelete(g.id, g.name)}
+                            className={`h-8 px-3 justify-center flex items-center border transition-colors bg-red-600/90 hover:bg-red-600 text-white border-red-600 shadow shadow-red-600/30 focus-visible:ring focus-visible:ring-red-500/50 disabled:opacity-60`}
+                          >
+                            {deletingId === g.id ? (
+                              <span className="animate-spin w-4 h-4">⌛</span>
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardFooter>
                   {/* Hintergrund-Grafiken: weiche Farbfläche + großes, leichtes Icon wie TimelineView */}

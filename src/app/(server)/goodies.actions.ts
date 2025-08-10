@@ -17,6 +17,7 @@ export type GoodieDto = {
   registrationUrl?: string | null;
   type: GoodieType;
   createdById: string;
+  createdBy?: { id: string; name: string; image?: string | null } | null;
   createdAt: string;
   updatedAt: string;
   totalScore: number; // sum of votes
@@ -53,6 +54,7 @@ export async function listGoodies(): Promise<GoodieDto[]> {
       votes: userId ? { where: { userId } } : false,
       _count: { select: { votes: true, collections: true } },
       collections: userId ? { where: { userId } } : false,
+  createdBy: { select: { id: true, name: true, image: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -76,6 +78,9 @@ export async function listGoodies(): Promise<GoodieDto[]> {
     registrationUrl: g.registrationUrl,
     type: g.type,
     createdById: g.createdById,
+    createdBy: g.createdBy
+      ? { id: g.createdBy.id, name: g.createdBy.name, image: g.createdBy.image }
+      : null,
     createdAt: g.createdAt.toISOString(),
     updatedAt: g.updatedAt.toISOString(),
     totalScore: voteMap.get(g.id) ?? 0,
@@ -129,6 +134,7 @@ export async function createGoodie(input: {
       date: true,
       registrationUrl: true,
       createdAt: true,
+      createdBy: { select: { id: true, name: true, image: true } },
     },
   });
   await broadcast({
@@ -143,6 +149,9 @@ export async function createGoodie(input: {
       registrationUrl: created.registrationUrl ?? null,
       totalScore: 0,
       createdAt: created.createdAt.toISOString(),
+      createdBy: created.createdBy
+        ? { id: created.createdBy.id, name: created.createdBy.name, image: created.createdBy.image }
+        : null,
     },
   });
   return created;
@@ -278,6 +287,7 @@ export async function updateGoodie(
       date: true,
       registrationUrl: true,
       updatedAt: true,
+  // keep creator stable (not needed in update broadcast currently)
     },
   });
   await broadcast({

@@ -446,5 +446,6 @@
     },
     "updating": "Updating...",
     "stats": { "total": "Total", "collected": "Collected", "types": "Types" }
+  ,"createdBy": "Created by {name}"
   }
 }

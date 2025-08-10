@@ -456,5 +456,6 @@
     },
     "updating": "Aktualisiere...",
     "stats": { "total": "Gesamt", "collected": "Gesammelt", "types": "Typen" }
+  ,"createdBy": "Erstellt von {name}"
   }
 }
