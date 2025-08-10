@@ -1,17 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-// Helper zum robusten Bauen interner API-URLs ohne versehentlich einen falschen (z.B. DB) Port zu treffen.
+/**
+ * Baut eine interne API URL für server-internen Fetch.
+ * Ziel: Kein TLS-Handschlag gegen einen Port, der nur Plain-HTTP spricht ("wrong version number").
+ * Reihenfolge:
+ * 1. Falls INTERNAL_API_ORIGIN gesetzt (z.B. http://app:3000) -> daran resolven.
+ * 2. Sonst auf Basis der eingehenden URL, aber wenn sie https ist, und wir nicht explizit HTTPS erzwingen,
+ *    wird auf http downgraded (TLS terminierte Proxy wie Coolify / Traefik / Caddy).
+ * 3. Ports können via INTERNAL_FETCH_PORT oder INTERNAL_HTTP_PORT übersteuert werden.
+ * 4. Fallback Host: request.headers.get("host") oder 127.0.0.1
+ */
 function buildInternalApiUrl(req: NextRequest, pathname: string) {
+  const explicitOrigin = process.env.INTERNAL_API_ORIGIN;
+  if (explicitOrigin) {
+    return new URL(pathname, explicitOrigin);
+  }
+
+  // Basis: eingehende URL klonen (enthält Host)
   const u = req.nextUrl.clone();
   u.pathname = pathname;
   u.search = "";
-  if (process.env.INTERNAL_FETCH_PROTOCOL) {
-    u.protocol = process.env.INTERNAL_FETCH_PROTOCOL;
+
+  const forceHttps = process.env.INTERNAL_FORCE_HTTPS === "1";
+  const overrideProto = process.env.INTERNAL_FETCH_PROTOCOL; // explizit > Force
+  const overridePort =
+    process.env.INTERNAL_FETCH_PORT ||
+    process.env.INTERNAL_HTTP_PORT ||
+    process.env.PORT;
+
+  if (overrideProto) {
+    u.protocol = /:$/i.test(overrideProto) ? overrideProto : `${overrideProto}:`;
+  } else {
+    // Wenn eingehend https aber wir sehr wahrscheinlich im Container ohne internem TLS sind => http
+    if (u.protocol === "https:" && !forceHttps) {
+      u.protocol = "http:";
+    }
   }
-  if (process.env.INTERNAL_FETCH_PORT) {
-    u.port = process.env.INTERNAL_FETCH_PORT;
+
+  if (overridePort) {
+    u.port = overridePort;
+  } else if (!u.port) {
+    // Falls kein Port, Standard abhängig vom Protokoll hinzufügen damit URL eindeutig ist
+    if (u.protocol === "http:") u.port = "3000"; // typischer Next.js default
   }
+
+  // Sicherheitsnetz: Wenn Host fehlt (Edge Fälle) -> 127.0.0.1
+  if (!u.host) {
+    const hostHeader = req.headers.get("host")?.trim();
+    const fallbackHost = hostHeader || `127.0.0.1:${u.port || "3000"}`;
+    u.host = fallbackHost;
+  }
+
   return u; // absolute URL
 }
 
@@ -52,6 +92,15 @@ export async function middleware(request: NextRequest) {
     pathname: adminUrl.pathname,
     port: adminUrl.port,
   });
+
+  // Zusatz: kurze Heuristik, um Misskonfigurationen zu erkennen
+  if (process.env.DEBUG_SECURE_MW === "1") {
+    if (adminUrl.protocol === "https:" && /^(localhost|127\.0\.0\.1)(:|$)/.test(adminUrl.host)) {
+      console.warn(
+        "[admin-secure-mw] Warnung: https gegen localhost – vermutlich unnötig und kann SSL Fehler erzeugen."
+      );
+    }
+  }
 
   let res: Response | null = null;
   try {

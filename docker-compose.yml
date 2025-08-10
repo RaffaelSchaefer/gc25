@@ -19,13 +19,22 @@ services:
     environment:
       # Construct DATABASE_URL from .env with safe defaults to avoid warnings
       DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-app}"
-      NODE_ENV: ${NODE_ENV:-development}^
+      # Remove stray caret; default to production in container unless overridden
+      NODE_ENV: ${NODE_ENV:-production}
       APP_PORT: ${APP_PORT:-3000}
       RESEND_API_KEY: ${RESEND_API_KEY}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
       ADMIN_MANAGEMENT_KEY: ${ADMIN_MANAGEMENT_KEY}
       DEBUG_SECURE_MW: ${DEBUG_SECURE_MW:-0}
+      # Internal fetch tuning for admin-secure-middleware (avoids SSL wrong version number)
+      # Preferred: set a plain HTTP origin inside the Docker network.
+      INTERNAL_API_ORIGIN: ${INTERNAL_API_ORIGIN:-http://app:3000}
+      # Optionally override protocol/port individually (leave empty when using INTERNAL_API_ORIGIN)
+      INTERNAL_FETCH_PROTOCOL: ${INTERNAL_FETCH_PROTOCOL:-}
+      INTERNAL_FETCH_PORT: ${INTERNAL_FETCH_PORT:-}
+      # Force https internally (normally keep at 0 when TLS terminates at proxy)
+      INTERNAL_FORCE_HTTPS: ${INTERNAL_FORCE_HTTPS:-0}
     depends_on:
       - db
     ports:
