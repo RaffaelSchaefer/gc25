@@ -8,5 +8,10 @@ export default async function GoodieTrackerPage() {
   const goodies = await listGoodies();
   const session = await auth.api.getSession({ headers: await headers() });
   const currentUserId = session?.user?.id ?? null;
-  return <GoodieTrackerClient initialGoodies={goodies} currentUserId={currentUserId} />;
+  return (
+    <GoodieTrackerClient
+      initialGoodies={goodies}
+      currentUserId={currentUserId}
+    />
+  );
 }

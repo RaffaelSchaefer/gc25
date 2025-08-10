@@ -15,9 +15,15 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { authClient } from "@/lib/auth-client";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("sidebar");
+  const { data: session } = authClient.useSession();
+  // Temporary: better-auth types don't yet include custom prisma field `isAdmin`.
+  // We cast to any here; the field exists in the database and is exposed via API.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isAdmin = (session?.user as unknown as any)?.isAdmin === true;
 
   return (
     <Sidebar
@@ -68,6 +74,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent></SidebarContent>
       <SidebarFooter>
+        {isAdmin && (
+          <SidebarMenu className="mb-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900">
+                <Link href="/admin/dashboard">
+                  <span className="truncate text-sm">
+                    {t("admin_panel", { default: "Admin" })}
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
         <NavUser />
       </SidebarFooter>
     </Sidebar>

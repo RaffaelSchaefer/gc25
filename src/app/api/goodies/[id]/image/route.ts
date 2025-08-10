@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest) {
   if (!id) {
     return new Response(JSON.stringify({ error: "Missing id" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": "image/png",
-      "Cache-Control": "public, max-age=300"
-    }
+      "Cache-Control": "public, max-age=300",
+    },
   });
 }

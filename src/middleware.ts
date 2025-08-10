@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
     return i18nResponse;
   }
 
-  if (pathname.match(/^\/(en|de)\/home/)) {
+  if (pathname.match(/^\/(en|de)\/(home|admin)/)) {
     const secureResponse = await securePathsMiddleware(request);
     return secureResponse;
   }

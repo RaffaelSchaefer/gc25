@@ -17,6 +17,16 @@ export const auth = betterAuth({
     },
   },
   user: {
+    // Expose custom Prisma boolean column isAdmin to the Better Auth user & session types
+    // This fixes TS error: Property 'isAdmin' does not exist on type 'User'
+    additionalFields: {
+      isAdmin: {
+        type: "boolean",
+        required: false, // existing users without value -> will fallback to defaultValue
+        defaultValue: false,
+        returned: true,
+      },
+    },
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url }) => {
