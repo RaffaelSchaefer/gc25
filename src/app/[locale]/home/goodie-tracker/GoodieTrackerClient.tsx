@@ -240,12 +240,13 @@ export default function GoodieTrackerClient({ initialGoodies, currentUserId }: P
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{t("title")}</h1>
               <p className="text-sm md:text-base text-muted-foreground">{t("subtitle")}</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex h-9 items-center gap-2 rounded-md border bg-background px-3">
+            {/* Action / Filter Bar: stack on narrow screens to avoid clipping */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 md:justify-end w-full max-w-full">
+              <div className="flex h-9 items-center gap-2 rounded-md border bg-background px-3 sm:w-auto w-full justify-between sm:justify-start">
                 <Label htmlFor="show-collected" className="text-sm font-medium whitespace-nowrap">{t("filters.show_collected")}</Label>
                 <Switch id="show-collected" checked={showCollected} onCheckedChange={setShowCollected} />
               </div>
-              <Button size="sm" onClick={() => { setEditing(null); setIsModalOpen(true); }} className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white ring-1 ring-indigo-400/40 hover:from-indigo-500 hover:to-indigo-600 shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-colors">
+              <Button size="sm" onClick={() => { setEditing(null); setIsModalOpen(true); }} className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-500 text-white ring-1 ring-indigo-400/40 hover:from-indigo-500 hover:to-indigo-600 shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-colors">
                 <Plus className="w-4 h-4 mr-2" /> {t("add_new")}
               </Button>
             </div>

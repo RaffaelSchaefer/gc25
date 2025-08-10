@@ -8,9 +8,15 @@ export async function exportAllUserData(userID: string) {
     const userData = await prisma.user.findUnique({
       where: { id: userID },
       include: {
+        accounts: true,
+        comments: true,
         createdEvents: true,
         updatedEvents: true,
-        comments: true,
+        participants: true,
+        sessions: true,
+        goodies: true,
+        goodieVotes: true,
+        goodieCollections: true,
       },
     });
     if (!userData) throw new Error("User not found");
