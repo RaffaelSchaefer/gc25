@@ -37,18 +37,11 @@ export function generateStaticParams() {
 
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
-  setRequestLocale(locale);
   return (
-    <html lang={locale} suppressHydrationWarning data-lt-installed="true">
+    <html lang={"de"} suppressHydrationWarning data-lt-installed="true">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
