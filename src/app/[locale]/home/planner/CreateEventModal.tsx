@@ -131,10 +131,13 @@ export function CreateEventModal({
       btnFrom: "from-indigo-600 dark:from-indigo-500",
       btnTo: "to-indigo-500 dark:to-indigo-400",
       btnRing: "ring-indigo-400/40 dark:ring-indigo-500/30",
-      btnHover: "hover:from-indigo-500 hover:to-indigo-600 dark:hover:from-indigo-400 dark:hover:to-indigo-500",
+      btnHover:
+        "hover:from-indigo-500 hover:to-indigo-600 dark:hover:from-indigo-400 dark:hover:to-indigo-500",
       glowBg: "bg-indigo-500/10 dark:bg-indigo-400/10",
-      focusRing: "focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
-      switchChecked: "data-[state=checked]:bg-indigo-600 dark:data-[state=checked]:bg-indigo-500",
+      focusRing:
+        "focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+      switchChecked:
+        "data-[state=checked]:bg-indigo-600 dark:data-[state=checked]:bg-indigo-500",
       solidBg: "bg-indigo-600 dark:bg-indigo-500",
       solidBorder: "border-indigo-600 dark:border-indigo-500",
     },
@@ -150,10 +153,13 @@ export function CreateEventModal({
       btnFrom: "from-violet-600 dark:from-violet-500",
       btnTo: "to-violet-500 dark:to-violet-400",
       btnRing: "ring-violet-400/40 dark:ring-violet-500/30",
-      btnHover: "hover:from-violet-500 hover:to-violet-600 dark:hover:from-violet-400 dark:hover:to-violet-500",
+      btnHover:
+        "hover:from-violet-500 hover:to-violet-600 dark:hover:from-violet-400 dark:hover:to-violet-500",
       glowBg: "bg-violet-500/10 dark:bg-violet-400/10",
-      focusRing: "focus-visible:ring-violet-500 dark:focus-visible:ring-violet-400",
-      switchChecked: "data-[state=checked]:bg-violet-600 dark:data-[state=checked]:bg-violet-500",
+      focusRing:
+        "focus-visible:ring-violet-500 dark:focus-visible:ring-violet-400",
+      switchChecked:
+        "data-[state=checked]:bg-violet-600 dark:data-[state=checked]:bg-violet-500",
       solidBg: "bg-violet-600 dark:bg-violet-500",
       solidBorder: "border-violet-600 dark:border-violet-500",
     },
@@ -169,10 +175,13 @@ export function CreateEventModal({
       btnFrom: "from-amber-600 dark:from-amber-500",
       btnTo: "to-amber-500 dark:to-amber-400",
       btnRing: "ring-amber-400/40 dark:ring-amber-500/30",
-      btnHover: "hover:from-amber-500 hover:to-amber-600 dark:hover:from-amber-400 dark:hover:to-amber-500",
+      btnHover:
+        "hover:from-amber-500 hover:to-amber-600 dark:hover:from-amber-400 dark:hover:to-amber-500",
       glowBg: "bg-amber-500/10 dark:bg-amber-400/10",
-      focusRing: "focus-visible:ring-amber-500 dark:focus-visible:ring-amber-400",
-      switchChecked: "data-[state=checked]:bg-amber-600 dark:data-[state=checked]:bg-amber-500",
+      focusRing:
+        "focus-visible:ring-amber-500 dark:focus-visible:ring-amber-400",
+      switchChecked:
+        "data-[state=checked]:bg-amber-600 dark:data-[state=checked]:bg-amber-500",
       solidBg: "bg-amber-600 dark:bg-amber-500",
       solidBorder: "border-amber-600 dark:border-amber-500",
     },
@@ -188,10 +197,12 @@ export function CreateEventModal({
       btnFrom: "from-pink-600 dark:from-pink-500",
       btnTo: "to-pink-500 dark:to-pink-400",
       btnRing: "ring-pink-400/40 dark:ring-pink-500/30",
-      btnHover: "hover:from-pink-500 hover:to-pink-600 dark:hover:from-pink-400 dark:hover:to-pink-500",
+      btnHover:
+        "hover:from-pink-500 hover:to-pink-600 dark:hover:from-pink-400 dark:hover:to-pink-500",
       glowBg: "bg-pink-500/10 dark:bg-pink-400/10",
       focusRing: "focus-visible:ring-pink-500 dark:focus-visible:ring-pink-400",
-      switchChecked: "data-[state=checked]:bg-pink-600 dark:data-[state=checked]:bg-pink-500",
+      switchChecked:
+        "data-[state=checked]:bg-pink-600 dark:data-[state=checked]:bg-pink-500",
       solidBg: "bg-pink-600 dark:bg-pink-500",
       solidBorder: "border-pink-600 dark:border-pink-500",
     },
@@ -207,10 +218,13 @@ export function CreateEventModal({
       btnFrom: "from-emerald-600 dark:from-emerald-500",
       btnTo: "to-emerald-500 dark:to-emerald-400",
       btnRing: "ring-emerald-400/40 dark:ring-emerald-500/30",
-      btnHover: "hover:from-emerald-500 hover:to-emerald-600 dark:hover:from-emerald-400 dark:hover:to-emerald-500",
+      btnHover:
+        "hover:from-emerald-500 hover:to-emerald-600 dark:hover:from-emerald-400 dark:hover:to-emerald-500",
       glowBg: "bg-emerald-500/10 dark:bg-emerald-400/10",
-      focusRing: "focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-400",
-      switchChecked: "data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500",
+      focusRing:
+        "focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-400",
+      switchChecked:
+        "data-[state=checked]:bg-emerald-600 dark:data-[state=checked]:bg-emerald-500",
       solidBg: "bg-emerald-600 dark:bg-emerald-500",
       solidBorder: "border-emerald-600 dark:border-emerald-500",
     },
@@ -226,10 +240,12 @@ export function CreateEventModal({
       btnFrom: "from-rose-600 dark:from-rose-500",
       btnTo: "to-rose-500 dark:to-rose-400",
       btnRing: "ring-rose-400/40 dark:ring-rose-500/30",
-      btnHover: "hover:from-rose-500 hover:to-rose-600 dark:hover:from-rose-400 dark:hover:to-rose-500",
+      btnHover:
+        "hover:from-rose-500 hover:to-rose-600 dark:hover:from-rose-400 dark:hover:to-rose-500",
       glowBg: "bg-rose-500/10 dark:bg-rose-400/10",
       focusRing: "focus-visible:ring-rose-500 dark:focus-visible:ring-rose-400",
-      switchChecked: "data-[state=checked]:bg-rose-600 dark:data-[state=checked]:bg-rose-500",
+      switchChecked:
+        "data-[state=checked]:bg-rose-600 dark:data-[state=checked]:bg-rose-500",
       solidBg: "bg-rose-600 dark:bg-rose-500",
       solidBorder: "border-rose-600 dark:border-rose-500",
     },

@@ -128,7 +128,8 @@ const categoryTokens = {
     linkText: "text-indigo-600 dark:text-indigo-300",
     linkHover: "hover:text-indigo-700 dark:hover:text-indigo-200",
     fieldBg: "bg-indigo-50 dark:bg-indigo-900/40",
-    focusRing: "focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
+    focusRing:
+      "focus-visible:ring-indigo-500 dark:focus-visible:ring-indigo-400",
   },
   EXPO: {
     bg: "bg-violet-500/10 dark:bg-violet-400/10",
@@ -144,7 +145,8 @@ const categoryTokens = {
     linkText: "text-violet-600 dark:text-violet-300",
     linkHover: "hover:text-violet-700 dark:hover:text-violet-200",
     fieldBg: "bg-violet-50 dark:bg-violet-900/40",
-    focusRing: "focus-visible:ring-violet-500 dark:focus-visible:ring-violet-400",
+    focusRing:
+      "focus-visible:ring-violet-500 dark:focus-visible:ring-violet-400",
   },
   FOOD: {
     bg: "bg-amber-500/10 dark:bg-amber-400/10",
@@ -192,7 +194,8 @@ const categoryTokens = {
     linkText: "text-emerald-600 dark:text-emerald-300",
     linkHover: "hover:text-emerald-700 dark:hover:text-emerald-200",
     fieldBg: "bg-emerald-50 dark:bg-emerald-900/40",
-    focusRing: "focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-400",
+    focusRing:
+      "focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-400",
   },
   TOURNAMENT: {
     bg: "bg-rose-500/10 dark:bg-rose-400/10",

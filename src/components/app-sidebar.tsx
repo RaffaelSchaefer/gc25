@@ -75,9 +75,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent></SidebarContent>
       <SidebarFooter>
         {isAdmin && (
-          <SidebarMenu className="mb-2">
+          <SidebarMenu className="mb-2 space-y-1">
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900">
+              <SidebarMenuButton
+                asChild
+                className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900"
+              >
                 <Link href="/admin/dashboard">
                   <span className="truncate text-sm">
                     {t("admin_panel", { default: "Admin" })}
