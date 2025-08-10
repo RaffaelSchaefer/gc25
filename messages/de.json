@@ -179,8 +179,9 @@
     "billing": "Abrechnung",
     "notifications": "Benachrichtigungen",
     "logout": "Abmelden",
-  "planner": "Reiseplaner",
-  "goodie_tracker": "Goodie Tracker"
+    "planner": "Reiseplaner",
+    "goodie_tracker": "Goodie Tracker",
+    "admin_panel": "Admin Bereich"
   },
   "nav-user": {
     "notifications": "Benachrichtigungen",
@@ -304,12 +305,12 @@
         "location": "Ort",
         "url": "URL",
         "description": "Beschreibung",
-  "date": "Datum",
+        "date": "Datum",
         "start": "Start (Datum & Zeit)",
         "end": "Ende (Datum & Zeit)",
         "public": "Öffentliches Event",
         "fixed": "Fester Zeitplan",
-  "status": "Veröffentlichen"
+        "status": "Veröffentlichen"
       },
       "placeholders": {
         "title": "Was ist das Event?",
@@ -391,8 +392,8 @@
     "party": "Party",
     "travel": "Reise",
     "tournament": "Turnier"
-  }
-  ,"goodies": {
+  },
+  "goodies": {
     "title": "Goodie Tracker",
     "subtitle": "Finde und teile Geschenke, Snacks und Drinks rund um die Gamescom.",
     "add_new": "Goodie hinzufügen",
@@ -404,24 +405,51 @@
     "check": "Gesammelt",
     "uncheck": "Zurücksetzen",
     "collected": "Gesammelt",
-  "score": "Score {score}",
+    "score": "Score {score}",
     "register_link": "Registrierungs- / Claim-Link",
-    "filters": {"show_collected": "Gesammelte anzeigen"},
-    "fields": {"name": "Name", "location": "Ort", "instructions": "Anleitung", "registrationUrl": "Registrierungs-URL", "image": "Bild"},
-    "types": {"gift": "Geschenk", "food": "Essen", "drink": "Getränk"},
-  "errors": {"vote": "Abstimmung fehlgeschlagen", "collect": "Umschalten fehlgeschlagen", "create": "Erstellung fehlgeschlagen", "delete": "Löschen fehlgeschlagen"},
-  "confirm": {"delete_title": "Goodie löschen?", "delete_message": "„{name}“ wird dauerhaft entfernt.", "delete_confirm": "Löschen", "cancel": "Abbrechen"},
-  "modal": {"title": "Goodie hinzufügen", "edit_title": "{name} bearbeiten", "create": "Goodie erstellen", "save_changes": "Änderungen speichern", "cancel": "Abbrechen"},
-  "placeholders": {"name": "Sticker Pack...", "location": "Halle 7 Stand B12", "instructions": "Beschreibe wie man es bekommt...", "registrationUrl": "https://..."},
-  "validation": {
-    "name_required": "Name ist erforderlich",
-    "location_required": "Ort ist erforderlich",
-    "instructions_required": "Anleitung ist erforderlich",
-    "url_invalid": "Gültige URL (https://...) eingeben",
-    "image_too_large": "Bild größer als {size} KB",
-    "image_type": "Nicht unterstützter Bildtyp"
-  },
-  "updating": "Aktualisiere...",
-  "stats": {"total": "Gesamt", "collected": "Gesammelt", "types": "Typen"}
+    "filters": { "show_collected": "Gesammelte anzeigen" },
+    "fields": {
+      "name": "Name",
+      "location": "Ort",
+      "instructions": "Anleitung",
+      "registrationUrl": "Registrierungs-URL",
+      "image": "Bild"
+    },
+    "types": { "gift": "Geschenk", "food": "Essen", "drink": "Getränk" },
+    "errors": {
+      "vote": "Abstimmung fehlgeschlagen",
+      "collect": "Umschalten fehlgeschlagen",
+      "create": "Erstellung fehlgeschlagen",
+      "delete": "Löschen fehlgeschlagen"
+    },
+    "confirm": {
+      "delete_title": "Goodie löschen?",
+      "delete_message": "„{name}“ wird dauerhaft entfernt.",
+      "delete_confirm": "Löschen",
+      "cancel": "Abbrechen"
+    },
+    "modal": {
+      "title": "Goodie hinzufügen",
+      "edit_title": "{name} bearbeiten",
+      "create": "Goodie erstellen",
+      "save_changes": "Änderungen speichern",
+      "cancel": "Abbrechen"
+    },
+    "placeholders": {
+      "name": "Sticker Pack...",
+      "location": "Halle 7 Stand B12",
+      "instructions": "Beschreibe wie man es bekommt...",
+      "registrationUrl": "https://..."
+    },
+    "validation": {
+      "name_required": "Name ist erforderlich",
+      "location_required": "Ort ist erforderlich",
+      "instructions_required": "Anleitung ist erforderlich",
+      "url_invalid": "Gültige URL (https://...) eingeben",
+      "image_too_large": "Bild größer als {size} KB",
+      "image_type": "Nicht unterstützter Bildtyp"
+    },
+    "updating": "Aktualisiere...",
+    "stats": { "total": "Gesamt", "collected": "Gesammelt", "types": "Typen" }
   }
 }

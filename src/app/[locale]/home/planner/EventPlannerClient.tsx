@@ -226,12 +226,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
           selectedDate === "all" || day.dateISO === selectedDate;
         const matchesJoined = !showJoinedOnly || event.userJoined;
 
-        return (
-          matchesSearch &&
-          matchesCategory &&
-          matchesDate &&
-          matchesJoined
-        );
+        return matchesSearch && matchesCategory && matchesDate && matchesJoined;
       }),
     }))
     .filter((day) => day.events.length > 0);

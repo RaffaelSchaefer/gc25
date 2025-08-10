@@ -4,6 +4,7 @@ import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
 import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { Badge } from "@/components/ui/badge";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -35,6 +36,8 @@ export function NavUser() {
   const avatar = createAvatar(adventurer, {
     seed: session.user.name ?? "default",
   }).toDataUri();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isAdmin = (session.user as unknown as any)?.isAdmin === true;
 
   return (
     <SidebarMenu>
@@ -53,8 +56,13 @@ export function NavUser() {
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {session.user.name}
+                <span className="truncate font-medium flex items-center gap-1">
+                  <span>{session.user.name}</span>
+                  {isAdmin && (
+                    <Badge className="h-4 px-1 text-[10px] leading-none">
+                      Admin
+                    </Badge>
+                  )}
                 </span>
                 <span className="truncate text-xs">{session.user.email}</span>
               </div>
@@ -77,8 +85,13 @@ export function NavUser() {
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {session.user.name}
+                  <span className="truncate font-medium flex items-center gap-1">
+                    <span>{session.user.name}</span>
+                    {isAdmin && (
+                      <Badge className="h-4 px-1 text-[10px] leading-none">
+                        Admin
+                      </Badge>
+                    )}
                   </span>
                   <span className="truncate text-xs">{session.user.email}</span>
                 </div>
@@ -89,10 +102,6 @@ export function NavUser() {
               <DropdownMenuItem onClick={() => router.push("/home/settings")}>
                 <BadgeCheck />
                 {t("settings")}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Bell />
-                {t("notifications")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
