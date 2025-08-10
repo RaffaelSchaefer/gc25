@@ -1,5 +1,5 @@
 #!/usr/bin/env tsx
-import { prisma } from "../src/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 async function main() {
   const email = process.argv[2];
