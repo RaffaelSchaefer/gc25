@@ -54,7 +54,7 @@ export async function listGoodies(): Promise<GoodieDto[]> {
       votes: userId ? { where: { userId } } : false,
       _count: { select: { votes: true, collections: true } },
       collections: userId ? { where: { userId } } : false,
-  createdBy: { select: { id: true, name: true, image: true } },
+      createdBy: { select: { id: true, name: true, image: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -150,7 +150,11 @@ export async function createGoodie(input: {
       totalScore: 0,
       createdAt: created.createdAt.toISOString(),
       createdBy: created.createdBy
-        ? { id: created.createdBy.id, name: created.createdBy.name, image: created.createdBy.image }
+        ? {
+            id: created.createdBy.id,
+            name: created.createdBy.name,
+            image: created.createdBy.image,
+          }
         : null,
     },
   });
@@ -287,7 +291,7 @@ export async function updateGoodie(
       date: true,
       registrationUrl: true,
       updatedAt: true,
-  // keep creator stable (not needed in update broadcast currently)
+      // keep creator stable (not needed in update broadcast currently)
     },
   });
   await broadcast({

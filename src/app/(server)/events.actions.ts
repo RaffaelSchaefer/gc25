@@ -453,7 +453,7 @@ export type BroadcastMessage =
         registrationUrl?: string | null;
         totalScore: number;
         createdAt: string;
-  createdBy?: { id: string; name: string; image?: string | null } | null;
+        createdBy?: { id: string; name: string; image?: string | null } | null;
       };
     }
   | {

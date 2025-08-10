@@ -344,7 +344,7 @@
         "create": "Event hinzufügen"
       }
     },
-    "banner": "Dieser Planer verwendet lokalen Zustand. Änderungen bleiben nach einem Reload nicht erhalten.",
+    "banner": "Plane und koordiniere unseren Gamescom-Trip: Erstelle, tritt bei und verfolge Community-Events über alle Tage.",
     "attendees": "{count, plural, one {# nimmt teil} other {# nehmen teil}}",
     "filters": {
       "clear": "Filter zurücksetzen",
@@ -455,7 +455,7 @@
       "image_type": "Nicht unterstützter Bildtyp"
     },
     "updating": "Aktualisiere...",
-    "stats": { "total": "Gesamt", "collected": "Gesammelt", "types": "Typen" }
-  ,"createdBy": "Erstellt von {name}"
+    "stats": { "total": "Gesamt", "collected": "Gesammelt", "types": "Typen" },
+    "createdBy": "Erstellt von {name}"
   }
 }

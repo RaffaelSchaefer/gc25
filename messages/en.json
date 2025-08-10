@@ -337,7 +337,7 @@
         "create": "Add event"
       }
     },
-    "banner": "This planner uses local state. Changes won’t persist after a refresh.",
+    "banner": "Plan and coordinate our Gamescom trip: create, join and track community events across all days.",
     "attendees": "{count, plural, one {# going} other {# going}}",
     "toast": {
       "created": "Event created",
@@ -445,7 +445,7 @@
       "image_type": "Unsupported image type"
     },
     "updating": "Updating...",
-    "stats": { "total": "Total", "collected": "Collected", "types": "Types" }
-  ,"createdBy": "Created by {name}"
+    "stats": { "total": "Total", "collected": "Collected", "types": "Types" },
+    "createdBy": "Created by {name}"
   }
 }

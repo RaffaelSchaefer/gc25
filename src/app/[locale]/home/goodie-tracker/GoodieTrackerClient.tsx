@@ -69,9 +69,7 @@ export default function GoodieTrackerClient({
   const [goodies, setGoodies] = useState<GoodieDto[]>(initialGoodies);
   const [showCollected, setShowCollected] = useState(true);
   const allTypes: Array<GoodieDto["type"]> = ["GIFT", "FOOD", "DRINK"];
-  const [activeTypes, setActiveTypes] = useState<GoodieDto["type"][]>(
-    allTypes,
-  );
+  const [activeTypes, setActiveTypes] = useState<GoodieDto["type"][]>(allTypes);
   const [isPending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -632,7 +630,8 @@ export default function GoodieTrackerClient({
                               : "border-emerald-300 hover:border-emerald-400 text-emerald-700 dark:text-emerald-300 bg-emerald-500/15 dark:bg-emerald-500/20 hover:bg-emerald-500/25 focus-visible:ring focus-visible:ring-emerald-400/50"
                           }`}
                         >
-                          <CheckCircle2 className="w-4 h-4 mr-1" /> {collected ? t("uncheck") : t("check")}
+                          <CheckCircle2 className="w-4 h-4 mr-1" />{" "}
+                          {collected ? t("uncheck") : t("check")}
                         </Button>
                         {currentUserId && g.createdById === currentUserId && (
                           <Button
