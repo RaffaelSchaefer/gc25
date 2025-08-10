@@ -10,10 +10,8 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "test": "vitest",
-    "pwa:icons": "tsx src/scripts/generate-icons.ts",
-    "db:deploy": "npx prisma migrate deploy && npx prisma generate",
-    "make:admin": "tsx src/scripts/make-admin.ts",
-    "remove:admin": "tsx src/scripts/remove-admin.ts"
+    "pwa:icons": "tsx scripts/generate-icons.ts",
+    "db:deploy": "npx prisma migrate deploy && npx prisma generate"
   },
   "dependencies": {
     "@dicebear/collection": "^9.2.3",
