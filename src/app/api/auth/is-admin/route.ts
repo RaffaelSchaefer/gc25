@@ -28,7 +28,8 @@ export async function GET(request: Request) {
       const sessionIsAdmin =
         typeof (session.user as unknown as { isAdmin?: unknown })?.isAdmin ===
         "boolean"
-          ? ((session.user as unknown as { isAdmin?: boolean }).isAdmin as boolean)
+          ? ((session.user as unknown as { isAdmin?: boolean })
+              .isAdmin as boolean)
           : false;
       return NextResponse.json({ isAdmin: sessionIsAdmin });
     }

@@ -16,6 +16,7 @@ import {
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { authClient } from "@/lib/auth-client";
+import { Shield } from "lucide-react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations("sidebar");
@@ -79,12 +80,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900"
+                className="group relative overflow-hidden border border-purple-500/30 bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 transition-all duration-300 hover:text-white focus-visible:text-white [&_*]:text-white"
               >
-                <Link href="/admin/dashboard">
-                  <span className="truncate text-sm">
+                <Link
+                  href="/admin/dashboard"
+                  aria-label={t("admin_panel", { default: "Admin Panel" })}
+                  className="flex w-full items-center gap-2"
+                >
+                  {/* Hintergrund Glow */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_80%_20%,rgba(147,51,234,0.35),transparent_60%)]"
+                  />
+                  {/* Subtiles Grid Overlay (leicht) */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-10 group-hover:opacity-20 transition-opacity duration-300 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:32px_32px]"
+                  />
+                  <Shield className="relative z-10 size-4 drop-shadow-sm group-hover:text-white" />
+                  <span className="relative z-10 truncate text-sm font-medium tracking-wide group-hover:text-white">
                     {t("admin_panel", { default: "Admin" })}
                   </span>
+                  {/* Accent Light */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -right-6 -top-6 size-12 rounded-full bg-purple-400/30 blur-xl opacity-0 group-hover:opacity-60 transition duration-500"
+                  />
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

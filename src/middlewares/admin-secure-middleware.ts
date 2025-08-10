@@ -30,7 +30,9 @@ function buildInternalApiUrl(req: NextRequest, pathname: string) {
     process.env.PORT;
 
   if (overrideProto) {
-    u.protocol = /:$/i.test(overrideProto) ? overrideProto : `${overrideProto}:`;
+    u.protocol = /:$/i.test(overrideProto)
+      ? overrideProto
+      : `${overrideProto}:`;
   } else {
     // Wenn eingehend https aber wir sehr wahrscheinlich im Container ohne internem TLS sind => http
     if (u.protocol === "https:" && !forceHttps) {
@@ -95,9 +97,12 @@ export async function middleware(request: NextRequest) {
 
   // Zusatz: kurze Heuristik, um Misskonfigurationen zu erkennen
   if (process.env.DEBUG_SECURE_MW === "1") {
-    if (adminUrl.protocol === "https:" && /^(localhost|127\.0\.0\.1)(:|$)/.test(adminUrl.host)) {
+    if (
+      adminUrl.protocol === "https:" &&
+      /^(localhost|127\.0\.0\.1)(:|$)/.test(adminUrl.host)
+    ) {
       console.warn(
-        "[admin-secure-mw] Warnung: https gegen localhost – vermutlich unnötig und kann SSL Fehler erzeugen."
+        "[admin-secure-mw] Warnung: https gegen localhost – vermutlich unnötig und kann SSL Fehler erzeugen.",
       );
     }
   }

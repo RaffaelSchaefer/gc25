@@ -2,7 +2,7 @@
 
 import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from "lucide-react";
+import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Badge } from "@/components/ui/badge";
 
@@ -59,7 +59,7 @@ export function NavUser() {
                 <span className="truncate font-medium flex items-center gap-1">
                   <span>{session.user.name}</span>
                   {isAdmin && (
-                    <Badge className="h-4 px-1 text-[10px] leading-none">
+                    <Badge className="h-4 px-1 text-[10px] leading-none bg-gradient-to-r from-purple-600 to-purple-500 text-white border border-purple-400/40 shadow-sm tracking-wide">
                       Admin
                     </Badge>
                   )}
@@ -88,7 +88,7 @@ export function NavUser() {
                   <span className="truncate font-medium flex items-center gap-1">
                     <span>{session.user.name}</span>
                     {isAdmin && (
-                      <Badge className="h-4 px-1 text-[10px] leading-none">
+                      <Badge className="h-4 px-1 text-[10px] leading-none bg-gradient-to-r from-purple-600 to-purple-500 text-white border border-purple-400/40 shadow-sm tracking-wide">
                         Admin
                       </Badge>
                     )}

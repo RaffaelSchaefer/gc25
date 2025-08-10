@@ -17,11 +17,18 @@ import {
   BarChart3,
   ListChecks,
   MapPin,
+  Gift,
+  Trophy,
+  CheckCircle2,
+  Utensils,
+  CupSoda,
 } from "lucide-react";
 import type { DayBucket } from "@/app/(server)/events.actions";
+import type { GoodieDto } from "@/app/(server)/goodies.actions";
 
 type Props = {
   days: DayBucket[];
+  goodies?: GoodieDto[]; // optional, um Home Page rückwärtskompatibel zu halten
 };
 
 function formatDateTime(iso: string) {
@@ -61,7 +68,7 @@ function formatTime(iso: string) {
   }
 }
 
-export default function DashboardOverview({ days }: Props) {
+export default function DashboardOverview({ days, goodies = [] }: Props) {
   const allEvents = days.flatMap((d) => d.events);
   const totalEvents = allEvents.length;
   const joinedEvents = allEvents.filter((e) => e.userJoined).length;
@@ -74,6 +81,13 @@ export default function DashboardOverview({ days }: Props) {
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const todayEvents = days.find((d) => d.dateISO === todayISO)?.events ?? [];
+
+  // Goodie Kennzahlen
+  const totalGoodies = goodies.length;
+  const collected = goodies.filter((g) => g.collected).length;
+  const topGoodies = [...goodies]
+    .sort((a, b) => b.totalScore - a.totalScore)
+    .slice(0, 3);
 
   return (
     <section className="relative -mt-24 z-10">
@@ -276,6 +290,120 @@ export default function DashboardOverview({ days }: Props) {
             </Card>
           </div>
 
+          {/* Goodies Overview */}
+          {goodies.length > 0 && (
+            <div className="break-inside-avoid mb-6">
+              <Card className="relative overflow-hidden border-0 ring-1 ring-violet-500/30 bg-gradient-to-br from-violet-500/10 via-background/0 to-transparent">
+                <CardHeader className="flex flex-row items-center justify-between pb-4">
+                  <div>
+                    <CardTitle className="text-xl font-extrabold bg-gradient-to-r from-violet-600 via-violet-500 to-violet-400 bg-clip-text text-transparent flex items-center gap-2 tracking-tight">
+                      <Trophy className="w-5 h-5 text-violet-400" /> Goodies
+                    </CardTitle>
+                    <CardDescription className="text-violet-600 dark:text-violet-200 font-medium">
+                      Überblick & aktuelle Favoriten
+                    </CardDescription>
+                  </div>
+                  <div className="w-10 h-10 rounded-lg bg-violet-500/15 ring-1 ring-violet-500/30 flex items-center justify-center">
+                    <Gift className="w-5 h-5 text-violet-300" />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-5 pt-0">
+                  {/* KPI Row */}
+                  <div className="flex flex-wrap items-center gap-6">
+                    <div>
+                      <div className="text-xl font-semibold text-violet-700 dark:text-violet-300">
+                        {totalGoodies}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Gesamt
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-semibold text-violet-700 dark:text-violet-300">
+                        {collected}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Gesammelt
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-semibold text-violet-700 dark:text-violet-300">
+                        {totalGoodies - collected}
+                      </div>
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                        Offen
+                      </div>
+                    </div>
+                  </div>
+                  {/* Top 3 List */}
+                  {topGoodies.length > 0 && (
+                    <div>
+                      <div className="text-xs font-medium text-muted-foreground mb-3 tracking-wide flex items-center gap-1">
+                        <Trophy className="w-3 h-3" /> Top 3 nach Score
+                      </div>
+                      <ol className="space-y-2">
+                        {topGoodies.map((g, idx) => {
+                          const typeLabel: Record<GoodieDto["type"], string> = {
+                            GIFT: "Gift",
+                            FOOD: "Food",
+                            DRINK: "Drink",
+                          };
+                          const TypeIcon: Record<
+                            GoodieDto["type"],
+                            React.ComponentType<{ className?: string }>
+                          > = {
+                            GIFT: Gift,
+                            FOOD: Utensils,
+                            DRINK: CupSoda,
+                          };
+                          const TI = TypeIcon[g.type];
+                          return (
+                            <li
+                              key={g.id}
+                              className="flex items-center gap-3 rounded-md bg-violet-500/5 ring-1 ring-violet-500/20 px-3 py-2"
+                            >
+                              <span
+                                className="flex-shrink-0 w-6 h-6 rounded-full bg-violet-500/20 text-violet-600 dark:text-violet-300 text-xs font-semibold flex items-center justify-center"
+                                aria-label={`Rang ${idx + 1}`}
+                              >
+                                {idx + 1}
+                              </span>
+                              <div className="flex-1 min-w-0 truncate text-sm font-medium text-violet-700 dark:text-violet-300">
+                                {g.name}
+                              </div>
+                              <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-500/15 text-violet-600 dark:text-violet-300 ring-1 ring-violet-500/30 text-[11px] leading-4">
+                                <TI className="w-3 h-3" /> {typeLabel[g.type]}
+                              </span>
+                              {g.collected && (
+                                <span className="inline-flex items-center gap-1 text-violet-600 dark:text-violet-300 text-[11px] leading-4">
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  Collect
+                                </span>
+                              )}
+                              <span className="flex-shrink-0 text-violet-600 dark:text-violet-300 font-semibold tabular-nums">
+                                {g.totalScore}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </div>
+                  )}
+                  <div className="pt-1">
+                    <Link href="/home/goodie-tracker">
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-600 ring-1 ring-violet-400/40"
+                      >
+                        Zum Tracker
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Useful links / tools */}
           <div className="break-inside-avoid mb-6">
             <Card className="relative overflow-hidden border-0 ring-1 ring-orange-500/20 bg-gradient-to-br from-orange-500/5 via-background/60 to-background/50">
@@ -295,6 +423,15 @@ export default function DashboardOverview({ days }: Props) {
                   <span className="inline-flex items-center gap-2 text-sm">
                     <ListChecks className="w-4 h-4 text-orange-300" />{" "}
                     Eventplaner
+                  </span>
+                  <span className="text-xs text-orange-300">Öffnen →</span>
+                </Link>
+                <Link
+                  href="/home/goodie-tracker"
+                  className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-orange-500/10"
+                >
+                  <span className="inline-flex items-center gap-2 text-sm">
+                    <Gift className="w-4 h-4 text-orange-300" /> Goodie Tracker
                   </span>
                   <span className="text-xs text-orange-300">Öffnen →</span>
                 </Link>

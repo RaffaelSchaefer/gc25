@@ -5,7 +5,6 @@ import { EventPlannerSkeleton } from "./EventPlannerSkeleton";
 import { Toaster } from "sonner";
 
 export default async function PlannerPage() {
-
   // Events aus der Datenbank laden
   const events = await listPublishedEvents();
 
