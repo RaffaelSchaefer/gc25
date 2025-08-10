@@ -397,7 +397,12 @@
     "collected": "Collected",
     "score": "Score {score}",
     "register_link": "Registration / Claim Link",
-    "filters": { "show_collected": "Show collected" },
+    "filters": {
+      "show_collected": "Show collected",
+      "types": "Types",
+      "all": "All",
+      "none": "None"
+    },
     "fields": {
       "name": "Name",
       "location": "Location",

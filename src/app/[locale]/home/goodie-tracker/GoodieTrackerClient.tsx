@@ -23,6 +23,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
   ArrowBigUp,
@@ -59,6 +67,10 @@ export default function GoodieTrackerClient({
   const t = useTranslations("goodies");
   const [goodies, setGoodies] = useState<GoodieDto[]>(initialGoodies);
   const [showCollected, setShowCollected] = useState(true);
+  const allTypes: Array<GoodieDto["type"]> = ["GIFT", "FOOD", "DRINK"];
+  const [activeTypes, setActiveTypes] = useState<GoodieDto["type"][]>(
+    allTypes,
+  );
   const [isPending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,7 +157,9 @@ export default function GoodieTrackerClient({
     });
   };
 
-  const filtered = goodies.filter((g) => showCollected || !g.collected);
+  const filtered = goodies.filter(
+    (g) => (showCollected || !g.collected) && activeTypes.includes(g.type),
+  );
 
   // Relevanz-Berechnung (spiegelt Server-Heuristik) für konsistente Sortierung nach Ranking
   const PERSONAL_WEIGHT = 3;
@@ -359,6 +373,54 @@ export default function GoodieTrackerClient({
                   onCheckedChange={setShowCollected}
                 />
               </div>
+              {/* Type Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    {t("filters.types")}
+                    {activeTypes.length !== allTypes.length && (
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        {activeTypes.length}/{allTypes.length}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {t("filters.types")}
+                  </DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={activeTypes.length === allTypes.length}
+                    onCheckedChange={() => {
+                      setActiveTypes((cur) =>
+                        cur.length === allTypes.length ? [] : allTypes,
+                      );
+                    }}
+                  >
+                    {t("filters.all")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  {allTypes.map((ty) => (
+                    <DropdownMenuCheckboxItem
+                      key={ty}
+                      checked={activeTypes.includes(ty)}
+                      onCheckedChange={(checked) => {
+                        setActiveTypes((prev) => {
+                          if (checked) return [...new Set([...prev, ty])];
+                          return prev.filter((p) => p !== ty);
+                        });
+                      }}
+                      className="capitalize"
+                    >
+                      {t(`types.${ty.toLowerCase()}`)}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
                 onClick={() => {
