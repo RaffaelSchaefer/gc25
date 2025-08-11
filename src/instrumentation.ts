@@ -1,5 +1,19 @@
+import { LangfuseExporter } from "langfuse-vercel";
+import { registerOTel } from "@vercel/otel";
+
 export async function register() {
-  // No-op in src instrumentation to avoid edge bundling of server code
+  registerOTel({
+    serviceName: "langfuse-vercel-ai-nextjs-example",
+    traceExporter: new LangfuseExporter(),
+  });
+  // Initialize Socket.IO server only when running in the Node.js runtime
+  if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  try {
+    const { ensureIOServer } = await import("./lib/io");
+    await ensureIOServer();
+  } catch {
+    // ignore
+  }
 }
 
 export async function instrumentationHook() {
