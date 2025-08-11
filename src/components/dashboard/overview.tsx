@@ -48,6 +48,11 @@ import {
   PromptInputTools,
   PromptInputSubmit,
   PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
 } from "@/components/ai-elements/prompt-input";
 import {
   Message,
@@ -133,6 +138,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
 
   // useChat korrekt (AI SDK 5) – eigener Input-State + Transport auf /api/ai/chat
   const [input, setInput] = useState("");
+  const [persona, setPersona] = useState("neutral");
   const { messages, status, error, sendMessage, regenerate, stop } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
@@ -141,7 +147,14 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
     e.preventDefault();
     const value = input.trim();
     if (!value || isLoading) return;
-    sendMessage({ role: "user", parts: [{ type: "text", text: value }] });
+    sendMessage(
+      { role: "user", parts: [{ type: "text", text: value }] },
+      {
+        headers: {
+          "x-persona": persona,
+        },
+      },
+    );
     setInput("");
   }
 
@@ -695,6 +708,35 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                     Stop
                   </PromptInputButton>
                 )}
+                {/* Persona-Auswahl statt Model-Auswahl */}
+                <PromptInputModelSelect
+                  onValueChange={(value) => setPersona(value)}
+                  value={persona}
+                >
+                  <PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectValue />
+                  </PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectContent>
+                    <PromptInputModelSelectItem value="neutral">
+                      Normal
+                    </PromptInputModelSelectItem>
+                    <PromptInputModelSelectItem value="uwu">
+                      Kawaii 🎀
+                    </PromptInputModelSelectItem>
+                    <PromptInputModelSelectItem value="bernd">
+                      Brot 🍞
+                    </PromptInputModelSelectItem>
+                    <PromptInputModelSelectItem value="monga">
+                      Monga 🅱️
+                    </PromptInputModelSelectItem>
+                    <PromptInputModelSelectItem value="denglish">
+                      Denglish Vong 💸
+                    </PromptInputModelSelectItem>
+                    <PromptInputModelSelectItem value="apored">
+                      Insi Modus 👟
+                    </PromptInputModelSelectItem>
+                  </PromptInputModelSelectContent>
+                </PromptInputModelSelect>
               </PromptInputTools>
               <PromptInputSubmit
                 className="absolute right-2 bottom-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-sm ring-1 ring-fuchsia-400/40 disabled:opacity-50 disabled:cursor-not-allowed"
