@@ -712,8 +712,9 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                 <PromptInputModelSelect
                   onValueChange={(value) => setPersona(value)}
                   value={persona}
+                  className="bg-transparent"
                 >
-                  <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectTrigger className="bg-transparent">
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
                   <PromptInputModelSelectContent>
