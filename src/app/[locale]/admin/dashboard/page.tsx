@@ -8,6 +8,7 @@ import {
   ExtendedTimelineChart,
   SimpleBarChart,
 } from "./usage-charts";
+import { AIAreaChart } from "./ai-usage-chart";
 
 export const dynamic = "force-dynamic"; // opt out of caching
 
@@ -35,6 +36,8 @@ async function getStats() {
     newUsers30,
     newEvents7,
     newEvents30,
+    aiUsageRaw,
+    aiUsageDailyRaw
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isAdmin: true } }),
@@ -69,19 +72,29 @@ async function getStats() {
     prisma.user.count({ where: { createdAt: { gte: from30 } } }),
     prisma.event.count({ where: { createdAt: { gte: from7 } } }),
     prisma.event.count({ where: { createdAt: { gte: from30 } } }),
+    // AI Usage: alle User mit Nutzung/Limits
+    prisma.user.findMany({
+      select: { id: true, name: true, aiUsageCount: true, aiUsageLimit: true, aiUsageReset: true },
+      orderBy: { aiUsageCount: "desc" },
+      where: { aiUsageCount: { gt: 0 }, aiUsageReset: { gte: from30 } },
+    }),
+    // AI Usage: tägliche Summen letzte 30 Tage
+    prisma.user.findMany({
+      select: { aiUsageCount: true, aiUsageReset: true },
+      where: { aiUsageReset: { gte: from30 } },
+    }),
   ]);
 
+
   const dayKey = (d: Date) => d.toISOString().slice(0, 10);
-  const days30: Record<
-    string,
-    {
-      users: number;
-      events: number;
-      comments: number;
-      participants: number;
-      goodies: number;
-    }
-  > = {};
+  const days30: Record<string, {
+    users: number;
+    events: number;
+    comments: number;
+    participants: number;
+    goodies: number;
+    aiUsage: number;
+  }> = {};
   for (let i = 0; i < 30; i++) {
     const d = new Date(from30.getTime() + i * 24 * 60 * 60 * 1000);
     days30[dayKey(d)] = {
@@ -90,6 +103,7 @@ async function getStats() {
       comments: 0,
       participants: 0,
       goodies: 0,
+      aiUsage: 0,
     };
   }
   function addRows(
@@ -107,6 +121,14 @@ async function getStats() {
   addRows(participantsSeriesRaw, "participants");
   addRows(goodiesSeriesRaw, "goodies");
 
+  // AI Usage Timeline: Summiere aiUsageCount pro Tag (aiUsageReset)
+  aiUsageDailyRaw.forEach((row) => {
+    if (row.aiUsageReset) {
+      const k = dayKey(new Date(row.aiUsageReset));
+      if (days30[k]) days30[k].aiUsage += row.aiUsageCount;
+    }
+  });
+
   const timeline = Object.entries(days30).map(([date, v]) => ({
     date,
     newUsers: v.users,
@@ -117,6 +139,10 @@ async function getStats() {
     newComments: v.comments,
     newParticipants: v.participants,
     newGoodies: v.goodies,
+  }));
+  const aiUsageTimeline = Object.entries(days30).map(([date, v]) => ({
+    date,
+    aiUsage: v.aiUsage,
   }));
 
   const avgParticipantsPerEvent =
@@ -131,6 +157,7 @@ async function getStats() {
     comments,
     timeline,
     extendedTimeline,
+    aiUsageTimeline,
     participantsCount,
     avgParticipantsPerEvent,
     goodiesByType: goodiesByType.map((r) => ({
@@ -270,7 +297,7 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
-        {/* Charts Row 2 */}
+  {/* Charts Row 2 */}
         <section
           className="grid gap-6 lg:grid-cols-5"
           aria-label="Engagement Timeline & Event Types"
@@ -318,6 +345,19 @@ export default async function AdminDashboardPage() {
               />
             </Suspense>
           </div>
+        </section>
+
+        {/* AI Usage Chart */}
+        <section className="rounded-xl border bg-card p-4 flex flex-col gap-3 mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium">AI-Nutzung (30d)</h2>
+            <span className="text-[10px] text-muted-foreground">
+              Tägliche AI-Requests aller User
+            </span>
+          </div>
+          <Suspense fallback={<div className="h-56 animate-pulse rounded-md bg-muted" />}>
+            <AIAreaChart data={stats.aiUsageTimeline} />
+          </Suspense>
         </section>
       </div>
     </div>

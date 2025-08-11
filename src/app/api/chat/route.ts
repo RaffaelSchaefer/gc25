@@ -400,6 +400,34 @@ export async function POST(req: Request) {
   const headers = new Headers(req.headers);
   const session = await getSessionFromHeaders(headers);
 
+  // AI Rate Limitierung (Admins werden gezählt, aber nie geblockt)
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (user) {
+      const now = new Date();
+      const reset = user.aiUsageReset ? new Date(user.aiUsageReset) : null;
+      const limit = user.aiUsageLimit ?? 50; // Default-Limit pro Tag
+      // Reset, falls Zeitraum abgelaufen
+      if (!reset || now > reset) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            aiUsageCount: 0,
+            aiUsageReset: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0),
+          },
+        });
+        user.aiUsageCount = 0;
+      }
+      if (!user.isAdmin && user.aiUsageCount >= limit) {
+        return new Response(JSON.stringify({ error: "AI-Rate-Limit erreicht. Bitte morgen wieder versuchen." }), { status: 429 });
+      }
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { aiUsageCount: { increment: 1 } },
+      });
+    }
+  }
+
   const modelId =
     headers.get("x-model")?.trim() ||
     process.env.OPENROUTER_MODEL ||
