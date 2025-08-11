@@ -27,6 +27,11 @@ model User {
   goodieVotes   GoodieVote[]
   goodieCollections GoodieCollection[]
 
+  // AI Rate Limit Felder
+  aiUsageCount   Int                @default(0) // Anzahl der AI-Nutzungen im aktuellen Zeitraum
+  aiUsageReset   DateTime?          // Zeitpunkt, wann das Limit zurückgesetzt wird
+  aiUsageLimit   Int?               // Optional: individuelles Limit pro User
+
   @@map("user")
 }
 

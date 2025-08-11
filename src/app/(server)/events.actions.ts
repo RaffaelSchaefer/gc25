@@ -174,6 +174,76 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
   return buckets;
 }
 
+export async function getEventById(id: string): Promise<TimelinedEvent | null> {
+  const userId = await getSessionUserId();
+  const event = await prisma.event.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      url: true,
+      isPublic: true,
+      createdById: true,
+      createdBy: {
+        select: {
+          name: true,
+          image: true,
+        },
+      },
+      category: true,
+      participants: {
+        select: {
+          userId: true,
+          user: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!event) return null;
+
+  const start = new Date(event.startDate);
+  const dateISO = start.toISOString().slice(0, 10);
+  const time = toHHmmLocal(start);
+
+  const attendees = event.participants.length;
+  const userJoined = userId
+    ? event.participants.some((p) => p.userId === userId)
+    : false;
+
+  return {
+    id: event.id,
+    title: event.name,
+    time,
+    dateISO,
+    location: event.location,
+    url: event.url,
+    description: event.description,
+    attendees,
+    userJoined,
+    startDate: event.startDate.toISOString(),
+    endDate: event.endDate.toISOString(),
+    createdById: event.createdById,
+    createdBy: {
+      name: event.createdBy.name,
+      image: event.createdBy.image,
+    },
+    category: event.category,
+    isPublic: event.isPublic,
+    participants: event.participants
+      .map((p) => p.user)
+      .filter((u): u is { id: string; name: string; image: string | null } =>
+        Boolean(u),
+      ),
+  };
+}
+
 /**
  * Create a new event. Requires authentication.
  * Note: Authorization can be extended (e.g., roles).
