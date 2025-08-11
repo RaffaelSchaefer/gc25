@@ -35,6 +35,7 @@ services:
       INTERNAL_FETCH_PORT: ${INTERNAL_FETCH_PORT:-}
       # Force https internally (normally keep at 0 when TLS terminates at proxy)
       INTERNAL_FORCE_HTTPS: ${INTERNAL_FORCE_HTTPS:-0}
+      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY}
     depends_on:
       - db
     ports:
