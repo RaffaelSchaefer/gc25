@@ -36,6 +36,9 @@ services:
       # Force https internally (normally keep at 0 when TLS terminates at proxy)
       INTERNAL_FORCE_HTTPS: ${INTERNAL_FORCE_HTTPS:-0}
       OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_BASEURL: ${LANGFUSE_BASEURL}
     depends_on:
       - db
     ports:
