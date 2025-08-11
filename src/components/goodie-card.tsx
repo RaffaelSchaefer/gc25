@@ -53,11 +53,7 @@ export function GoodieCard({ goodie, goodieImage }: Props) {
   };
 
   const Icon =
-    goodie.type === "GIFT"
-      ? Gift
-      : goodie.type === "FOOD"
-        ? Utensils
-        : CupSoda;
+    goodie.type === "GIFT" ? Gift : goodie.type === "FOOD" ? Utensils : CupSoda;
   const isPast = goodie.date ? new Date(goodie.date) < new Date() : false;
   const tone = typeTokens[goodie.type];
   const collected = goodie.collected;
@@ -105,7 +101,9 @@ export function GoodieCard({ goodie, goodieImage }: Props) {
                 })}
               </Badge>
             )}
-            {collected && <Badge className="bg-emerald-600/80">Collected</Badge>}
+            {collected && (
+              <Badge className="bg-emerald-600/80">Collected</Badge>
+            )}
           </div>
         </CardHeader>
         {goodieImage && (

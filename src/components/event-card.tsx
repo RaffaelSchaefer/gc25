@@ -196,11 +196,14 @@ export function EventCard({ event }: EventCardProps) {
                             .slice(0, 2)
                             .toUpperCase(),
                         }))
-                      : Array.from({ length: Math.min(event.attendees, 5) }, (_, i) => ({
-                          id: `attendee-${i}`,
-                          name: `Attendee ${i + 1}`,
-                          fallback: `A${i + 1}`,
-                        }))
+                      : Array.from(
+                          { length: Math.min(event.attendees, 5) },
+                          (_, i) => ({
+                            id: `attendee-${i}`,
+                            name: `Attendee ${i + 1}`,
+                            fallback: `A${i + 1}`,
+                          }),
+                        )
                   }
                   size="sm"
                 />

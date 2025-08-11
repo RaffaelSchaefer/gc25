@@ -137,7 +137,8 @@ export async function getGoodieById(id: string): Promise<GoodieDto | null> {
     createdAt: goodie.createdAt.toISOString(),
     updatedAt: goodie.updatedAt.toISOString(),
     totalScore,
-    userVote: goodie.votes && goodie.votes.length > 0 ? goodie.votes[0].value : 0,
+    userVote:
+      goodie.votes && goodie.votes.length > 0 ? goodie.votes[0].value : 0,
     collected: !!(goodie.collections && goodie.collections.length > 0),
   };
 }

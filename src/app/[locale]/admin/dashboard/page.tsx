@@ -37,7 +37,7 @@ async function getStats() {
     newEvents7,
     newEvents30,
     aiUsageRaw,
-    aiUsageDailyRaw
+    aiUsageDailyRaw,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isAdmin: true } }),
@@ -74,7 +74,13 @@ async function getStats() {
     prisma.event.count({ where: { createdAt: { gte: from30 } } }),
     // AI Usage: alle User mit Nutzung/Limits
     prisma.user.findMany({
-      select: { id: true, name: true, aiUsageCount: true, aiUsageLimit: true, aiUsageReset: true },
+      select: {
+        id: true,
+        name: true,
+        aiUsageCount: true,
+        aiUsageLimit: true,
+        aiUsageReset: true,
+      },
       orderBy: { aiUsageCount: "desc" },
       where: { aiUsageCount: { gt: 0 }, aiUsageReset: { gte: from30 } },
     }),
@@ -85,16 +91,18 @@ async function getStats() {
     }),
   ]);
 
-
   const dayKey = (d: Date) => d.toISOString().slice(0, 10);
-  const days30: Record<string, {
-    users: number;
-    events: number;
-    comments: number;
-    participants: number;
-    goodies: number;
-    aiUsage: number;
-  }> = {};
+  const days30: Record<
+    string,
+    {
+      users: number;
+      events: number;
+      comments: number;
+      participants: number;
+      goodies: number;
+      aiUsage: number;
+    }
+  > = {};
   for (let i = 0; i < 30; i++) {
     const d = new Date(from30.getTime() + i * 24 * 60 * 60 * 1000);
     days30[dayKey(d)] = {
@@ -297,7 +305,7 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
 
-  {/* Charts Row 2 */}
+        {/* Charts Row 2 */}
         <section
           className="grid gap-6 lg:grid-cols-5"
           aria-label="Engagement Timeline & Event Types"
@@ -355,7 +363,11 @@ export default async function AdminDashboardPage() {
               Tägliche AI-Requests aller User
             </span>
           </div>
-          <Suspense fallback={<div className="h-56 animate-pulse rounded-md bg-muted" />}>
+          <Suspense
+            fallback={
+              <div className="h-56 animate-pulse rounded-md bg-muted" />
+            }
+          >
             <AIAreaChart data={stats.aiUsageTimeline} />
           </Suspense>
         </section>

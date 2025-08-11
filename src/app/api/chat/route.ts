@@ -73,11 +73,24 @@ const resolveEventByName = tool({
       where,
       orderBy: { startDate: "asc" },
       take: 20,
-      select: { id: true, name: true, slug: true, startDate: true, location: true, category: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        startDate: true,
+        location: true,
+        category: true,
+      },
     });
     const q = query.toLowerCase();
     const rank = (n: string) =>
-      n.toLowerCase() === q ? 100 : n.toLowerCase().startsWith(q) ? 80 : n.toLowerCase().includes(q) ? 50 : 0;
+      n.toLowerCase() === q
+        ? 100
+        : n.toLowerCase().startsWith(q)
+          ? 80
+          : n.toLowerCase().includes(q)
+            ? 50
+            : 0;
     return items.sort((a, b) => rank(b.name) - rank(a.name)).slice(0, limit);
   },
 });
@@ -109,7 +122,13 @@ const resolveGoodieByName = tool({
     });
     const q = query.toLowerCase();
     const score = (n: string) =>
-      n.toLowerCase() === q ? 100 : n.toLowerCase().startsWith(q) ? 80 : n.toLowerCase().includes(q) ? 50 : 0;
+      n.toLowerCase() === q
+        ? 100
+        : n.toLowerCase().startsWith(q)
+          ? 80
+          : n.toLowerCase().includes(q)
+            ? 50
+            : 0;
     return items.sort((a, b) => score(b.name) - score(a.name)).slice(0, limit);
   },
 });
@@ -119,20 +138,29 @@ const getEventInformation = tool({
   description: "Return EventCardEvent for a given event ID.",
   inputSchema: z.object({ eventId: z.string().min(1) }),
   execute: async ({ eventId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
 
     const e = await prisma.event.findUnique({
       where: { id: eventId },
       include: {
         createdBy: { select: { id: true, name: true, image: true } },
-        participants: { include: { user: { select: { id: true, name: true, image: true } } } },
+        participants: {
+          include: { user: { select: { id: true, name: true, image: true } } },
+        },
       },
     });
     if (!e) return { error: "Event not found" };
 
-    const userJoined = !!(session && e.participants.some((p) => p.userId === session.user.id));
+    const userJoined = !!(
+      session && e.participants.some((p) => p.userId === session.user.id)
+    );
     const attendees = e.participants.length;
     const participants = e.participants.slice(0, 8).map((p) => ({
       id: p.user.id,
@@ -148,13 +176,16 @@ const getEventInformation = tool({
       dateISO: e.startDate.toISOString(),
       location: e.location ?? null,
       url: e.url ?? null,
-      description: e.summary ?? (e.description ? e.description.slice(0, 240) : null),
+      description:
+        e.summary ?? (e.description ? e.description.slice(0, 240) : null),
       attendees,
       userJoined,
       startDate: e.startDate.toISOString(),
       endDate: e.endDate.toISOString(),
       createdById: e.createdById,
-      createdBy: e.createdBy ? { name: e.createdBy.name, image: e.createdBy.image ?? null } : undefined,
+      createdBy: e.createdBy
+        ? { name: e.createdBy.name, image: e.createdBy.image ?? null }
+        : undefined,
       category: e.category,
       isPublic: e.isPublic,
       participants,
@@ -168,9 +199,14 @@ const getGoodieInformation = tool({
   description: "Return GoodieDto for a given goodie ID.",
   inputSchema: z.object({ goodieId: z.string().min(1) }),
   execute: async ({ goodieId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
 
     const g = await prisma.goodie.findUnique({
       where: { id: goodieId },
@@ -205,7 +241,9 @@ const getGoodieInformation = tool({
       registrationUrl: g.registrationUrl ?? null,
       collected,
       totalScore,
-      createdBy: g.createdBy ? { name: g.createdBy.name, image: g.createdBy.image ?? null } : undefined,
+      createdBy: g.createdBy
+        ? { name: g.createdBy.name, image: g.createdBy.image ?? null }
+        : undefined,
     };
 
     return goodie; // Client rendert <GoodieCard goodie={goodie} />
@@ -221,9 +259,14 @@ const getEvents = tool({
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
   execute: async ({ upcomingOnly, search, limit }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
 
     const where: any = {};
     if (upcomingOnly) where.startDate = { gte: new Date() };
@@ -242,7 +285,9 @@ const getEvents = tool({
         location: true,
         isPublic: true,
         category: true,
-        participants: session ? { where: { userId: session.user.id }, select: { id: true } } : false,
+        participants: session
+          ? { where: { userId: session.user.id }, select: { id: true } }
+          : false,
       },
     });
 
@@ -254,7 +299,11 @@ const getEvents = tool({
       location: e.location,
       isPublic: e.isPublic,
       category: e.category,
-      joined: !!(session && Array.isArray(e.participants) && e.participants.length > 0),
+      joined: !!(
+        session &&
+        Array.isArray(e.participants) &&
+        e.participants.length > 0
+      ),
     }));
   },
 });
@@ -268,9 +317,14 @@ const getGoodies = tool({
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
   execute: async ({ type, collectedOnly, search, limit }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
 
     const where: any = {};
     if (type) where.type = type;
@@ -286,7 +340,9 @@ const getGoodies = tool({
         type: true,
         location: true,
         date: true,
-        collections: session ? { where: { userId: session.user.id }, select: { id: true } } : false,
+        collections: session
+          ? { where: { userId: session.user.id }, select: { id: true } }
+          : false,
       },
     });
 
@@ -296,7 +352,11 @@ const getGoodies = tool({
       type: g.type,
       location: g.location,
       date: g.date,
-      collected: !!(session && Array.isArray(g.collections) && g.collections.length > 0),
+      collected: !!(
+        session &&
+        Array.isArray(g.collections) &&
+        g.collections.length > 0
+      ),
     }));
     return collectedOnly ? mapped.filter((g) => g.collected) : mapped;
   },
@@ -307,9 +367,14 @@ const joinEvent = tool({
   description: "Join an event (requires auth).",
   inputSchema: z.object({ eventId: z.string().min(1) }),
   execute: async ({ eventId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
     if (!session) return { error: "auth-required" };
 
     await prisma.eventParticipant.upsert({
@@ -325,9 +390,14 @@ const leaveEvent = tool({
   description: "Leave an event (requires auth).",
   inputSchema: z.object({ eventId: z.string().min(1) }),
   execute: async ({ eventId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
     if (!session) return { error: "auth-required" };
 
     await prisma.eventParticipant.deleteMany({
@@ -339,19 +409,61 @@ const leaveEvent = tool({
 
 const voteGoodie = tool({
   description: "Vote a goodie with value -1 or 1 (requires auth).",
-  inputSchema: z.object({ goodieId: z.string().min(1), value: z.enum(["-1", "1"]).transform(Number) }),
+  inputSchema: z.object({
+    goodieId: z.string().min(1),
+    // akzeptiert "1"/"-1" (string) und 1/-1 (number):
+    value: z.coerce
+      .number()
+      .int()
+      .refine((v) => v === -1 || v === 1, {
+        message: "value must be -1 or 1",
+      }),
+  }),
   execute: async ({ goodieId, value }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
+
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
     if (!session) return { error: "auth-required" };
 
-    await prisma.goodieVote.upsert({
-      where: { userId_goodieId: { userId: session.user.id, goodieId } },
-      create: { userId: session.user.id, goodieId, value },
-      update: { value },
+    // Existenz prüfen (sauberere Fehlermeldung als FK-Error)
+    const exists = await prisma.goodie.findUnique({
+      where: { id: goodieId },
+      select: { id: true },
     });
-    return { ok: true };
+    if (!exists) return { error: "not-found" };
+
+    // Upsert + neuen Gesamtscore atomar berechnen
+    const { totalScore, votes } = await prisma.$transaction(async (tx) => {
+      await tx.goodieVote.upsert({
+        where: { userId_goodieId: { userId: session!.user.id, goodieId } },
+        create: { userId: session!.user.id, goodieId, value },
+        update: { value },
+      });
+
+      const agg = await tx.goodieVote.aggregate({
+        where: { goodieId },
+        _sum: { value: true },
+        _count: true,
+      });
+
+      return {
+        totalScore: agg._sum.value ?? 0,
+        votes: agg._count,
+      };
+    });
+
+    return {
+      ok: true,
+      myValue: value as -1 | 1,
+      totalScore,
+      votes,
+    };
   },
 });
 
@@ -359,9 +471,14 @@ const clearGoodieVote = tool({
   description: "Clear vote for a goodie (requires auth).",
   inputSchema: z.object({ goodieId: z.string().min(1) }),
   execute: async ({ goodieId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
     if (!session) return { error: "auth-required" };
 
     await prisma.goodieVote.deleteMany({
@@ -375,9 +492,14 @@ const toggleCollectGoodie = tool({
   description: "Toggle collected status for a goodie (requires auth).",
   inputSchema: z.object({ goodieId: z.string().min(1) }),
   execute: async ({ goodieId }, options) => {
-    const ctx = (options as { experimental_context?: { session?: Session; headers?: Headers } }).experimental_context;
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
     let session = ctx?.session ?? null;
-    if (!session && ctx?.headers) session = await getSessionFromHeaders(ctx.headers);
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
     if (!session) return { error: "auth-required" };
 
     const existing = await prisma.goodieCollection.findFirst({
@@ -388,7 +510,9 @@ const toggleCollectGoodie = tool({
       await prisma.goodieCollection.delete({ where: { id: existing.id } });
       return { collected: false };
     } else {
-      await prisma.goodieCollection.create({ data: { userId: session.user.id, goodieId } });
+      await prisma.goodieCollection.create({
+        data: { userId: session.user.id, goodieId },
+      });
       return { collected: true };
     }
   },
@@ -402,7 +526,9 @@ export async function POST(req: Request) {
 
   // AI Rate Limitierung (Admins werden gezählt, aber nie geblockt)
   if (session?.user?.id) {
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
     if (user) {
       const now = new Date();
       const reset = user.aiUsageReset ? new Date(user.aiUsageReset) : null;
@@ -413,13 +539,26 @@ export async function POST(req: Request) {
           where: { id: user.id },
           data: {
             aiUsageCount: 0,
-            aiUsageReset: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0),
+            aiUsageReset: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate() + 1,
+              0,
+              0,
+              0,
+              0,
+            ),
           },
         });
         user.aiUsageCount = 0;
       }
       if (!user.isAdmin && user.aiUsageCount >= limit) {
-        return new Response(JSON.stringify({ error: "AI-Rate-Limit erreicht. Bitte morgen wieder versuchen." }), { status: 429 });
+        return new Response(
+          JSON.stringify({
+            error: "AI-Rate-Limit erreicht. Bitte morgen wieder versuchen.",
+          }),
+          { status: 429 },
+        );
       }
       await prisma.user.update({
         where: { id: user.id },
@@ -475,7 +614,12 @@ export async function POST(req: Request) {
         const toolResults = Array.isArray((r as any).toolResults)
           ? (r as any).toolResults.length
           : undefined;
-        console.log("[agent step]", { stepType, finishReason, toolCalls, toolResults });
+        console.log("[agent step]", {
+          stepType,
+          finishReason,
+          toolCalls,
+          toolResults,
+        });
       }
     },
   });

@@ -600,12 +600,39 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                             );
                           }
                           // Dynamische Kartenanzeige für Tool-Resultate
-                          if (["tool-getGoodieInformation", "tool-getEventInformation"].includes(part.type)) {
-                            if (part.state === "output-available" && part.output && !("error" in part.output)) {
-                              return <AIChatCardPart key={part.toolCallId} part={part} />;
+                          if (
+                            [
+                              "tool-getGoodieInformation",
+                              "tool-getEventInformation",
+                            ].includes(part.type)
+                          ) {
+                            if (
+                              "state" in part &&
+                              part.state === "output-available" &&
+                              part.output &&
+                              typeof part.output === "object" &&
+                              part.output !== null &&
+                              !("error" in part.output)
+                            ) {
+                              return (
+                                <AIChatCardPart
+                                  key={part.toolCallId}
+                                  part={part}
+                                />
+                              );
                             }
-                            if (part.output && "error" in part.output) {
-                              return <div key={part.toolCallId}>Error: {part.output.error}</div>;
+                            if (
+                              "output" in part &&
+                              part.output &&
+                              typeof part.output === "object" &&
+                              part.output !== null &&
+                              "error" in part.output
+                            ) {
+                              return (
+                                <div key={part.toolCallId}>
+                                  Error: {String(part.output.error)}
+                                </div>
+                              );
                             }
                           }
                           return null;
