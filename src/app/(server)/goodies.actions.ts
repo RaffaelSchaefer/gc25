@@ -97,6 +97,51 @@ export async function listGoodies(): Promise<GoodieDto[]> {
   return withRelevance.map((w) => w.data);
 }
 
+export async function getGoodieById(id: string): Promise<GoodieDto | null> {
+  const userId = await getUserId();
+  const goodie = await (prisma as any).goodie.findUnique({
+    where: { id },
+    include: {
+      votes: userId ? { where: { userId } } : false,
+      _count: { select: { votes: true, collections: true } },
+      collections: userId ? { where: { userId } } : false,
+      createdBy: { select: { id: true, name: true, image: true } },
+    },
+  });
+
+  if (!goodie) return null;
+
+  const voteSums = await (prisma as any).goodieVote.groupBy({
+    by: ["goodieId"],
+    _sum: { value: true },
+    where: { goodieId: id },
+  });
+  const totalScore = voteSums[0]?._sum.value || 0;
+
+  return {
+    id: goodie.id,
+    name: goodie.name,
+    location: goodie.location,
+    instructions: goodie.instructions,
+    date: goodie.date?.toISOString() ?? null,
+    registrationUrl: goodie.registrationUrl,
+    type: goodie.type,
+    createdById: goodie.createdById,
+    createdBy: goodie.createdBy
+      ? {
+          id: goodie.createdBy.id,
+          name: goodie.createdBy.name,
+          image: goodie.createdBy.image,
+        }
+      : null,
+    createdAt: goodie.createdAt.toISOString(),
+    updatedAt: goodie.updatedAt.toISOString(),
+    totalScore,
+    userVote: goodie.votes && goodie.votes.length > 0 ? goodie.votes[0].value : 0,
+    collected: !!(goodie.collections && goodie.collections.length > 0),
+  };
+}
+
 export async function createGoodie(input: {
   name: string;
   location: string;

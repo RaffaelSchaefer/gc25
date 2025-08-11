@@ -58,6 +58,7 @@ import { authClient } from "@/lib/auth-client";
 import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
 import { Response } from "@/components/ai-elements/response";
+import { AIChatCardPart } from "@/components/ai-elements/ai-chat-card-part";
 
 type Props = {
   days: DayBucket[];
@@ -590,13 +591,25 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                   <Message key={m.id} from={m.role}>
                     <MessageContent className="bg-transparent p-0">
                       <div className={bubbleClasses}>
-                        {m.parts.map((part, i) =>
-                          part.type === "text" ? (
-                            <Response key={m.id + "-" + i}>
-                              {part.text}
-                            </Response>
-                          ) : null,
-                        )}
+                        {m.parts.map((part, i) => {
+                          if (part.type === "text") {
+                            return (
+                              <Response key={m.id + "-" + i}>
+                                {part.text}
+                              </Response>
+                            );
+                          }
+                          // Dynamische Kartenanzeige für Tool-Resultate
+                          if (["tool-getGoodieInformation", "tool-getEventInformation"].includes(part.type)) {
+                            if (part.state === "output-available" && part.output && !("error" in part.output)) {
+                              return <AIChatCardPart key={part.toolCallId} part={part} />;
+                            }
+                            if (part.output && "error" in part.output) {
+                              return <div key={part.toolCallId}>Error: {part.output.error}</div>;
+                            }
+                          }
+                          return null;
+                        })}
                       </div>
                     </MessageContent>
                     {avatarEl}
@@ -631,7 +644,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
           </Conversation>
           <PromptInput
             onSubmit={onSubmit}
-            className="mt-4 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
+            className="mt-4 mb-2 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
           >
             <PromptInputTextarea
               value={input}
