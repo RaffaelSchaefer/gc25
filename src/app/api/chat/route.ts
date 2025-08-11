@@ -728,7 +728,12 @@ export async function POST(req: Request) {
   const result = streamText({
     model: openrouter(modelId),
     system: getSystemPrompt(personaID),
-    experimental_telemetry: { isEnabled: true },
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        persona: personaID,
+      },
+    },
     messages: convertToModelMessages(messages),
     tools: {
       // Resolver
