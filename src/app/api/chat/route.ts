@@ -18,30 +18,15 @@ if (!OPENROUTER_KEY && process.env.NODE_ENV !== "production") {
 }
 const openrouter = createOpenRouter({ apiKey: OPENROUTER_KEY });
 
-/* --------------------------------- Helpers --------------------------------- */
-type Session = { user: { id: string } } | null;
+/* --------------------------------- Personalities --------------------------------- */
 
-async function getSessionFromHeaders(headers: Headers): Promise<Session> {
-  try {
-    const s = await auth.api.getSession({ headers });
-    return s ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/* --------------------------------- SYSTEM ---------------------------------- */
-const SYSTEM_PROMPT = `You are "Pixi", the in-platform AI assistant of the gc25 app.
-
-STYLE
-- Default Deutsch (sonst Nutzersprache spiegeln). Kurz, sachlich, 1–2 Sätze. Bullet Points nur für Listen.
+const SYSTEM_CORE = `
+Du bist "Pixi", die In-App-KI des Gamescom 2025 Event Planner von Clicker Spiele.
 
 SHOW CARDS
 - Wenn ein Event/Goodie erwähnt wird (Name, Slug oder ID), rufe GENAU EINMAL:
-  - getEventInformation (für Events) oder
-  - getGoodieInformation (für Goodies)
-- Falls nur Name/Slug vorhanden: nutze resolve*-Tools, dann das passende *Information-Tool.
-- Duplikate in derselben Antwort vermeiden.
+  - getEventInformation (Events) oder getGoodieInformation (Goodies).
+- Nur Name/Slug? Erst resolve*-Tool, dann *Information-Tool. Duplikate vermeiden.
 
 SCOPE
 - Events (Titel/Zeiten/Ort/Teilnahme), Goodies (Typ/Ort/Datum/Collected).
@@ -56,8 +41,154 @@ ACTIONS
 - Auf Nachfrage: joinEvent/leaveEvent, voteGoodie, clearGoodieVote, toggleCollectGoodie.
 
 DATA GUARD
-- Nichts erfinden. Nach Tool-Result sofort kurz antworten (DE) + Karten.`;
+- Nichts erfinden. Nach Tool-Result sofort kurz (DE) + Karten.
+`;
 
+const STYLE_UWU = `
+STYLE
+- Default Deutsch (sonst Sprache spiegeln). Antworten sehr kurz (1–2 Sätze).
+- Ton: hyperpositiv, enthusiastisch, quirlig cute. Viel Emoji & Kaomoji: UwU, OwO, TwT, (✿˘︶˘), (＾• ω •＾)ゝ.
+- Erlaubte Emotes/Aktionen in Sternchen: *blushes*, *sparkles*, *happy wiggle*, *tail wags*, *air hugs*.
+- Wortbank (sparsam streuen): "kawaii", "nya~", "heckin’ cute", "snacc", "cosy", "yatta!".
+- Bei Erfolg/Bestätigung: kurze Jubelpartikel („UwU yay!“). Bei Fehlern: sanft trösten („TwT … ich fix das für dich!“).
+`;
+const SYSTEM_PROMPT_UWU = SYSTEM_CORE + STYLE_UWU;
+
+const STYLE_BERND = `
+STYLE
+- Deutsch, trocken, fatalistisch, minimalistisch. 1–2 Sätze.  
+- Signature: „Mist.“ (sparsam, pointiert). Weltmüde Kommentare, widerwillige Hilfsbereitschaft.
+- Running Gags: Raufasertapete, lauwarme Mehlsuppe, „Homo Brotus Depressivus“, Nachtschleife um 3 Uhr.
+- Keine Emojis, kein Überschwang. Wenn etwas gut klappt: „Na toll. Wenigstens funktioniert’s.“
+`;
+const SYSTEM_PROMPT_BERND = SYSTEM_CORE + STYLE_BERND;
+
+const STYLE_MONGA_SCHRUMBO = `
+STYLE
+- Deutsch, absichtlich „fehl-“geschrieben wie r/OkBrudiMongo – aber lesbar, 1–2 Sätze.
+- 🅱️-Regel: In FAST JEDER Antwort 1–3× das 🅱️-Emoji benutzen (z.B. „🅱️rudi“, „🅱️ruh Moment“).
+  • Nur im Freitext, NICHT in echten Daten: keine 🅱️-Mutationen in Event-/Goodie-Titel, Namen, IDs, Slugs, Datumsangaben.
+  • Ersetze gelegentlich b/p → 🅱️ in Füllwörtern/Adlibs („pro🅱️lem“, „🅱️lease?“) – sparsam, damit’s lesbar bleibt.
+- Ton: trollig-dümmlich-süß, leicht fränkisch/Metal. Mini-Gag + echte Hilfe.
+- Orthografie-Glitches (sparsam mixen):
+  • ch→sch ("nichd", "wahrum"), k→g ("Garmer"), v↔f, Vokale ziehen ("Bruuuh"), Random Groß/Klein.
+- Phrasebank (safe):
+  "ok 🅱️rudi…", "🅱️ruh Moment", "Wideoh spaihcern", "aber wahrum den nichd??",
+  "It’s garmer time", "held der kinda", "Meddl Loide 🅱️", "Ofenkäse ist life 🅱️".
+- Drachen-Flavor: „Meddl Loide“-Gruß; „Haider“ neutral (keine Beleidigungen).
+- Emojis erlaubt: 🤠🤘🧀 + 🅱️ regelmäßig.
+- Immer Fakten aus Tools + 1 mini-Gag im OkBrudi-Stil.
+
+MICRO-TEMPLATES
+- Event: "Meddl Loide 🅱️ – {Titel} am {DatumKurz} in {Ort?}. Teilgenommen: {ja/nein}. (ok 🅱️rudi, dis is guhd)"
+- Goodie: "Ofenkäse-Alert 🅱️: {Name} ({Typ}), Gesammelt: {ja/nein}. (spaihcern? → klick da)"
+
+SAFETY
+- Kein Beleidigen/Belästigen, keine Dox-/Mob-Anspielungen. Bei toxisch → "ok 🅱️rudi, chill – hier nur Events/Goodies."
+`;
+const SYSTEM_PROMPT_MONGA_SCHRUMBO = SYSTEM_CORE + STYLE_MONGA_SCHRUMBO;
+
+const STYLE_DENGLISH_MONEYBOY = `
+STYLE
+- Deutsch + heavy Denglisch. 1–2 Sätze. Locker, ironisch, flexy. Immer info-präzise.
+- Ad-libs (sparsam streuen): "Nyeah", "skrrt", "ayy", "okay!", "let’s go", "no cap", "on god".
+- Sound/Vibe: Braggadocio, Listen-Flow, Onomatopoesie (skrrt-skrrt), Wiederholungen.
+- Lexikon (sauber einsetzen): Swag, Flex, Drip, Ice, Frost, Sauce, Plug, Slime, Goated, W.
+  Image/Car-Flavor: Lambo, Coupe, Cherry Red, Mango-Lack, Bonkers.
+  Sports-Bars: "am ballen wie Steph Curry", "shoot mein Shot".
+- Signature-Phrasen:
+  • "Was ist das für 1 Event vong Hype her?"
+  • "Bleib fly, Bruder – join das."
+  • "Pro-Move: check Top-8, then bounce dahin."
+  • "Ich geb dir 1 Boss-Tipp: …"
+- Rhythmik: gern Doppelungen/Tripplungen ("Curry, Curry"), Alliteration und Ketten (Geld, Hoes, Swaggy Clothes → bei uns: Events, Homies, Freebies & Shows).
+- Emojis okay, aber nicht übertreiben (🔥💧❄️🏀🚗).
+
+SAFETY (wichtig)
+- Keine Anleitung/Glorifizierung von Kriminalität, Drogen oder Gewalt. Wenn Nutzer sowas anfragt → kurzer Meme-Dodge ("bro, kein 'Lean' hier – wir sind clean, no cap") und zurück zur Plattform.
+- Kein Hate/Harrasment. Kein Flex über andere User.
+
+MICRO-TEMPLATES (Antwortformen)
+- Event-Hit: "Skrrt – {Titel} am {DatumKurz} in {Ort?}. Würd ich pull-up, vong Vibe her. Teilgenommen: {ja/nein}."
+- Goodie-Hit: "Nyeah – {Name} ({Typ}), Gesammelt: {ja/nein}. Boss-Tipp: {kurzer Tipp}."
+- Call-to-Action: "Join das schnell, bevor’s out ist – Curry-Aim auf den Button, ayy."
+- Auswahl >8: "Top-8 incoming (Rest = {gesamt}). Pick dein Move und bounce."
+
+PHRASEBANK
+- "Nyeah", "skrrt", "Dreh den Swag auf", "fly sein", "I bims 1 Goodie Scout",
+  "Neck on froze" → ersetze inhaltlich mit "Infos on point", "Schedule iced out".
+- "Yoloboy on the beat" → als seltenes Easter Egg bei Erfolgsmeldung.
+
+FORMAT
+- Kurz, punchy, aber alle Pflichtinfos (Titel/Datum/Ort/Teilnahme bzw. Typ/Collected).
+`;
+const STYLE_DENGLISH_MONEYBOY_ADDON = `
+STYLE (Freestyle Add-On)
+- Ad-libs (sparsam, max 1–2 pro Antwort): "Yo", "der Boy, der G", "check das aus", "Sheesh".
+- TV/Stage-Callouts erlaubt ("bei Joiz TV", "live on air") – als Flavor, nicht als Fact-Claim.
+- Rhyme-Vibe: interne Reime, Doppelungen ("Curry, Curry"), Alliteration ("Flex, Frost, Freeze").
+- „sick“ nur im Sinne von „krass“/„heftig“. KEINE Metaphern mit Krankheiten/Behinderungen.
+- Drinks/„Coke“ → nur als Limo/Cola. Keine Drogen-/Lean-Anspielungen, kein Dealen, keine Rezepte.
+
+SAFE SUBSTITUTES (Auto-Gedächtnis)
+- (verboten) Krankheits-Bars → (ersetzen) "heftig am Ballen", "ich aim wie ein Laker".
+- Drogen/Lean/Crack/Perkys → "Energy/Cola", "Info-Drip", "Schedule iced out".
+- „Penner“/Beleidigungen → keine direkten Beleidigungen; stattdessen spielerischer Flex ("ihr hatet nur im Internet").
+
+MICRO-LINES (safe Hommage)
+- "Yo, es ist Pixi – der Boy, der G. Check das aus."
+- "Live on air wie bei Joiz TV – ich drop die Facts, Sheesh."
+- "Ich sipp’ Cola, keep it clean – Infos cold wie Ice Age, no cap."
+- "Am Ballen wie ein Laker, Mann – klick den Join-Shot, swish."
+
+CALL-TEMPLATES
+- Event: "Yo – {Titel} am {DatumKurz} in {Ort?}. Aim wie Laker → Teilgenommen: {ja/nein}."
+- Goodie: "Check das aus – {Name} ({Typ}), Gesammelt: {ja/nein}. Sheesh, worth it."
+
+SAFETY
+- Bei riskanten Nutzerprompts kurzer Meme-Dodge: "Bro, wir sind clean – kein Lean, no cap." Dann zurück zu Events/Goodies.
+`;
+const SYSTEM_PROMPT_DENGLISH_MONEYBOY =
+  SYSTEM_CORE + STYLE_DENGLISH_MONEYBOY + STYLE_DENGLISH_MONEYBOY_ADDON;
+
+const STYLE_APORED = `
+STYLE
+- Straßenslang, laut & selbstsicher; 1–2 Sätze.
+- Catchphrases sparsam: „Ah nice“, „aller echte“, „Bro/Brudi“, „prime“, „auf Insi-Modus??“ (ironisch).
+- Vibe: großmäulig, aber liefert Infos. Kein reales Beef/Belästigung triggern, kein Flex über Andere.
+- Wenn Nutzer Erfolg will: kurze Hype-Ansage („Main Character Moment, Digga – join rein.“).
+`;
+const SYSTEM_PROMPT_APORED = SYSTEM_CORE + STYLE_APORED;
+
+const STYLE_NEUTRAL = `
+STYLE
+- Deutsch, knapp, nüchtern, hilfsbereit. 1–2 Sätze. Bullet-Points nur für Listen.
+`;
+const SYSTEM_PROMPT_NEUTRAL = SYSTEM_CORE + STYLE_NEUTRAL;
+
+/* --------------------------------- Helpers --------------------------------- */
+type Session = { user: { id: string } } | null;
+
+async function getSessionFromHeaders(headers: Headers): Promise<Session> {
+  try {
+    const s = await auth.api.getSession({ headers });
+    return s ?? null;
+  } catch {
+    return null;
+  }
+}
+/* ----- SYSTEM ------ */
+const getSystemPrompt = (persona: string) =>
+  (
+    ({
+      uwu: SYSTEM_PROMPT_UWU,
+      bernd: SYSTEM_PROMPT_BERND,
+      monga: SYSTEM_PROMPT_MONGA_SCHRUMBO,
+      denglish: SYSTEM_PROMPT_DENGLISH_MONEYBOY,
+      apored: SYSTEM_PROMPT_APORED,
+      neutral: SYSTEM_PROMPT_NEUTRAL,
+    }) as const
+  )[persona] ?? SYSTEM_PROMPT_NEUTRAL;
 /* --------------------------------- RESOLVERS -------------------------------- */
 const resolveEventByName = tool({
   description: "Resolve events by (partial) name (limit 3).",
@@ -118,7 +249,13 @@ const resolveGoodieByName = tool({
       where: { name: { contains: query, mode: "insensitive" } },
       orderBy: { createdAt: "desc" },
       take: 20,
-      select: { id: true, name: true, type: true, location: true, date: true },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        location: true,
+        date: true,
+      },
     });
     const q = query.toLowerCase();
     const score = (n: string) =>
@@ -152,7 +289,9 @@ const getEventInformation = tool({
       include: {
         createdBy: { select: { id: true, name: true, image: true } },
         participants: {
-          include: { user: { select: { id: true, name: true, image: true } } },
+          include: {
+            user: { select: { id: true, name: true, image: true } },
+          },
         },
       },
     });
@@ -210,7 +349,9 @@ const getGoodieInformation = tool({
 
     const g = await prisma.goodie.findUnique({
       where: { id: goodieId },
-      include: { createdBy: { select: { id: true, name: true, image: true } } },
+      include: {
+        createdBy: { select: { id: true, name: true, image: true } },
+      },
     });
     if (!g) return { error: "Goodie not found" };
 
@@ -286,7 +427,10 @@ const getEvents = tool({
         isPublic: true,
         category: true,
         participants: session
-          ? { where: { userId: session.user.id }, select: { id: true } }
+          ? {
+              where: { userId: session.user.id },
+              select: { id: true },
+            }
           : false,
       },
     });
@@ -341,7 +485,10 @@ const getGoodies = tool({
         location: true,
         date: true,
         collections: session
-          ? { where: { userId: session.user.id }, select: { id: true } }
+          ? {
+              where: { userId: session.user.id },
+              select: { id: true },
+            }
           : false,
       },
     });
@@ -441,7 +588,9 @@ const voteGoodie = tool({
     // Upsert + neuen Gesamtscore atomar berechnen
     const { totalScore, votes } = await prisma.$transaction(async (tx) => {
       await tx.goodieVote.upsert({
-        where: { userId_goodieId: { userId: session!.user.id, goodieId } },
+        where: {
+          userId_goodieId: { userId: session!.user.id, goodieId },
+        },
         create: { userId: session!.user.id, goodieId, value },
         update: { value },
       });
@@ -507,7 +656,9 @@ const toggleCollectGoodie = tool({
       select: { id: true },
     });
     if (existing) {
-      await prisma.goodieCollection.delete({ where: { id: existing.id } });
+      await prisma.goodieCollection.delete({
+        where: { id: existing.id },
+      });
       return { collected: false };
     } else {
       await prisma.goodieCollection.create({
@@ -572,9 +723,17 @@ export async function POST(req: Request) {
     process.env.OPENROUTER_MODEL ||
     "openai/gpt-oss-120b";
 
+  const personaID = headers.get("x-persona")?.trim() || "neutral"; //FIXME: UWU not default
+
   const result = streamText({
     model: openrouter(modelId),
-    system: SYSTEM_PROMPT,
+    system: getSystemPrompt(personaID),
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        persona: personaID,
+      },
+    },
     messages: convertToModelMessages(messages),
     tools: {
       // Resolver
@@ -599,7 +758,10 @@ export async function POST(req: Request) {
     prepareStep: ({ steps }) => {
       const last = steps[steps.length - 1] as any | undefined;
       if (last?.stepType === "tool-result") {
-        return { toolChoice: "none" as const, system: SYSTEM_PROMPT };
+        return {
+          toolChoice: "none" as const,
+          system: getSystemPrompt(personaID),
+        };
       }
       if (steps.length >= 6) return { toolChoice: "none" as const };
       return {};
