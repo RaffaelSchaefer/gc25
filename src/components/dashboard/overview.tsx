@@ -64,7 +64,194 @@ import { authClient } from "@/lib/auth-client";
 import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
 import { Response } from "@/components/ai-elements/response";
-import { AIChatCardPart } from "@/components/ai-elements/ai-chat-card-part";
+
+// Reasoning & Task Components
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ai-elements/reasoning";
+import {
+  Task,
+  TaskContent,
+  TaskItem,
+  TaskItemFile,
+  TaskTrigger,
+} from "@/components/ai-elements/task";
+
+/** Type Guard: tool-* UI parts from AI SDK */
+function isToolUIPart(part: any): part is {
+  type: string;
+  toolCallId: string;
+  state?: string;
+  output?: unknown;
+  input?: unknown;
+} {
+  return (
+    typeof part === "object" &&
+    part !== null &&
+    typeof part.type === "string" &&
+    part.type.startsWith("tool-") &&
+    typeof (part as any).toolCallId === "string"
+  );
+}
+
+/** NEW: robust task extractors (data-task, generic data, tool output) */
+function getTasksFromPart(part: any): any[] | null {
+  if (part?.type === "data-task" && Array.isArray(part?.data?.tasks)) return part.data.tasks;
+  if (part?.type === "task" && Array.isArray(part?.tasks)) return part.tasks;
+
+  const isDataType =
+    part?.type === "data" || (typeof part?.type === "string" && part.type.startsWith("data-"));
+  if (isDataType && Array.isArray(part?.data?.tasks)) return part.data.tasks;
+
+  if (isToolUIPart(part) && part?.output) {
+    const out: any = part.output;
+    if (Array.isArray(out?.tasks)) return out.tasks;
+    if (Array.isArray(out?.data?.tasks)) return out.data.tasks;
+  }
+  return null;
+}
+
+function renderTaskList(tasks: any[], keyBase: string) {
+  return (
+    <div key={keyBase} className="my-2">
+      {tasks.map((task: any, taskIdx: number) => (
+        <Task key={taskIdx} className="w-full" defaultOpen={false}>
+          <TaskTrigger title={task.title || "Task"} />
+          <TaskContent>
+            {(task.items ?? []).map((item: any, itemIdx: number) => (
+              <TaskItem key={itemIdx}>
+                {item.type === "file" && item.file ? (
+                  <TaskItemFile>{item.file.name}</TaskItemFile>
+                ) : null}
+                {item.text}
+              </TaskItem>
+            ))}
+          </TaskContent>
+        </Task>
+      ))}
+    </div>
+  );
+}
+
+/* ------------ Helper: kurze, lesbare Zeilen für bekannte Tool-Outputs ----------- */
+function toLineFromEvent(e: any, formatDateTimeFn: (iso: string) => string) {
+  const name = e.name ?? e.title ?? "Unbenannt";
+  const dt = e.startDate ? formatDateTimeFn(e.startDate) : (e.dateISO ? formatDateTimeFn(e.dateISO) : "–");
+  const loc = e.location && String(e.location).trim() ? e.location : "n/a";
+  const joined = e.joined ?? e.userJoined;
+  const joinedTxt = typeof joined === "boolean" ? (joined ? "ja" : "nein") : "n/a";
+  return `${name} – ${dt} – (Ort: ${loc}) – Teilgenommen: ${joinedTxt}`;
+}
+
+function toLineFromGoodie(g: any, formatDateTimeFn: (iso: string) => string) {
+  const name = g.name ?? "Unbenannt";
+  const type = g.type ?? "—";
+  const date = g.date ? formatDateTimeFn(g.date) : (g.createdAt ? formatDateTimeFn(g.createdAt) : "—");
+  const loc = g.location && String(g.location).trim() ? g.location : "n/a";
+  const collected = typeof g.collected === "boolean" ? (g.collected ? "ja" : "nein") : "n/a";
+  return `${name} (${type}) – ${date} – (Ort: ${loc}) – Gesammelt: ${collected}`;
+}
+
+function pretty(obj: any) {
+  try {
+    return JSON.stringify(obj, null, 2);
+  } catch {
+    return String(obj);
+  }
+}
+
+/** NEW: Tools als Task rendern */
+function renderToolAsTask(part: any, keyBase: string, formatDateTimeFn: (iso: string) => string) {
+  const toolName = String(part.type).replace(/^tool-/, "");
+  const state = part.state || "";
+  const hasError = !!(part?.output && typeof part.output === "object" && "error" in (part.output as any));
+  const titleSuffix =
+    state === "input-start" ? "• startet…" :
+    state === "input-available" ? "• Input bereit" :
+    state === "output-available" ? (hasError ? "• Fehler" : "• fertig") :
+    state ? `• ${state}` : "";
+
+  const title = `${toolName}() ${titleSuffix}`.trim();
+
+  // Versuche, „schöne“ Output-Listen zu bauen
+  const items: string[] = [];
+  if (state === "output-available" && part.output && !hasError) {
+    const out = part.output as any;
+    if (Array.isArray(out)) {
+      // Liste von Events/Goodies?
+      for (const o of out) {
+        if (o && (o.name || o.title) && (o.startDate || o.date || o.dateISO)) {
+          items.push(toLineFromEvent(o, formatDateTimeFn));
+        } else if (o && (o.name) && (o.type || o.location || o.collected)) {
+          items.push(toLineFromGoodie(o, formatDateTimeFn));
+        } else {
+          items.push(pretty(o));
+        }
+      }
+    } else if (out && typeof out === "object") {
+      // Einzelobjekt (z. B. EventCard / GoodieDto)
+      if ((out.name || out.title) && (out.startDate || out.date || out.dateISO)) {
+        items.push(toLineFromEvent(out, formatDateTimeFn));
+      } else if (out.name && (out.type || out.location || out.collected)) {
+        items.push(toLineFromGoodie(out, formatDateTimeFn));
+      } else {
+        items.push(pretty(out));
+      }
+    } else {
+      items.push(String(out));
+    }
+  }
+
+  const nestedTasks = getTasksFromPart(part);
+
+  return (
+    <Task key={keyBase} className="w-full pb-2" defaultOpen={false}>
+      <TaskTrigger title={title} />
+      <TaskContent>
+        {part.input ? (
+          <TaskItem>
+            <span className="font-medium">Input:</span>
+            <pre className="mt-1 max-h-48 overflow-auto rounded bg-muted/40 p-2 text-xs">{pretty(part.input)}</pre>
+          </TaskItem>
+        ) : null}
+
+        {hasError ? (
+          <TaskItem>
+            <span className="font-medium text-red-600">Error:</span>{" "}
+            <span className="text-red-600">{String((part.output as any).error)}</span>
+          </TaskItem>
+        ) : null}
+
+        {state === "output-available" && !hasError ? (
+          items.length ? (
+            items.map((line, idx) => <TaskItem key={`${keyBase}-out-${idx}`}>{line}</TaskItem>)
+          ) : (
+            <TaskItem>
+              <span className="font-medium">Output:</span>
+              <pre className="mt-1 max-h-48 overflow-auto rounded bg-muted/40 p-2 text-xs">{pretty(part.output)}</pre>
+            </TaskItem>
+          )
+        ) : null}
+
+        {/* Falls Tool zusätzlich eigene 'tasks' zurückgibt */}
+        {nestedTasks?.length ? (
+          <div className="mt-2 w-full">
+            {renderTaskList(nestedTasks, `${keyBase}-nested`)}
+          </div>
+        ) : null}
+
+        {/* Meta dezent */}
+        <TaskItem>
+          <span className="text-xs text-muted-foreground">
+            callId: <code>{part.toolCallId}</code>
+          </span>
+        </TaskItem>
+      </TaskContent>
+    </Task>
+  );
+}
 
 type Props = {
   days: DayBucket[];
@@ -137,9 +324,8 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
 
   const [aiOpen, setAiOpen] = useState(false);
 
-  // useChat korrekt (AI SDK 5) – eigener Input-State + Transport auf /api/ai/chat
+  // useChat korrekt (AI SDK 5)
   const [input, setInput] = useState("");
-  // Persona aus localStorage initialisieren
   const [persona, setPersonaState] = useState(() => {
     if (typeof window !== "undefined") {
       try {
@@ -150,7 +336,6 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
     }
     return "neutral";
   });
-  // Wrapper für setPersona, der auch localStorage setzt
   function setPersona(value: string) {
     setPersonaState(value);
     try {
@@ -180,10 +365,8 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
     setInput("");
   }
 
-  // Auto-Scroll wird durch Conversation (StickToBottom) gehandhabt
-
   return (
-  <section className="relative -mt-24 z-10 overflow-x-clip">
+    <section className="relative -mt-24 z-10 overflow-x-clip">
       <div className="container mx-auto px-4">
         {/* Intro */}
         <div className="mb-8 text-center">
@@ -483,9 +666,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                           };
                           const TypeIcon: Record<
                             GoodieDto["type"],
-                            React.ComponentType<{
-                              className?: string;
-                            }>
+                            React.ComponentType<{ className?: string }>
                           > = {
                             GIFT: Gift,
                             FOOD: Utensils,
@@ -597,6 +778,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
           </div>
         </div>
       </div>
+
       {/* AI Assistant Sheet */}
       <Sheet open={aiOpen} onOpenChange={setAiOpen}>
         <SheetContent
@@ -609,11 +791,15 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
               Stelle Fragen zur Planung oder bitte um Ideen.
             </SheetDescription>
           </SheetHeader>
+
           <Conversation className="mt-4 flex-1 relative">
             <ConversationContent>
-              {/* Platzhalter entfernt auf Wunsch */}
-              {messages.map((m) => {
+              {messages.map((m, idx) => {
                 const isUser = m.role === "user";
+                const isAssistant = m.role === "assistant";
+                const isLast = idx === messages.length - 1;
+                const loading = status === "submitted" || status === "streaming";
+
                 const avatarEl = isUser ? (
                   <MessageAvatar
                     src={session?.user?.image || userAvatar || ""}
@@ -625,81 +811,90 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                     <Sparkles className="w-4 h-4" />
                   </div>
                 );
+
                 const bubbleBase =
                   "relative rounded-xl border backdrop-blur-xl px-4 py-3 text-sm leading-relaxed bg-gradient-to-br shadow-sm break-words";
                 const bubbleClasses = isUser
                   ? `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`
                   : `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
+
+                const textParts = (m.parts as any[]).filter((p) => p.type === "text") as Array<{ text: string }>;
+                const finalText = textParts.map((p) => p.text ?? "").join("");
+
+                const showSpinnerInline =
+                  isAssistant && isLast && loading && finalText.trim().length === 0;
+
                 return (
-                  <Message key={m.id} from={m.role}>
-                    <MessageContent className="bg-transparent p-0">
-                      <div className={bubbleClasses}>
-                        {m.parts.map((part, i) => {
-                          if (part.type === "text") {
+                  <div key={m.id}>
+                    {/* PRE-MESSAGE: Reasoning / Tools-as-Tasks / (optional) standalone Tasks – IN ORDER */}
+                    {isAssistant && (
+                      <div className="space-y-2 mb-2">
+                        {(m.parts as any[]).map((part: any, i: number) => {
+                          if (part.type === "reasoning") {
                             return (
-                              <Response key={m.id + "-" + i}>
-                                {part.text}
-                              </Response>
+                              <Reasoning
+                                key={m.id + "-reasoning-" + i}
+                                className="w-full"
+                                isStreaming={loading && isLast}
+                              >
+                                <ReasoningTrigger />
+                                <ReasoningContent>{part.text}</ReasoningContent>
+                              </Reasoning>
                             );
                           }
-                          // Dynamische Kartenanzeige für Tool-Resultate
-                          if (
-                            [
-                              "tool-getGoodieInformation",
-                              "tool-getEventInformation",
-                            ].includes(part.type)
-                          ) {
-                            if (
-                              "state" in part &&
-                              part.state === "output-available" &&
-                              part.output &&
-                              typeof part.output === "object" &&
-                              part.output !== null &&
-                              !("error" in part.output)
-                            ) {
-                              return (
-                                <AIChatCardPart
-                                  key={part.toolCallId}
-                                  part={part}
-                                />
-                              );
-                            }
-                            if (
-                              "output" in part &&
-                              part.output &&
-                              typeof part.output === "object" &&
-                              part.output !== null &&
-                              "error" in part.output
-                            ) {
-                              return (
-                                <div key={part.toolCallId}>
-                                  Error: {String(part.output.error)}
-                                </div>
-                              );
-                            }
+
+                          if (isToolUIPart(part)) {
+                            return renderToolAsTask(part, `${m.id}-tool-${i}`, formatDateTime);
                           }
-                          return null;
+
+                          const tasks = getTasksFromPart(part);
+                          if (tasks?.length) return renderTaskList(tasks, `${m.id}-tasks-${i}`);
+
+                          return null; // text etc. kommt in die Final-Bubble
                         })}
                       </div>
-                    </MessageContent>
-                    {avatarEl}
-                  </Message>
+                    )}
+
+                    {/* FINAL MESSAGE BUBBLE */}
+                    <Message from={m.role}>
+                      <MessageContent className="bg-transparent p-0">
+                        <div className={bubbleClasses}>
+                          {showSpinnerInline ? (
+                            <div className="flex justify-center items-center">
+                              <svg
+                                className="animate-spin h-6 w-6 text-fuchsia-500"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-20"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                />
+                                <path
+                                  className="opacity-70"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                />
+                              </svg>
+                            </div>
+                          ) : isAssistant ? (
+                            <Response key={m.id}>{finalText}</Response>
+                          ) : (
+                            textParts.map((p, i2) => (
+                              <Response key={m.id + "-" + i2}>{p.text}</Response>
+                            ))
+                          )}
+                        </div>
+                      </MessageContent>
+                      {avatarEl}
+                    </Message>
+                  </div>
                 );
               })}
-              {status === "submitted" && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <Response>Wird gesendet…</Response>
-                  </MessageContent>
-                </Message>
-              )}
-              {status === "streaming" && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <Response>…</Response>
-                  </MessageContent>
-                </Message>
-              )}
               {error && (
                 <Message from="assistant">
                   <MessageContent>
@@ -712,6 +907,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
             </ConversationContent>
             <ConversationScrollButton />
           </Conversation>
+
           <PromptInput
             onSubmit={onSubmit}
             className="mt-4 mb-2 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
@@ -774,11 +970,9 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                 status={status}
                 variant="default"
               />
-              {/* Schließen Button entfernt wie gewünscht; Sheet kann per Outside Click / ESC geschlossen werden */}
             </PromptInputToolbar>
           </PromptInput>
         </SheetContent>
       </Sheet>
     </section>
   );
-}

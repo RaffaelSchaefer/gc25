@@ -1,3 +1,271 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const TOOL_BUDGET = 6;
+// Neue/erweiterte Resolver
+const resolveGoodieBySlug = tool({
+  description: "Resolve a single goodie by slug.",
+  inputSchema: z.object({ slug: z.string().trim().min(1) }),
+  execute: async ({ slug }) =>
+    (await prisma.goodie.findFirst({
+      where: {
+        // slug,
+        name: slug, // fallback: notfalls Name exact
+      },
+      select: { id: true, name: true },
+    })) ?? { error: "Goodie not found" },
+});
+
+const resolveEventById = tool({
+  description: "Resolve event by ID (light).",
+  inputSchema: z.object({ id: z.string().uuid() }),
+  execute: async ({ id }) =>
+    (await prisma.event.findUnique({
+      where: { id },
+      select: { id: true, name: true, slug: true },
+    })) ?? { error: "Event not found" },
+});
+
+const resolveGoodieById = tool({
+  description: "Resolve goodie by ID (light).",
+  inputSchema: z.object({ id: z.string().uuid() }),
+  execute: async ({ id }) =>
+    (await prisma.goodie.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    })) ?? { error: "Goodie not found" },
+});
+
+// Participants & Stats
+const getEventParticipants = tool({
+  description: "List participants for an event (top N) + total count.",
+  inputSchema: z.object({
+    eventId: z.string().min(1),
+    limit: z.number().int().min(1).max(24).default(8),
+  }),
+  execute: async ({ eventId, limit }, options) =>
+    fromCache(options, `evt:participants:${eventId}:${limit}`, async () => {
+      const rows = await prisma.eventParticipant.findMany({
+        where: { eventId },
+        take: limit,
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      });
+      const total = await prisma.eventParticipant.count({ where: { eventId } });
+      return {
+        total,
+        participants: rows.map((p) => ({
+          id: p.user.id,
+          name: p.user.name,
+          image: p.user.image ?? null,
+        })),
+      };
+    }),
+});
+
+const getStats = tool({
+  description: "Quick stats (counts) for dashboard-ish summaries.",
+  inputSchema: z.object({}),
+  execute: async () => {
+    const [events, goodies, votes] = await Promise.all([
+      prisma.event.count(),
+      prisma.goodie.count(),
+      prisma.goodieVote.count(),
+    ]);
+    return { events, goodies, votes };
+  },
+});
+
+// Advanced Listings
+const getEventsAdvanced = tool({
+  description: "Advanced event listing with filters.",
+  inputSchema: z.object({
+    category: z.nativeEnum(
+      { MEETUP:"MEETUP", EXPO:"EXPO", FOOD:"FOOD", PARTY:"PARTY", TRAVEL:"TRAVEL", TOURNAMENT:"TOURNAMENT" } as const
+    ).optional(),
+    dateFrom: z.string().datetime().optional(),
+    dateTo: z.string().datetime().optional(),
+    mineOnly: z.boolean().optional(),
+    joinedOnly: z.boolean().optional(),
+    search: z.string().trim().min(1).max(200).optional(),
+    limit: z.number().int().min(1).max(100).default(20),
+  }),
+  execute: async (args, options) => {
+    const ctx = ctxOf(options);
+    const where: any = {};
+    if (args.category) where.category = args.category;
+    if (args.search) where.name = { contains: args.search, mode: "insensitive" };
+    if (args.dateFrom || args.dateTo) {
+      where.startDate = {};
+      if (args.dateFrom) where.startDate.gte = new Date(args.dateFrom);
+      if (args.dateTo) where.startDate.lte = new Date(args.dateTo);
+    }
+    if (!ctx.session) where.isPublic = true;
+
+    const baseSelect: any = {
+      id: true, name: true, startDate: true, endDate: true, location: true,
+      isPublic: true, category: true, createdById: true,
+    };
+
+    if (args.mineOnly || args.joinedOnly) {
+      if (!ctx.session) return { error: "auth-required" };
+    }
+    if (args.mineOnly && ctx.session) where.createdById = ctx.session.user.id;
+
+    const rows = await prisma.event.findMany({
+      where,
+      orderBy: { startDate: "asc" },
+      take: args.limit,
+      ...(args.joinedOnly && ctx.session
+        ? {
+          include: {
+            participants: {
+              where: { userId: ctx.session.user.id },
+              select: { id: true },
+            },
+          },
+        }
+        : { select: baseSelect }),
+      include: {
+        participants: {
+          where: {
+            userId: ""
+          },
+          select: {
+            id: true
+          }
+        }
+      }
+    });
+
+    const mapped = rows.map((e: any) => ({
+      id: e.id,
+      name: e.name,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      location: e.location,
+      isPublic: e.isPublic,
+      category: e.category,
+      joined: !!(
+        ctx.session &&
+        Array.isArray((e as any).participants) &&
+        e.participants.length > 0
+      ),
+      createdByMe: !!(ctx.session && e.createdById === ctx.session.user.id),
+    }));
+
+    return mapped;
+  },
+});
+
+// „Meine…“ Tools
+const getMyEvents = tool({
+  description: "List events the current user joined or created.",
+  inputSchema: z.object({
+    role: z.enum(["joined", "created"]).default("joined"),
+    limit: z.number().int().min(1).max(50).default(20),
+  }),
+  execute: async ({ role, limit }, options) => {
+    const ctx = ctxOf(options);
+    const err = assertAuthSession(ctx);
+    if (err) return err;
+
+    if (role === "created") {
+      const rows = await prisma.event.findMany({
+        where: { createdById: ctx.session!.user.id },
+        orderBy: { startDate: "asc" },
+        take: limit,
+        select: { id: true, name: true, startDate: true, endDate: true, location: true, category: true },
+      });
+      return rows.map((e) => ({ ...e, joined: true, createdByMe: true }));
+    }
+
+    const rows = await prisma.eventParticipant.findMany({
+      where: { userId: ctx.session!.user.id },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: { event: { select: { id: true, name: true, startDate: true, endDate: true, location: true, category: true } } },
+    });
+    return rows.map((p) => ({
+      id: p.event.id, name: p.event.name, startDate: p.event.startDate, endDate: p.event.endDate,
+      location: p.event.location, category: p.event.category, joined: true, createdByMe: false,
+    }));
+  },
+});
+
+const getMyGoodies = tool({
+  description: "List goodies collected/created by current user.",
+  inputSchema: z.object({
+    role: z.enum(["collected", "created"]).default("collected"),
+    limit: z.number().int().min(1).max(50).default(20),
+  }),
+  execute: async ({ role, limit }, options) => {
+    const ctx = ctxOf(options);
+    const err = assertAuthSession(ctx);
+    if (err) return err;
+
+    if (role === "created") {
+      const rows = await prisma.goodie.findMany({
+        where: { createdById: ctx.session!.user.id },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        select: { id: true, name: true, type: true, location: true, date: true },
+      });
+      return rows.map((g) => ({ ...g, collected: true }));
+    }
+
+    const rows = await prisma.goodieCollection.findMany({
+      where: { userId: ctx.session!.user.id },
+      orderBy: { collectedAt: "desc" },
+      take: limit,
+      include: { goodie: { select: { id: true, name: true, type: true, location: true, date: true } } },
+    });
+    return rows.map((c) => ({ ...c.goodie, collected: true }));
+  },
+});
+
+// Event-Kommentare (CRUD light, nur Event)
+const listEventComments = tool({
+  description: "List comments for an event (newest first).",
+  inputSchema: z.object({ eventId: z.string().min(1), limit: z.number().int().min(1).max(50).default(20) }),
+  execute: async ({ eventId, limit }) =>
+    await prisma.comment.findMany({
+      where: { eventId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: { createdBy: { select: { id: true, name: true, image: true } } },
+    }),
+});
+
+const createEventComment = tool({
+  description: "Create a comment on an event (requires auth).",
+  inputSchema: z.object({ eventId: z.string().min(1), content: z.string().trim().min(1).max(2000) }),
+  execute: async ({ eventId, content }, options) => {
+    const ctx = ctxOf(options);
+    const err = assertAuthSession(ctx);
+    if (err) return err;
+
+    const created = await prisma.comment.create({
+      data: { eventId, createdById: ctx.session!.user.id, content },
+      include: { createdBy: { select: { id: true, name: true, image: true } } },
+    });
+    return created;
+  },
+});
+
+const deleteMyEventComment = tool({
+  description: "Delete my own comment by id (requires auth).",
+  inputSchema: z.object({ commentId: z.string().uuid() }),
+  execute: async ({ commentId }, options) => {
+    const ctx = ctxOf(options);
+    const err = assertAuthSession(ctx);
+    if (err) return err;
+
+    const c = await prisma.comment.findUnique({ where: { id: commentId }, select: { createdById: true } });
+    if (!c) return { error: "not-found" };
+    if (c.createdById !== ctx.session!.user.id) return { error: "forbidden" };
+    await prisma.comment.delete({ where: { id: commentId } });
+    return { ok: true };
+  },
+});
 // apps/web/app/api/ai/route.ts
 import { streamText, UIMessage, convertToModelMessages, tool } from "ai";
 import { z } from "zod";
@@ -44,6 +312,14 @@ ACTIONS
 
 DATA GUARD
 - Nichts erfinden. Nach Tool-Result sofort kurz (DE) + Karten.
+
+TOOL POLICY
+- Wenn ein Event/Goodie erwähnt wird: zuerst eindeutig machen (ID/Slug/Name-Resolver), dann GENAU EIN mal *Information*-Tool.
+- Keine doppelten Tool-Calls zu derselben ID in einer Antwort. Nutze vorhandene Ergebnisse erneut.
+- Tool-Budget: max ${TOOL_BUDGET} Calls pro Anfrage.
+- Für "meine" Daten: getMyEvents / getMyGoodies.
+- Für Listen mit Filtern: getEventsAdvanced.
+- Teilnehmerliste nur auf Nachfrage: getEventParticipants(limit=8).
 `;
 
 const STYLE_UWU = `
@@ -148,6 +424,35 @@ const SYSTEM_PROMPT_NEUTRAL = SYSTEM_CORE + STYLE_NEUTRAL;
 
 /* --------------------------------- Helpers --------------------------------- */
 type Session = { user: { id: string } } | null;
+
+type RunCtx = {
+  session?: Session | null;
+  headers?: Headers;
+  cache?: Map<string, any>;
+  requestId?: string;
+};
+
+function ctxOf(options: any): RunCtx {
+  return ((options as any)?.experimental_context ?? {}) as RunCtx;
+}
+
+async function fromCache<T>(
+  options: any,
+  key: string,
+  loader: () => Promise<T>,
+) {
+  const ctx = ctxOf(options);
+  if (!ctx.cache) return loader();
+  if (ctx.cache.has(key)) return ctx.cache.get(key);
+  const val = await loader();
+  ctx.cache.set(key, val);
+  return val;
+}
+
+function assertAuthSession(ctx: RunCtx) {
+  if (!ctx.session) return { error: "auth-required" } as const;
+  return null;
+}
 
 async function getSessionFromHeaders(headers: Headers): Promise<Session> {
   try {
@@ -255,62 +560,56 @@ const getEventInformation = tool({
   description: "Return EventCardEvent for a given event ID.",
   inputSchema: z.object({ eventId: z.string().min(1) }),
   execute: async ({ eventId }, options) => {
-    const ctx = (
-      options as {
-        experimental_context?: { session?: Session; headers?: Headers };
-      }
-    ).experimental_context;
-    let session = ctx?.session ?? null;
-    if (!session && ctx?.headers)
-      session = await getSessionFromHeaders(ctx.headers);
+    const ctx = ctxOf(options);
+    const session = ctx.session ?? (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
 
-    const e = await prisma.event.findUnique({
-      where: { id: eventId },
-      include: {
-        createdBy: { select: { id: true, name: true, image: true } },
-        participants: {
-          include: {
-            user: { select: { id: true, name: true, image: true } },
+    return fromCache(options, `evt:${eventId}`, async () => {
+      const e = await prisma.event.findUnique({
+        where: { id: eventId },
+        include: {
+          createdBy: { select: { id: true, name: true, image: true } },
+          participants: {
+            include: {
+              user: { select: { id: true, name: true, image: true } },
+            },
           },
         },
-      },
+      });
+      if (!e) return { error: "Event not found" };
+
+      const userJoined = !!(
+        session && e.participants.some((p) => p.userId === session.user.id)
+      );
+      const attendees = e.participants.length;
+      const participants = e.participants.slice(0, 8).map((p) => ({
+        id: p.user.id,
+        name: p.user.name,
+        image: p.user.image ?? null,
+      }));
+
+      const event = {
+        id: e.id,
+        title: e.name,
+        time: "",
+        dateISO: e.startDate.toISOString(),
+        location: e.location ?? null,
+        url: e.url ?? null,
+        description:
+          e.summary ?? (e.description ? e.description.slice(0, 240) : null),
+        attendees,
+        userJoined,
+        startDate: e.startDate.toISOString(),
+        endDate: e.endDate.toISOString(),
+        createdById: e.createdById,
+        createdBy: e.createdBy
+          ? { name: e.createdBy.name, image: e.createdBy.image ?? null }
+          : undefined,
+        category: e.category,
+        isPublic: e.isPublic,
+        participants,
+      };
+      return event;
     });
-    if (!e) return { error: "Event not found" };
-
-    const userJoined = !!(
-      session && e.participants.some((p) => p.userId === session.user.id)
-    );
-    const attendees = e.participants.length;
-    const participants = e.participants.slice(0, 8).map((p) => ({
-      id: p.user.id,
-      name: p.user.name,
-      image: p.user.image ?? null,
-    }));
-
-    // exakt das Shape, das dein <EventCard /> erwartet
-    const event = {
-      id: e.id,
-      title: e.name,
-      time: "",
-      dateISO: e.startDate.toISOString(),
-      location: e.location ?? null,
-      url: e.url ?? null,
-      description:
-        e.summary ?? (e.description ? e.description.slice(0, 240) : null),
-      attendees,
-      userJoined,
-      startDate: e.startDate.toISOString(),
-      endDate: e.endDate.toISOString(),
-      createdById: e.createdById,
-      createdBy: e.createdBy
-        ? { name: e.createdBy.name, image: e.createdBy.image ?? null }
-        : undefined,
-      category: e.category,
-      isPublic: e.isPublic,
-      participants,
-    };
-
-    return event; // Client rendert <EventCard event={event} />
   },
 });
 
@@ -318,56 +617,50 @@ const getGoodieInformation = tool({
   description: "Return GoodieDto for a given goodie ID.",
   inputSchema: z.object({ goodieId: z.string().min(1) }),
   execute: async ({ goodieId }, options) => {
-    const ctx = (
-      options as {
-        experimental_context?: { session?: Session; headers?: Headers };
-      }
-    ).experimental_context;
-    let session = ctx?.session ?? null;
-    if (!session && ctx?.headers)
-      session = await getSessionFromHeaders(ctx.headers);
+    const ctx = ctxOf(options);
+    const session = ctx.session ?? (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
 
-    const g = await prisma.goodie.findUnique({
-      where: { id: goodieId },
-      include: {
-        createdBy: { select: { id: true, name: true, image: true } },
-      },
+    return fromCache(options, `good:${goodieId}`, async () => {
+      const g = await prisma.goodie.findUnique({
+        where: { id: goodieId },
+        include: {
+          createdBy: { select: { id: true, name: true, image: true } },
+        },
+      });
+      if (!g) return { error: "Goodie not found" };
+
+      const collected =
+        !!session &&
+        !!(await prisma.goodieCollection.findFirst({
+          where: { userId: session.user.id, goodieId },
+          select: { id: true },
+        }));
+
+      const votes = await prisma.goodieVote.findMany({
+        where: { goodieId },
+        select: { value: true },
+      });
+      const totalScore = votes.reduce((a, v) => a + v.value, 0);
+
+      const goodie = {
+        id: g.id,
+        createdAt: g.createdAt.toISOString(),
+        updatedAt: g.updatedAt.toISOString(),
+        createdById: g.createdById,
+        type: g.type,
+        name: g.name,
+        location: g.location,
+        instructions: g.instructions,
+        date: g.date ? g.date.toISOString() : null,
+        registrationUrl: g.registrationUrl ?? null,
+        collected,
+        totalScore,
+        createdBy: g.createdBy
+          ? { name: g.createdBy.name, image: g.createdBy.image ?? null }
+          : undefined,
+      };
+      return goodie;
     });
-    if (!g) return { error: "Goodie not found" };
-
-    const collected =
-      !!session &&
-      !!(await prisma.goodieCollection.findFirst({
-        where: { userId: session.user.id, goodieId },
-        select: { id: true },
-      }));
-
-    const votes = await prisma.goodieVote.findMany({
-      where: { goodieId },
-      select: { value: true },
-    });
-    const totalScore = votes.reduce((a, v) => a + v.value, 0);
-
-    // Shape kompatibel zu deinem GoodieDto (Client nutzt nur `goodie`)
-    const goodie = {
-      id: g.id,
-      createdAt: g.createdAt.toISOString(),
-      updatedAt: g.updatedAt.toISOString(),
-      createdById: g.createdById,
-      type: g.type,
-      name: g.name,
-      location: g.location,
-      instructions: g.instructions,
-      date: g.date ? g.date.toISOString() : null,
-      registrationUrl: g.registrationUrl ?? null,
-      collected,
-      totalScore,
-      createdBy: g.createdBy
-        ? { name: g.createdBy.name, image: g.createdBy.image ?? null }
-        : undefined,
-    };
-
-    return goodie; // Client rendert <GoodieCard goodie={goodie} />
   },
 });
 
@@ -755,13 +1048,25 @@ export async function POST(req: Request) {
       // Resolver
       resolveEventByName,
       resolveEventBySlug,
+      resolveEventById,
       resolveGoodieByName,
-      // Cards (Client rendert diese beiden!)
+      resolveGoodieBySlug,
+      resolveGoodieById,
+      // Cards
       getEventInformation,
       getGoodieInformation,
       // Listings
       getEvents,
+      getEventsAdvanced,
       getGoodies,
+      getMyEvents,
+      getMyGoodies,
+      getEventParticipants,
+      getStats,
+      // Comments
+      listEventComments,
+      createEventComment,
+      deleteMyEventComment,
       // Actions
       joinEvent,
       leaveEvent,
@@ -769,7 +1074,7 @@ export async function POST(req: Request) {
       clearGoodieVote,
       toggleCollectGoodie,
     },
-    experimental_context: { session, headers },
+    experimental_context: { session, headers, requestId },
     stopWhen: () => false,
     prepareStep: ({ steps }) => {
       const last = steps[steps.length - 1] as any | undefined;
