@@ -754,16 +754,16 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                       Kawaii 🎀
                     </PromptInputModelSelectItem>
                     <PromptInputModelSelectItem value="bernd">
-                      Brot 🍞
+                      Bernd das Brot 🍞
                     </PromptInputModelSelectItem>
                     <PromptInputModelSelectItem value="monga">
                       Monga 🅱️
                     </PromptInputModelSelectItem>
                     <PromptInputModelSelectItem value="denglish">
-                      Denglish Vong 💸
+                      Money Boy 💸
                     </PromptInputModelSelectItem>
                     <PromptInputModelSelectItem value="apored">
-                      Insi Modus 👟
+                      ApoRed 👟
                     </PromptInputModelSelectItem>
                   </PromptInputModelSelectContent>
                 </PromptInputModelSelect>
