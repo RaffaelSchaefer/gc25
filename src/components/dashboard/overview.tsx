@@ -307,10 +307,13 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
   const joinedEvents = allEvents.filter((e) => e.userJoined).length;
 
   const now = Date.now();
-  const upcoming = allEvents
-    .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
-    .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
-    .sort((a, b) => a.ts - b.ts)[0]?.e;
+        // Filtere finale finish-Parts aus (werden nicht als Chatnachricht gerendert)
+        const isFinishPart = (part: any) =>
+          part.type === "finish" || part.type === "finish-step" || part.type === "d" || part.type === "e";
+        const upcoming = allEvents
+          .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
+          .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
+          .sort((a, b) => a.ts - b.ts)[0]?.e;
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const todayEvents = days.find((d) => d.dateISO === todayISO)?.events ?? [];
