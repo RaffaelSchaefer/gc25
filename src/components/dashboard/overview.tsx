@@ -746,7 +746,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                   <PromptInputModelSelectTrigger className="bg-transparent">
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectContent >
+                  <PromptInputModelSelectContent>
                     <PromptInputModelSelectItem value="neutral">
                       Normal
                     </PromptInputModelSelectItem>

@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     title: "GC25",
     statusBarStyle: "default",
   },
+  robots: "noindex, nofollow",
 };
 
 export function generateStaticParams() {
