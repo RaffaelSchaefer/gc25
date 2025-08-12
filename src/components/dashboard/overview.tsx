@@ -183,7 +183,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
   // Auto-Scroll wird durch Conversation (StickToBottom) gehandhabt
 
   return (
-    <section className="relative -mt-24 z-10">
+  <section className="relative -mt-24 z-10 overflow-x-clip">
       <div className="container mx-auto px-4">
         {/* Intro */}
         <div className="mb-8 text-center">
@@ -260,8 +260,8 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
               <CardContent className="space-y-4">
                 {upcoming ? (
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="text-indigo-700 dark:text-indigo-300 text-lg font-semibold">
+                    <div className="space-y-2 min-w-0">
+                      <div className="text-indigo-700 dark:text-indigo-300 text-lg font-semibold truncate">
                         {upcoming.title}
                       </div>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -319,7 +319,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                         key={e.id}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span>{e.title}</span>
+                        <span className="min-w-0 truncate pr-2">{e.title}</span>
                         <span className="text-muted-foreground">
                           {formatTime(e.startDate)}
                         </span>
@@ -626,7 +626,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                   </div>
                 );
                 const bubbleBase =
-                  "relative rounded-xl border backdrop-blur-xl px-4 py-3 text-sm leading-relaxed bg-gradient-to-br shadow-sm";
+                  "relative rounded-xl border backdrop-blur-xl px-4 py-3 text-sm leading-relaxed bg-gradient-to-br shadow-sm break-words";
                 const bubbleClasses = isUser
                   ? `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`
                   : `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
