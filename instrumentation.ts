@@ -6,7 +6,7 @@ export function register() {
   registerOTel({
     serviceName: "gc25-ai",
     traceExporter: new LangfuseExporter({
-      debug: process.env.NODE_ENV !== "production",
+      debug: true,
     }),
   });
 }
