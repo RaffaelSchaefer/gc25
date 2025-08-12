@@ -4,6 +4,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { randomUUID } from "crypto";
+import { langfuse } from "@/lib/langfuse";
 
 /** Prisma → Node runtime */
 export const runtime = "nodejs";
@@ -675,6 +677,38 @@ export async function POST(req: Request) {
   const headers = new Headers(req.headers);
   const session = await getSessionFromHeaders(headers);
 
+  // ✨ NEU: IDs & Meta früh bestimmen
+  const requestId = headers.get("x-request-id") || randomUUID();
+  const modelId =
+    headers.get("x-model")?.trim() ||
+    process.env.OPENROUTER_MODEL ||
+    "openai/gpt-oss-120b";
+  const personaID = headers.get("x-persona")?.trim() || "neutral";
+
+  // ✨ NEU: Parent-Trace in Langfuse anlegen (klares, lesbares Naming)
+  const parentTraceId = randomUUID();
+  const firstUserMsg =
+    messages
+      ?.find((m) => m.role === "user")
+      ?.parts?.filter((p) => p.type === "text")
+      .map((p: any) => p.text)
+      .join(" ")
+      .slice(0, 140) ?? "";
+
+  langfuse.trace({
+    id: parentTraceId,
+    name: `pixi/${personaID} → ${modelId}`,
+    userId: session?.user?.id || "anon",
+    sessionId: requestId,
+    metadata: {
+      route: "/api/chat",
+      modelId,
+      persona: personaID,
+      preview: firstUserMsg,
+    },
+    tags: ["pixi", "ai-sdk", "openrouter"],
+  });
+
   // AI Rate Limitierung (Admins werden gezählt, aber nie geblockt)
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -718,20 +752,20 @@ export async function POST(req: Request) {
     }
   }
 
-  const modelId =
-    headers.get("x-model")?.trim() ||
-    process.env.OPENROUTER_MODEL ||
-    "openai/gpt-oss-120b";
-
-  const personaID = headers.get("x-persona")?.trim() || "neutral"; //FIXME: UWU not default
-
   const result = streamText({
     model: openrouter(modelId),
     system: getSystemPrompt(personaID),
     experimental_telemetry: {
       isEnabled: true,
+      functionId: `pixi-run/${personaID}`, // ✨ Root-Span-Name in Langfuse
       metadata: {
         persona: personaID,
+        // ✨ WICHTIG: Eltern-Trace verlinken + nützliche Attribute
+        langfuseTraceId: parentTraceId,
+        langfuseUpdateParent: false,
+        userId: session?.user?.id || "anon",
+        requestId,
+        modelId,
       },
     },
     messages: convertToModelMessages(messages),

@@ -2,6 +2,7 @@ import { listGoodies } from "@/app/(server)/goodies.actions";
 import GoodieTrackerClient from "./GoodieTrackerClient";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { TrackGoodieTrackerPageView } from "./TrackGoodieTrackerPageView";
 export const revalidate = 30; // ISR for now
 
 export default async function GoodieTrackerPage() {
@@ -9,9 +10,12 @@ export default async function GoodieTrackerPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   const currentUserId = session?.user?.id ?? null;
   return (
-    <GoodieTrackerClient
-      initialGoodies={goodies}
-      currentUserId={currentUserId}
-    />
+    <>
+      <TrackGoodieTrackerPageView />
+      <GoodieTrackerClient
+        initialGoodies={goodies}
+        currentUserId={currentUserId}
+      />
+    </>
   );
 }

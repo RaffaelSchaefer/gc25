@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
+import posthog from "posthog-js";
 import {
   Card,
   CardContent,
@@ -138,13 +139,34 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
 
   // useChat korrekt (AI SDK 5) – eigener Input-State + Transport auf /api/ai/chat
   const [input, setInput] = useState("");
-  const [persona, setPersona] = useState("neutral");
+  // Persona aus localStorage initialisieren
+  const [persona, setPersonaState] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem("ai-persona") || "neutral";
+      } catch {
+        return "neutral";
+      }
+    }
+    return "neutral";
+  });
+  // Wrapper für setPersona, der auch localStorage setzt
+  function setPersona(value: string) {
+    setPersonaState(value);
+    try {
+      localStorage.setItem("ai-persona", value);
+    } catch {}
+  }
   const { messages, status, error, sendMessage, regenerate, stop } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    posthog.capture("ai_message_sent", {
+      button_name: "Send",
+      page: "home",
+    });
     const value = input.trim();
     if (!value || isLoading) return;
     sendMessage(
@@ -201,7 +223,13 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                   Planung zu stellen.
                 </p>
                 <Button
-                  onClick={() => setAiOpen(true)}
+                  onClick={() => {
+                    posthog.capture("ai_assistant_opened", {
+                      button_name: "Assistent öffnen",
+                      page: "Dashboard",
+                    });
+                    setAiOpen(true);
+                  }}
                   className="px-5 bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-600 ring-1 ring-fuchsia-400/40"
                 >
                   Assistent öffnen
@@ -455,7 +483,9 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                           };
                           const TypeIcon: Record<
                             GoodieDto["type"],
-                            React.ComponentType<{ className?: string }>
+                            React.ComponentType<{
+                              className?: string;
+                            }>
                           > = {
                             GIFT: Gift,
                             FOOD: Utensils,
@@ -712,12 +742,11 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
                 <PromptInputModelSelect
                   onValueChange={(value) => setPersona(value)}
                   value={persona}
-                  className="bg-transparent"
                 >
                   <PromptInputModelSelectTrigger className="bg-transparent">
                     <PromptInputModelSelectValue />
                   </PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectContent>
+                  <PromptInputModelSelectContent >
                     <PromptInputModelSelectItem value="neutral">
                       Normal
                     </PromptInputModelSelectItem>

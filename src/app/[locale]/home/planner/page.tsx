@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { TrackPlannerPageView } from "./TrackPlannerPageView";
 import { listPublishedEvents } from "../../../(server)/events.actions";
 import { EventPlannerClient } from "./EventPlannerClient";
 import { EventPlannerSkeleton } from "./EventPlannerSkeleton";
@@ -10,6 +11,7 @@ export default async function PlannerPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <TrackPlannerPageView />
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={<EventPlannerSkeleton />}>
           <EventPlannerClient initialEvents={events} />
