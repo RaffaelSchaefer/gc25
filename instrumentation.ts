@@ -1,21 +1,22 @@
-import { LangfuseExporter } from "langfuse-vercel";
+// apps/web/instrumentation.ts
 import { registerOTel } from "@vercel/otel";
+import { LangfuseExporter } from "langfuse-vercel";
 
-export async function register() {
+export function register() {
   registerOTel({
-    serviceName: "gc25-ai-nextjs",
-    traceExporter: new LangfuseExporter(),
+    serviceName: "gc25-ai",
+    traceExporter: new LangfuseExporter({
+      debug: process.env.NODE_ENV !== "production",
+    }),
   });
-  // Initialize Socket.IO server only when running in the Node.js runtime
-  if (process.env.NEXT_RUNTIME !== "nodejs") return;
-  try {
+}
+
+//TODO Reimplement Socket IO server
+/*
+ try {
     const { ensureIOServer } = await import("./src/lib/io");
     await ensureIOServer();
   } catch {
     // ignore
   }
-}
-
-export async function instrumentationHook() {
-  return register();
-}
+*/
