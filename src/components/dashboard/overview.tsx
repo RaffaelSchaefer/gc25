@@ -976,3 +976,4 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
       </Sheet>
     </section>
   );
+}
