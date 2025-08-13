@@ -307,13 +307,14 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
   const joinedEvents = allEvents.filter((e) => e.userJoined).length;
 
   const now = Date.now();
-        // Filtere finale finish-Parts aus (werden nicht als Chatnachricht gerendert)
-        const isFinishPart = (part: any) =>
-          part.type === "finish" || part.type === "finish-step" || part.type === "d" || part.type === "e";
-        const upcoming = allEvents
-          .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
-          .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
-          .sort((a, b) => a.ts - b.ts)[0]?.e;
+  // Filtere finale finish-Parts aus (werden nicht als Chatnachricht gerendert)
+  const isFinishPart = (part: any) =>
+    part?.type === "finish" || part?.type === "finish-step" || part?.type === "d" || part?.type === "e";
+
+  const upcoming = allEvents
+    .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
+    .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
+    .sort((a, b) => a.ts - b.ts)[0]?.e;
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const todayEvents = days.find((d) => d.dateISO === todayISO)?.events ?? [];
@@ -817,85 +818,143 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
 
                 const bubbleBase =
                   "relative rounded-xl border backdrop-blur-xl px-4 py-3 text-sm leading-relaxed bg-gradient-to-br shadow-sm break-words";
-                const bubbleClasses = isUser
-                  ? `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`
-                  : `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
+                const bubbleClassesUser =
+                  `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`;
+                const bubbleClassesAssistant =
+                  `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
 
-                const textParts = (m.parts as any[]).filter((p) => p.type === "text") as Array<{ text: string }>;
-                const finalText = textParts.map((p) => p.text ?? "").join("");
+                // Sichtbare Parts in Reihenfolge (ohne finish/d/e)
+                const visibleParts = (m.parts as any[]).filter((p) => !isFinishPart(p));
 
-                const showSpinnerInline =
-                  isAssistant && isLast && loading && finalText.trim().length === 0;
+                if (isAssistant) {
+                  let printedText = false;
+
+                  return (
+                    <div key={m.id} className="space-y-2 mb-2">
+                      {visibleParts.map((part: any, i: number) => {
+                        if (part?.type === "reasoning") {
+                          return (
+                            <Reasoning
+                              key={m.id + "-reasoning-" + i}
+                              className="w-full"
+                              isStreaming={loading && isLast}
+                            >
+                              <ReasoningTrigger />
+                              <ReasoningContent>{part.text}</ReasoningContent>
+                            </Reasoning>
+                          );
+                        }
+
+                        if (isToolUIPart(part)) {
+                          return renderToolAsTask(part, `${m.id}-tool-${i}`, formatDateTime);
+                        }
+
+                        const tasks = getTasksFromPart(part);
+                        if (tasks?.length) {
+                          return (
+                            <div key={`${m.id}-tasks-${i}`} className="w-full">
+                              {renderTaskList(tasks, `${m.id}-tasks-${i}`)}
+                            </div>
+                          );
+                        }
+
+                        if (part?.type === "text") {
+                          printedText = true;
+                          const text = part.text ?? "";
+                          const showSpinner =
+                            isLast && loading && text.trim().length === 0;
+
+                          return (
+                            <Message key={`${m.id}-text-${i}`} from="assistant">
+                              <MessageContent className="bg-transparent p-0">
+                                <div className={bubbleClassesAssistant}>
+                                  {showSpinner ? (
+                                    <div className="flex justify-center items-center">
+                                      <svg
+                                        className="animate-spin h-6 w-6 text-fuchsia-500"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <circle
+                                          className="opacity-20"
+                                          cx="12"
+                                          cy="12"
+                                          r="10"
+                                          stroke="currentColor"
+                                          strokeWidth="4"
+                                          fill="none"
+                                        />
+                                        <path
+                                          className="opacity-70"
+                                          fill="currentColor"
+                                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                        />
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <Response>{text}</Response>
+                                  )}
+                                </div>
+                              </MessageContent>
+                              {avatarEl}
+                            </Message>
+                          );
+                        }
+
+                        return null;
+                      })}
+
+                      {/* Fallback: wenn noch kein Text-Part da ist, aber gestreamt wird */}
+                      {!printedText && isLast && loading ? (
+                        <Message from="assistant">
+                          <MessageContent className="bg-transparent p-0">
+                            <div className={bubbleClassesAssistant}>
+                              <div className="flex justify-center items-center">
+                                <svg
+                                  className="animate-spin h-6 w-6 text-fuchsia-500"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-20"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  />
+                                  <path
+                                    className="opacity-70"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                          </MessageContent>
+                          {avatarEl}
+                        </Message>
+                      ) : null}
+                    </div>
+                  );
+                }
+
+                // USER: eine Bubble mit den Textteilen
+                const userTextParts = (m.parts as any[]).filter((p) => p.type === "text") as Array<{ text: string }>;
+                const finalText = userTextParts.map((p) => p.text ?? "").join("");
 
                 return (
-                  <div key={m.id}>
-                    {/* PRE-MESSAGE: Reasoning / Tools-as-Tasks / (optional) standalone Tasks – IN ORDER */}
-                    {isAssistant && (
-                      <div className="space-y-2 mb-2">
-                        {(m.parts as any[]).map((part: any, i: number) => {
-                          if (part.type === "reasoning") {
-                            return (
-                              <Reasoning
-                                key={m.id + "-reasoning-" + i}
-                                className="w-full"
-                                isStreaming={loading && isLast}
-                              >
-                                <ReasoningTrigger />
-                                <ReasoningContent>{part.text}</ReasoningContent>
-                              </Reasoning>
-                            );
-                          }
-
-                          if (isToolUIPart(part)) {
-                            return renderToolAsTask(part, `${m.id}-tool-${i}`, formatDateTime);
-                          }
-
-                          const tasks = getTasksFromPart(part);
-                          if (tasks?.length) return renderTaskList(tasks, `${m.id}-tasks-${i}`);
-
-                          return null; // text etc. kommt in die Final-Bubble
-                        })}
-                      </div>
-                    )}
-
-                    {/* FINAL MESSAGE BUBBLE */}
-                    <Message from={m.role}>
-                      <MessageContent className="bg-transparent p-0">
-                        <div className={bubbleClasses}>
-                          {showSpinnerInline ? (
-                            <div className="flex justify-center items-center">
-                              <svg
-                                className="animate-spin h-6 w-6 text-fuchsia-500"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-20"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                  fill="none"
-                                />
-                                <path
-                                  className="opacity-70"
-                                  fill="currentColor"
-                                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                />
-                              </svg>
-                            </div>
-                          ) : isAssistant ? (
-                            <Response key={m.id}>{finalText}</Response>
-                          ) : (
-                            textParts.map((p, i2) => (
+                  <Message key={m.id} from="user">
+                    <MessageContent className="bg-transparent p-0">
+                      <div className={bubbleClassesUser}>
+                        {userTextParts.length
+                          ? userTextParts.map((p, i2) => (
                               <Response key={m.id + "-" + i2}>{p.text}</Response>
                             ))
-                          )}
-                        </div>
-                      </MessageContent>
-                      {avatarEl}
-                    </Message>
-                  </div>
+                          : <Response>{finalText}</Response>}
+                      </div>
+                    </MessageContent>
+                    {avatarEl}
+                  </Message>
                 );
               })}
               {error && (
