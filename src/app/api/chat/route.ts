@@ -1174,5 +1174,5 @@ export async function POST(req: Request) {
   });
 
   // gemäß AI SDK Docs: keine UI-Registry hier
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({ sendReasoning: true });
 }
