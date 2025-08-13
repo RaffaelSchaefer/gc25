@@ -20,13 +20,12 @@ export async function generateSuggestions({
   }
   const openrouter = createOpenRouter({ apiKey: OPENROUTER_KEY });
 
-  const prompt = `
-    You generate suggestions for the user based on their user data. The suggestions should be relevant and personalized. The Topic is about the Events and goodies a person is interested in. For the Answers use this locale: ${locale}
+  // Prüfe, ob userId vorhanden ist
+  if (!session.userId) {
+    throw new Error("Session userId is undefined. Cannot fetch user data.");
+  }
 
-    USER DATA
-
-${JSON.stringify(
-  await prisma.user.findUnique({
+  const userData = await prisma.user.findUnique({
     where: { id: session.userId },
     include: {
       accounts: true,
@@ -39,9 +38,20 @@ ${JSON.stringify(
       goodieVotes: true,
       goodieCollections: true,
     },
-  }),
-)}
+  });
 
+  if (!userData) {
+    throw new Error(`No user found for id: ${session.userId}`);
+  }
+
+  const prompt = `
+You generate personalized suggestions for the user based on their stored user data. Suggestions should be relevant to the user’s interests, focusing on events and goodies they are likely to enjoy.
+Use the locale: ${locale} for all output.
+Write the suggestions from the user’s perspective, as if they are asking a question about the event or goodie.
+
+USER DATA
+
+${JSON.stringify(userData)}
     `;
 
   const resultObj = await generateObject({
@@ -52,7 +62,7 @@ ${JSON.stringify(
     prompt: prompt,
     experimental_telemetry: {
       isEnabled: true,
-      functionId: `summary/toolCalling`,
+      functionId: `generate/suggestions`,
     },
   });
 

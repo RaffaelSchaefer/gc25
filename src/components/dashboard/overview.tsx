@@ -90,6 +90,12 @@ import {
   type ToolCallSummary,
 } from "@/app/(server)/tool-summary.actions";
 
+/** 🔗 Server Action: Personalized Suggestions */
+import { generateSuggestions } from "@/app/(server)/generate-suggestions.actions";
+
+/** Suggestions UI */
+import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
+
 /** Type Guard: tool-* UI parts from AI SDK */
 function isToolUIPart(part: any): part is {
   type: string;
@@ -307,6 +313,48 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
     Record<string, ToolCallSummary>
   >({});
   const inFlight = useRef<Set<string>>(new Set());
+
+  /** Personalized AI suggestions */
+  const [sugs, setSugs] = useState<string[]>([]);
+  const [sugsLoading, setSugsLoading] = useState(false);
+  const [sugsError, setSugsError] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
+
+  const fetchSuggestions = async () => {
+    if (!session?.user || fetchedRef.current) return;
+    try {
+      setSugsLoading(true);
+      setSugsError(null);
+      const items = await generateSuggestions({
+        session: session.session,
+        locale,
+      });
+      setSugs(items ?? []);
+      fetchedRef.current = true;
+      posthog.capture("ai_suggestions_loaded", { count: items?.length ?? 0 });
+    } catch (e: any) {
+      setSugsError(e?.message || "Konnte Vorschläge nicht laden.");
+    } finally {
+      setSugsLoading(false);
+    }
+  };
+
+  /** Load suggestions once when the sheet is opened (and we have a session) */
+  useEffect(() => {
+    if (aiOpen && session?.user && !fetchedRef.current) {
+      fetchSuggestions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiOpen, session?.user?.id, locale]);
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (!suggestion || isLoading) return;
+    posthog.capture("ai_suggestion_clicked", { suggestion });
+    sendMessage(
+      { role: "user", parts: [{ type: "text", text: suggestion }] },
+      { headers: { "x-persona": persona } },
+    );
+  };
 
   /** Server-Action nur für finale Toolcalls; währenddessen nur Skeleton */
   useEffect(() => {
@@ -962,9 +1010,39 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
             <ConversationScrollButton />
           </Conversation>
 
+          {/* Personalized Suggestions Row */}
+          <div className="mt-2">
+            <Suggestions className="px-1">
+              {sugsLoading && (
+                <>
+                  <Suggestion suggestion="Lade Vorschläge…" disabled />
+                </>
+              )}
+              {!sugsLoading && sugsError && (
+                <Suggestion suggestion={sugsError} disabled />
+              )}
+              {!sugsLoading &&
+                !sugsError &&
+                (sugs.length
+                  ? sugs
+                  : [
+                      "Was sind die Top-Goodies heute?",
+                      "Plane meine nächsten zwei Events",
+                      "Wo sind Free Drinks in der Nähe?",
+                    ]
+                ).map((s) => (
+                  <Suggestion
+                    key={s}
+                    suggestion={s}
+                    onClick={handleSuggestionClick}
+                  />
+                ))}
+            </Suggestions>
+          </div>
+
           <PromptInput
             onSubmit={onSubmit}
-            className="mt-4 mb-2 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
+            className="mt-2 mb-2 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
           >
             <PromptInputTextarea
               value={input}
