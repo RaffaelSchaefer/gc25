@@ -21,6 +21,7 @@ import {
   PromptInputModelSelectItem,
 } from "./prompt-input";
 import type { ToolCallSummary, ToolCallPart } from "@/app/(server)/tool-summary.actions";
+import type { UIMessage } from "ai";
 import { generateToolSummary } from "@/app/(server)/tool-summary.actions";
 import { generateSuggestions } from "@/app/(server)/generate-suggestions.actions";
 
@@ -129,19 +130,18 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
   const [sugs, setSugs] = useState<string[]>([]);
   const [sugsLoading, setSugsLoading] = useState(false);
   const [sugsError, setSugsError] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
 
-  const fetchSuggestions = async () => {
-    if (!session?.user || fetchedRef.current) return;
+  const fetchSuggestions = async (history: UIMessage[]) => {
+    if (!session?.user) return;
     try {
       setSugsLoading(true);
       setSugsError(null);
       const items = await generateSuggestions({
         session: session.session,
         locale,
+        messages: history,
       });
       setSugs(items ?? []);
-      fetchedRef.current = true;
       posthog.capture("ai_suggestions_loaded", { count: items?.length ?? 0 });
     } catch (e: any) {
       setSugsError(e?.message || "Konnte Vorschläge nicht laden.");
@@ -151,10 +151,25 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
   };
 
   useEffect(() => {
-    if (open && session?.user && !fetchedRef.current) {
-      fetchSuggestions();
+    if (open && session?.user && messages.length === 0) {
+      fetchSuggestions([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, session?.user?.id, locale]);
+
+  const lastAssistantId = useRef<string | null>(null);
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (
+      status === "ready" &&
+      last?.role === "assistant" &&
+      last.id !== lastAssistantId.current
+    ) {
+      lastAssistantId.current = last.id;
+      fetchSuggestions(messages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, status]);
 
   const handleSuggestionClick = (suggestion: string) => {
     if (!suggestion || isLoading) return;

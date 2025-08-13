@@ -2,16 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { generateObject } from "ai";
+import { generateObject, type UIMessage } from "ai";
 import { Session } from "better-auth";
 import z from "zod";
 
 export async function generateSuggestions({
   session,
   locale,
+  messages = [],
 }: {
   session: Session;
   locale: string;
+  messages?: UIMessage[];
 }) {
   const OPENROUTER_KEY =
     process.env.OPENROUTER_API_KEY ?? process.env.OPEN_ROUTER_API_KEY ?? "";
@@ -20,69 +22,72 @@ export async function generateSuggestions({
   }
   const openrouter = createOpenRouter({ apiKey: OPENROUTER_KEY });
 
-  // Prüfe, ob userId vorhanden ist
-  if (!session.userId) {
-    throw new Error("Session userId is undefined. Cannot fetch user data.");
-  }
+  let prompt = "";
 
-  const TAKE = 5;
-  const userData = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: {
-      name: true,
-      comments: {
-        select: {
-          content: true,
-          event: { select: { name: true } },
+  if (messages.length === 0) {
+    // Prüfe, ob userId vorhanden ist
+    if (!session.userId) {
+      throw new Error("Session userId is undefined. Cannot fetch user data.");
+    }
+
+    const TAKE = 5;
+    const userData = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        name: true,
+        comments: {
+          select: {
+            content: true,
+            event: { select: { name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: TAKE,
         },
-        orderBy: { createdAt: "desc" },
-        take: TAKE,
-      },
-      createdEvents: {
-        select: {
-          name: true,
-          description: true,
+        createdEvents: {
+          select: {
+            name: true,
+            description: true,
+          },
+          orderBy: { startDate: "desc" },
+          take: TAKE,
         },
-        orderBy: { startDate: "desc" },
-        take: TAKE,
-      },
-      goodies: {
-        select: {
-          name: true,
-          type: true,
-          location: true,
+        goodies: {
+          select: {
+            name: true,
+            type: true,
+            location: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: TAKE,
         },
-        orderBy: { createdAt: "desc" },
-        take: TAKE,
       },
-    },
-  });
+    });
 
-  if (!userData) {
-    throw new Error(`No user found for id: ${session.userId}`);
-  }
+    if (!userData) {
+      throw new Error(`No user found for id: ${session.userId}`);
+    }
 
-  const truncate = (s: string, len: number) =>
-    (s.length > len ? s.slice(0, len) + "…" : s);
+    const truncate = (s: string, len: number) =>
+      (s.length > len ? s.slice(0, len) + "…" : s);
 
-  const compact = {
-    name: userData.name,
-    comments: userData.comments.map((c) => ({
-      event: c.event.name,
-      content: truncate(c.content, 80),
-    })),
-    events: userData.createdEvents.map((e) => ({
-      name: e.name,
-      description: truncate(e.description, 120),
-    })),
-    goodies: userData.goodies.map((g) => ({
-      name: g.name,
-      type: g.type,
-      location: g.location,
-    })),
-  };
+    const compact = {
+      name: userData.name,
+      comments: userData.comments.map((c) => ({
+        event: c.event.name,
+        content: truncate(c.content, 80),
+      })),
+      events: userData.createdEvents.map((e) => ({
+        name: e.name,
+        description: truncate(e.description, 120),
+      })),
+      goodies: userData.goodies.map((g) => ({
+        name: g.name,
+        type: g.type,
+        location: g.location,
+      })),
+    };
 
-  const prompt = `
+    prompt = `
 Generate exactly three personalized suggestions for the user based on the data below.
 
 - Use locale: ${locale}
@@ -92,7 +97,35 @@ Generate exactly three personalized suggestions for the user based on the data b
 
 USER DATA:
 ${JSON.stringify(compact)}
-  `.trim();
+    `.trim();
+  } else {
+    const lastMessages = messages.slice(-10);
+    const serialize = (m: UIMessage) => {
+      const text = m.parts
+        .filter((p) => p.type === "text")
+        .map((p: any) => p.text)
+        .join(" ");
+      return `${m.role}: ${text}`;
+    };
+    const history = lastMessages.map(serialize).join("\n");
+    const last = lastMessages[lastMessages.length - 1];
+    const lastText = last.parts
+      .filter((p) => p.type === "text")
+      .map((p: any) => p.text)
+      .join(" ");
+
+    prompt = `
+Given the chat history below, generate exactly three concise follow-up suggestions for the user.
+
+- Use locale: ${locale}
+- Focus primarily on the latest message: "${lastText}"
+- Phrase each suggestion as a short question from the user's perspective
+- Keep suggestions short
+
+CHAT HISTORY:
+${history}
+    `.trim();
+  }
 
   const resultObj = await generateObject({
     model: openrouter("openai/gpt-4.1-nano"),
