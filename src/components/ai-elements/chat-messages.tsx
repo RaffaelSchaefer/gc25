@@ -178,7 +178,7 @@ export function ChatMessages({
   };
 
   return (
-    <Conversation className="mt-4 flex-1 relative">
+    <Conversation className="mt-4 flex-1 min-h-0 relative">
       <ConversationContent>
         {messages.map((m, idx) => {
           const isUser = m.role === "user";

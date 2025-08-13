@@ -534,7 +534,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
       <Sheet open={aiOpen} onOpenChange={setAiOpen}>
         <SheetContent
           side="right"
-          className="px-2 sm:max-w-md w-full flex flex-col"
+          className="px-2 sm:max-w-md w-full flex flex-col h-full overflow-hidden"
         >
           <SheetHeader>
             <SheetTitle>AI Assistent</SheetTitle>

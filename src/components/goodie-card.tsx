@@ -52,10 +52,18 @@ export function GoodieCard({ goodie, goodieImage }: Props) {
     },
   };
 
+  const defaultTokens = {
+    ring: "ring-muted-foreground/30",
+    gradFrom: "from-muted-foreground/10",
+    icon: "text-muted-foreground",
+    shadow: "shadow-muted-foreground/10 hover:shadow-muted-foreground/30",
+    idleArrow: "text-muted-foreground/40",
+  };
+
   const Icon =
     goodie.type === "GIFT" ? Gift : goodie.type === "FOOD" ? Utensils : CupSoda;
   const isPast = goodie.date ? new Date(goodie.date) < new Date() : false;
-  const tone = typeTokens[goodie.type];
+  const tone = typeTokens[goodie.type as keyof typeof typeTokens] ?? defaultTokens;
   const collected = goodie.collected;
   const cardRing = collected ? "ring-emerald-500/50" : tone.ring;
   const gradFrom = collected ? "from-emerald-500/15" : tone.gradFrom;
