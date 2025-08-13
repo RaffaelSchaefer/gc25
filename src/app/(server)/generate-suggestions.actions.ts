@@ -25,12 +25,36 @@ export async function generateSuggestions({
     throw new Error("Session userId is undefined. Cannot fetch user data.");
   }
 
+  const TAKE = 5;
   const userData = await prisma.user.findUnique({
     where: { id: session.userId },
-    include: {
-      comments: true,
-      createdEvents: true,
-      goodies: true,
+    select: {
+      name: true,
+      comments: {
+        select: {
+          content: true,
+          event: { select: { name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: TAKE,
+      },
+      createdEvents: {
+        select: {
+          name: true,
+          description: true,
+        },
+        orderBy: { startDate: "desc" },
+        take: TAKE,
+      },
+      goodies: {
+        select: {
+          name: true,
+          type: true,
+          location: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: TAKE,
+      },
     },
   });
 
@@ -38,21 +62,37 @@ export async function generateSuggestions({
     throw new Error(`No user found for id: ${session.userId}`);
   }
 
+  const truncate = (s: string, len: number) =>
+    (s.length > len ? s.slice(0, len) + "…" : s);
+
+  const compact = {
+    name: userData.name,
+    comments: userData.comments.map((c) => ({
+      event: c.event.name,
+      content: truncate(c.content, 80),
+    })),
+    events: userData.createdEvents.map((e) => ({
+      name: e.name,
+      description: truncate(e.description, 120),
+    })),
+    goodies: userData.goodies.map((g) => ({
+      name: g.name,
+      type: g.type,
+      location: g.location,
+    })),
+  };
+
   const prompt = `
-You generate personalized suggestions for the user based on their stored user data. Suggestions should be relevant to the user’s interests, focusing on events and goodies they are likely to enjoy.
-Use the locale: ${locale} for all output.
-Write the suggestions from the user’s perspective, as if they are asking a question about the event or goodie.
-Keep them short and specific on the data you see.
+Generate exactly three personalized suggestions for the user based on the data below.
 
-Comments: Are the comments User left on Events
-CreatedEvents: Are the Events User created
-Goodies: Are the Goodies the User created
+- Use locale: ${locale}
+- Phrase each suggestion as a short question from the user's perspective
+- Reference events or goodies when relevant
+- Keep suggestions concise
 
-
-USER DATA
-
-${JSON.stringify(userData)}
-    `;
+USER DATA:
+${JSON.stringify(compact)}
+  `.trim();
 
   const resultObj = await generateObject({
     model: openrouter("openai/gpt-4.1-nano"),
