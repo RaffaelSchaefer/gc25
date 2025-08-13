@@ -181,16 +181,18 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <ChatMessages
-        messages={messages}
-        status={status}
-        error={error}
-        session={session}
-        userAvatar={userAvatar}
-        toolSummaries={toolSummaries}
-        onRegenerate={regenerate}
-      />
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-auto">
+        <ChatMessages
+          messages={messages}
+          status={status}
+          error={error}
+          session={session}
+          userAvatar={userAvatar}
+          toolSummaries={toolSummaries}
+          onRegenerate={regenerate}
+        />
+      </div>
 
       <div className="mt-2">
         <Suggestions className="px-1">
