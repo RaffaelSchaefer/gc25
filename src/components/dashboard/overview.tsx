@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -380,6 +381,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
           const summary = await generateToolSummary({
             part: slim,
             locale,
+            session: session.session,
           });
           setToolSummaries((prev) => ({ ...prev, [id]: summary }));
         } catch (err) {

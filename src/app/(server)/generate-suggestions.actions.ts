@@ -28,15 +28,9 @@ export async function generateSuggestions({
   const userData = await prisma.user.findUnique({
     where: { id: session.userId },
     include: {
-      accounts: true,
       comments: true,
       createdEvents: true,
-      updatedEvents: true,
-      participants: true,
-      sessions: true,
       goodies: true,
-      goodieVotes: true,
-      goodieCollections: true,
     },
   });
 
@@ -48,7 +42,12 @@ export async function generateSuggestions({
 You generate personalized suggestions for the user based on their stored user data. Suggestions should be relevant to the user’s interests, focusing on events and goodies they are likely to enjoy.
 Use the locale: ${locale} for all output.
 Write the suggestions from the user’s perspective, as if they are asking a question about the event or goodie.
-Keep them short and concise.
+Keep them short and specific on the data you see.
+
+Comments: Are the comments User left on Events
+CreatedEvents: Are the Events User created
+Goodies: Are the Goodies the User created
+
 
 USER DATA
 
@@ -64,6 +63,9 @@ ${JSON.stringify(userData)}
     experimental_telemetry: {
       isEnabled: true,
       functionId: `generate/suggestions`,
+      metadata: {
+        userId: session.userId
+      }
     },
   });
 

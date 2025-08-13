@@ -2,6 +2,7 @@
 "use server";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateObject } from "ai";
+import { Session } from "better-auth";
 import z from "zod";
 
 export type ToolCallPart = {
@@ -22,9 +23,11 @@ export type ToolCallSummary = {
 export async function generateToolSummary({
   part,
   locale,
+  session
 }: {
   part: ToolCallPart;
   locale: string;
+  session: Session;
 }): Promise<ToolCallSummary> {
   const OPENROUTER_KEY =
     process.env.OPENROUTER_API_KEY ?? process.env.OPEN_ROUTER_API_KEY ?? "";
@@ -55,6 +58,9 @@ ${safe}
     experimental_telemetry: {
       isEnabled: true,
       functionId: `summary/toolCalling`,
+      metadata: {
+        userId: session.userId
+      }
     },
   });
 
