@@ -1,12 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import {
-  ctxOf,
-  fromCache,
-  getSessionFromHeaders,
-  Session,
-} from "../utils";
+import { ctxOf, fromCache, getSessionFromHeaders, Session } from "../utils";
 
 export const getEventInformation = tool({
   description: "Return EventCardEvent for a given event ID.",

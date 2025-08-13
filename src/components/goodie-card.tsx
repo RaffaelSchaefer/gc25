@@ -63,7 +63,8 @@ export function GoodieCard({ goodie, goodieImage }: Props) {
   const Icon =
     goodie.type === "GIFT" ? Gift : goodie.type === "FOOD" ? Utensils : CupSoda;
   const isPast = goodie.date ? new Date(goodie.date) < new Date() : false;
-  const tone = typeTokens[goodie.type as keyof typeof typeTokens] ?? defaultTokens;
+  const tone =
+    typeTokens[goodie.type as keyof typeof typeTokens] ?? defaultTokens;
   const collected = goodie.collected;
   const cardRing = collected ? "ring-emerald-500/50" : tone.ring;
   const gradFrom = collected ? "from-emerald-500/15" : tone.gradFrom;

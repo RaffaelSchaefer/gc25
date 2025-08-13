@@ -9,7 +9,11 @@ import {
   RefreshCcw,
   Copy,
 } from "lucide-react";
-import { Conversation, ConversationContent, ConversationScrollButton } from "./conversation";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "./conversation";
 import { Message, MessageAvatar, MessageContent } from "./message";
 import { Response } from "./response";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "./reasoning";
@@ -79,7 +83,7 @@ function renderToolAsTask(
       <TaskTrigger
         icon={
           <ToolTypeIcon
-            type={summary?.type ?? "Action"}
+            type={summary?.type || "Action"}
             className="w-4 h-4 text-muted-foreground"
           />
         }
@@ -202,7 +206,9 @@ export function ChatMessages({
           const bubbleClassesUser = `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`;
           const bubbleClassesAssistant = `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
 
-          const visibleParts = (m.parts as any[]).filter((p) => !isFinishPart(p));
+          const visibleParts = (m.parts as any[]).filter(
+            (p) => !isFinishPart(p),
+          );
 
           if (isAssistant) {
             let printedText = false;
@@ -244,50 +250,62 @@ export function ChatMessages({
                       isLast && loading && text.trim().length === 0;
 
                     return (
-                      <Message key={`${m.id}-text-${i}`} from="assistant">
-                        <MessageContent className="bg-transparent p-0">
-                          <div className={bubbleClassesAssistant}>
-                            {showSpinner ? <Spinner /> : <Response>{text}</Response>}
-                          </div>
-                          {!showSpinner && isLast && (
-                            <Actions className="mt-2">
-                              <Action
-                                onClick={() => onRegenerate?.({ messageId: m.id })}
-                                label="Regenerate"
-                                tooltip="Regenerate"
-                              >
-                                <RefreshCcw className="size-3" />
-                              </Action>
-                              <Action
-                                onClick={() => handleFeedback(m.id, "up", text)}
-                                label="Thumbs up"
-                                tooltip="Thumbs up"
-                              >
-                                <ThumbsUp className="size-3" />
-                              </Action>
-                              <Action
-                                onClick={() => handleFeedback(m.id, "down", text)}
-                                label="Thumbs down"
-                                tooltip="Thumbs down"
-                              >
-                                <ThumbsDown className="size-3" />
-                              </Action>
-                              <Action
-                                onClick={() => navigator.clipboard.writeText(text)}
-                                label="Copy"
-                                tooltip="Copy"
-                              >
-                                <Copy className="size-3" />
-                              </Action>
-                            </Actions>
-                          )}
-                        </MessageContent>
-                        {avatarEl}
-                      </Message>
+                      <>
+                        <Message key={`${m.id}-text-${i}`} from="assistant">
+                          <MessageContent className="bg-transparent p-0">
+                            <div className={bubbleClassesAssistant}>
+                              {showSpinner ? (
+                                <Spinner />
+                              ) : (
+                                <Response>{text}</Response>
+                              )}
+                            </div>
+                          </MessageContent>
+                          {avatarEl}
+                        </Message>
+                        {!showSpinner && isLast && (
+                          <Actions className="p-0 -mt-5 ml-10">
+                            <Action
+                              onClick={() =>
+                                onRegenerate?.({ messageId: m.id })
+                              }
+                              label="Regenerate"
+                              tooltip="Regenerate"
+                            >
+                              <RefreshCcw className="size-3" />
+                            </Action>
+                            <Action
+                              onClick={() => handleFeedback(m.id, "up", text)}
+                              label="Thumbs up"
+                              tooltip="Thumbs up"
+                            >
+                              <ThumbsUp className="size-3" />
+                            </Action>
+                            <Action
+                              onClick={() => handleFeedback(m.id, "down", text)}
+                              label="Thumbs down"
+                              tooltip="Thumbs down"
+                            >
+                              <ThumbsDown className="size-3" />
+                            </Action>
+                            <Action
+                              onClick={() =>
+                                navigator.clipboard.writeText(text)
+                              }
+                              label="Copy"
+                              tooltip="Copy"
+                            >
+                              <Copy className="size-3" />
+                            </Action>
+                          </Actions>
+                        )}
+                      </>
                     );
                   }
 
-                  return <AIChatCardPart key={`${m.id}-card-${i}`} part={part} />;
+                  return (
+                    <AIChatCardPart key={`${m.id}-card-${i}`} part={part} />
+                  );
                 })}
 
                 {!printedText && isLast && loading ? (
@@ -327,7 +345,9 @@ export function ChatMessages({
         {error && (
           <Message from="assistant">
             <MessageContent>
-              <div className="text-xs text-red-500">Fehler: {error.message}</div>
+              <div className="text-xs text-red-500">
+                Fehler: {error.message}
+              </div>
             </MessageContent>
           </Message>
         )}
@@ -336,4 +356,3 @@ export function ChatMessages({
     </Conversation>
   );
 }
-

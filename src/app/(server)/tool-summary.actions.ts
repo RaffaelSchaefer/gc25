@@ -23,7 +23,7 @@ export type ToolCallSummary = {
 export async function generateToolSummary({
   part,
   locale,
-  session
+  session,
 }: {
   part: ToolCallPart;
   locale: string;
@@ -40,7 +40,7 @@ export async function generateToolSummary({
   const prompt = `
 You summarize tool calls into four fields: {icon, type, label, description}.
 Write the description in first-person ("I ...") and in the user's locale: ${locale}.
-Valid "type" values: Action | Search | Upvote | Downvote.
+Valid "type" values: Search | Upvote | Downvote | Action.
 Create a readable function label from the tool name (camelCase → words), localized.
 
 TOOL CALL (JSON):
@@ -50,7 +50,7 @@ ${safe}
   const resultObj = await generateObject({
     model: openrouter("openai/gpt-4.1-nano"),
     schema: z.object({
-      type: z.enum(["Action", "Search", "Upvote", "Downvote"]),
+      type: z.enum(["Search", "Upvote", "Downvote", "Action"]),
       label: z.string().min(2).max(80),
       description: z.string().min(5).max(200),
     }),
@@ -59,8 +59,8 @@ ${safe}
       isEnabled: true,
       functionId: `summary/toolCalling`,
       metadata: {
-        userId: session.userId
-      }
+        userId: session.userId,
+      },
     },
   });
 

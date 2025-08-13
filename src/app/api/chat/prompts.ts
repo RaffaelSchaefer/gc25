@@ -133,12 +133,12 @@ const SYSTEM_PROMPT_NEUTRAL = SYSTEM_CORE + STYLE_NEUTRAL;
 
 export const getSystemPrompt = (persona: string) =>
   (
-    {
+    ({
       uwu: SYSTEM_PROMPT_UWU,
       bernd: SYSTEM_PROMPT_BERND,
       monga: SYSTEM_PROMPT_MONGA_SCHRUMBO,
       denglish: SYSTEM_PROMPT_DENGLISH_MONEYBOY,
       apored: SYSTEM_PROMPT_APORED,
       neutral: SYSTEM_PROMPT_NEUTRAL,
-    } as const
+    }) as const
   )[persona] ?? SYSTEM_PROMPT_NEUTRAL;

@@ -68,7 +68,7 @@ export async function generateSuggestions({
     }
 
     const truncate = (s: string, len: number) =>
-      (s.length > len ? s.slice(0, len) + "…" : s);
+      s.length > len ? s.slice(0, len) + "…" : s;
 
     const compact = {
       name: userData.name,
@@ -91,9 +91,10 @@ export async function generateSuggestions({
 Generate exactly three personalized suggestions for the user based on the data below.
 
 - Use locale: ${locale}
-- Phrase each suggestion as a short question from the user's perspective
+- Phrase each suggestion as a short question the user could ask the assistant
 - Reference events or goodies when relevant
 - Keep suggestions concise
+- Form sentences like "Show me...", "When is...", "Who is joining..."
 
 USER DATA:
 ${JSON.stringify(compact)}
@@ -119,7 +120,7 @@ Given the chat history below, generate exactly three concise follow-up suggestio
 
 - Use locale: ${locale}
 - Focus primarily on the latest message: "${lastText}"
-- Phrase each suggestion as a short question from the user's perspective
+- Phrase each suggestion as a short question the user could ask the assistant
 - Keep suggestions short
 
 CHAT HISTORY:
@@ -137,8 +138,8 @@ ${history}
       isEnabled: true,
       functionId: `generate/suggestions`,
       metadata: {
-        userId: session.userId
-      }
+        userId: session.userId,
+      },
     },
   });
 

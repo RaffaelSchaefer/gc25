@@ -7,10 +7,7 @@ export {
   resolveGoodieByName,
 } from "./resolvers";
 
-export {
-  getEventInformation,
-  getGoodieInformation,
-} from "./info";
+export { getEventInformation, getGoodieInformation } from "./info";
 
 export {
   getEventParticipants,

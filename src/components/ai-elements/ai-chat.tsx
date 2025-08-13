@@ -20,7 +20,10 @@ import {
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
 } from "./prompt-input";
-import type { ToolCallSummary, ToolCallPart } from "@/app/(server)/tool-summary.actions";
+import type {
+  ToolCallSummary,
+  ToolCallPart,
+} from "@/app/(server)/tool-summary.actions";
 import type { UIMessage } from "ai";
 import { generateToolSummary } from "@/app/(server)/tool-summary.actions";
 import { generateSuggestions } from "@/app/(server)/generate-suggestions.actions";
@@ -80,7 +83,9 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
     setInput("");
   }
 
-  const [toolSummaries, setToolSummaries] = useState<Record<string, ToolCallSummary>>({});
+  const [toolSummaries, setToolSummaries] = useState<
+    Record<string, ToolCallSummary>
+  >({});
   const inFlight = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -233,7 +238,9 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
           <PromptInputTools>
             <PromptInputButton
               title="Letzte Antwort neu generieren"
-              disabled={!messages.some((m) => m.role === "assistant") || isLoading}
+              disabled={
+                !messages.some((m) => m.role === "assistant") || isLoading
+              }
               onClick={() => regenerate()}
             >
               ↻
@@ -285,4 +292,3 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
 }
 
 export default AIChat;
-

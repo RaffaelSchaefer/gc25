@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  streamText,
-  UIMessage,
-  convertToModelMessages,
-} from "ai";
+import { streamText, UIMessage, convertToModelMessages } from "ai";
 import { randomUUID } from "crypto";
 import { langfuse } from "@/lib/langfuse";
 import { prisma } from "@/lib/prisma";
