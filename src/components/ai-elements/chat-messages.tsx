@@ -1,14 +1,23 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { Sparkles, ThumbsDown, ThumbsUp, Wrench } from "lucide-react";
+import {
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  Wrench,
+  RefreshCcw,
+  Copy,
+} from "lucide-react";
 import { Conversation, ConversationContent, ConversationScrollButton } from "./conversation";
 import { Message, MessageAvatar, MessageContent } from "./message";
 import { Response } from "./response";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "./reasoning";
 import { Task, TaskContent, TaskItem, TaskTrigger } from "./task";
 import { AIChatCardPart } from "./ai-chat-card-part";
+import { Actions, Action } from "./actions";
 import type { ToolCallSummary } from "@/app/(server)/tool-summary.actions";
+import { sendFeedback } from "@/app/(server)/feedback.actions";
 
 function isToolUIPart(part: any): part is {
   type: string;
@@ -137,6 +146,7 @@ export interface ChatMessagesProps {
   session: any;
   userAvatar?: string;
   toolSummaries: Record<string, ToolCallSummary>;
+  onRegenerate?: (options?: { messageId?: string }) => void;
 }
 
 export function ChatMessages({
@@ -146,8 +156,26 @@ export function ChatMessages({
   session,
   userAvatar,
   toolSummaries,
+  onRegenerate,
 }: ChatMessagesProps) {
   const loading = status === "submitted" || status === "streaming";
+
+  const handleFeedback = async (
+    messageId: string,
+    rating: "up" | "down",
+    text: string,
+  ) => {
+    try {
+      await sendFeedback({
+        session: session.session,
+        messageId,
+        rating,
+        message: text,
+      });
+    } catch (err) {
+      console.error("sendFeedback failed", err);
+    }
+  };
 
   return (
     <Conversation className="mt-4 flex-1 relative">
@@ -221,6 +249,38 @@ export function ChatMessages({
                           <div className={bubbleClassesAssistant}>
                             {showSpinner ? <Spinner /> : <Response>{text}</Response>}
                           </div>
+                          {!showSpinner && isLast && (
+                            <Actions className="mt-2">
+                              <Action
+                                onClick={() => onRegenerate?.({ messageId: m.id })}
+                                label="Regenerate"
+                                tooltip="Regenerate"
+                              >
+                                <RefreshCcw className="size-3" />
+                              </Action>
+                              <Action
+                                onClick={() => handleFeedback(m.id, "up", text)}
+                                label="Thumbs up"
+                                tooltip="Thumbs up"
+                              >
+                                <ThumbsUp className="size-3" />
+                              </Action>
+                              <Action
+                                onClick={() => handleFeedback(m.id, "down", text)}
+                                label="Thumbs down"
+                                tooltip="Thumbs down"
+                              >
+                                <ThumbsDown className="size-3" />
+                              </Action>
+                              <Action
+                                onClick={() => navigator.clipboard.writeText(text)}
+                                label="Copy"
+                                tooltip="Copy"
+                              >
+                                <Copy className="size-3" />
+                              </Action>
+                            </Actions>
+                          )}
                         </MessageContent>
                         {avatarEl}
                       </Message>

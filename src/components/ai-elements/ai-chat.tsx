@@ -189,6 +189,7 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
         session={session}
         userAvatar={userAvatar}
         toolSummaries={toolSummaries}
+        onRegenerate={regenerate}
       />
 
       <div className="mt-2">
