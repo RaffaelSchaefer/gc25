@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import posthog from "posthog-js";
@@ -27,9 +26,6 @@ import {
   CheckCircle2,
   Utensils,
   CupSoda,
-  ThumbsUp,
-  ThumbsDown,
-  Wrench,
 } from "lucide-react";
 import type { DayBucket } from "@/app/(server)/events.actions";
 import type { GoodieDto } from "@/app/(server)/goodies.actions";
@@ -42,158 +38,10 @@ import {
 } from "@/components/ui/sheet";
 
 // AI Chat UI Primitives
-import { useChat } from "@ai-sdk/react";
-import {
-  Conversation,
-  ConversationContent,
-  ConversationScrollButton,
-} from "@/components/ai-elements/conversation";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-  PromptInputSubmit,
-  PromptInputButton,
-  PromptInputModelSelect,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-} from "@/components/ai-elements/prompt-input";
-import {
-  Message,
-  MessageContent,
-  MessageAvatar,
-} from "@/components/ai-elements/message";
 import { authClient } from "@/lib/auth-client";
 import { createAvatar } from "@dicebear/core";
 import { adventurer } from "@dicebear/collection";
-import { Response } from "@/components/ai-elements/response";
-
-// Reasoning & Task Components
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
-import {
-  Task,
-  TaskContent,
-  TaskItem,
-  TaskTrigger,
-} from "@/components/ai-elements/task";
-
-/** 🔗 Server Action: Tool-Summary */
-import {
-  generateToolSummary,
-  type ToolCallPart,
-  type ToolCallSummary,
-} from "@/app/(server)/tool-summary.actions";
-
-/** 🔗 Server Action: Personalized Suggestions */
-import { generateSuggestions } from "@/app/(server)/generate-suggestions.actions";
-
-/** Suggestions UI */
-import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
-
-/** Type Guard: tool-* UI parts from AI SDK */
-function isToolUIPart(part: any): part is {
-  type: string;
-  toolCallId: string;
-  state?: string;
-  output?: unknown;
-  input?: unknown;
-} {
-  return (
-    typeof part === "object" &&
-    part !== null &&
-    typeof part.type === "string" &&
-    part.type.startsWith("tool-") &&
-    typeof (part as any).toolCallId === "string"
-  );
-}
-
-// remove leading "analysis:" / "final:" incl. **Final:**, Final —, etc.
-function stripLeadTags(s?: string) {
-  if (!s) return "";
-  return s.replace(/^\s*(\*{0,2})?(analysis|final)(\*{0,2})?\s*[:\-—]\s*/i, "");
-}
-
-/** Lucide-Icon passend zum Summary-Typ (Search nutzt jetzt Action/Wrench) */
-function ToolTypeIcon({
-  type,
-  className,
-}: {
-  type: ToolCallSummary["type"];
-  className?: string;
-}) {
-  switch (type) {
-    case "Upvote":
-      return <ThumbsUp className={className} aria-hidden />;
-    case "Downvote":
-      return <ThumbsDown className={className} aria-hidden />;
-    case "Search":
-    case "Action":
-    default:
-      return <Wrench className={className} aria-hidden />;
-  }
-}
-
-/** Tools als Task rendern – nur Server-Action-Output, sonst Skeleton */
-function renderToolAsTask(
-  part: any,
-  keyBase: string,
-  _formatDateTimeFn: (iso: string) => string,
-  summary?: ToolCallSummary,
-) {
-  const toolName = String(part.type).replace(/^tool-/, "");
-  const humanLabel = toolName.replace(/([a-z])([A-Z])/g, "$1 $2");
-  const isFinal = part?.state === "output-available";
-
-  const title = isFinal
-    ? summary?.label
-      ? stripLeadTags(summary.label)
-      : humanLabel
-    : `Running task: ${humanLabel}`;
-
-  return (
-    <Task key={keyBase} className="w-full pb-2" defaultOpen={false}>
-      <TaskTrigger
-        icon={
-          <ToolTypeIcon
-            type={summary?.type ?? "Action"}
-            className="w-4 h-4 text-muted-foreground"
-          />
-        }
-        title={title}
-      />
-      <TaskContent>
-        {!isFinal ? (
-          <TaskItem>
-            <div className="w-full rounded-md border border-muted-foreground/20 bg-muted/30 p-3">
-              <div className="animate-pulse space-y-2">
-                <div className="h-3 w-1/3 rounded bg-muted-foreground/30" />
-                <div className="h-3 w-2/3 rounded bg-muted-foreground/20" />
-                <div className="text-xs text-muted-foreground/80 mt-1">
-                  running task…
-                </div>
-              </div>
-            </div>
-          </TaskItem>
-        ) : (
-          <TaskItem>
-            {summary?.description ? (
-              <div className="mt-1 text-sm opacity-80">
-                {stripLeadTags(summary.description)}
-              </div>
-            ) : null}
-          </TaskItem>
-        )}
-      </TaskContent>
-    </Task>
-  );
-}
+import { AIChat } from "@/components/ai-elements/ai-chat";
 
 type Props = {
   days: DayBucket[];
@@ -239,8 +87,6 @@ function formatTime(iso: string) {
 
 export default function DashboardOverview({ days, goodies = [] }: Props) {
   const { data: session } = authClient.useSession();
-  const locale = useLocale() ?? "de";
-
   const userAvatar = session?.user
     ? createAvatar(adventurer, {
         seed: session.user.name ?? session.user.email ?? "user",
@@ -252,12 +98,6 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
   const joinedEvents = allEvents.filter((e) => e.userJoined).length;
 
   const now = Date.now();
-  const isFinishPart = (part: any) =>
-    part?.type === "finish" ||
-    part?.type === "finish-step" ||
-    part?.type === "d" ||
-    part?.type === "e";
-
   const upcoming = allEvents
     .map((e) => ({ e, ts: new Date(e.startDate).getTime() }))
     .filter(({ ts }) => !Number.isNaN(ts) && ts >= now)
@@ -273,135 +113,6 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
     .slice(0, 3);
 
   const [aiOpen, setAiOpen] = useState(false);
-
-  const [input, setInput] = useState("");
-  const [persona, setPersonaState] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        return localStorage.getItem("ai-persona") || "neutral";
-      } catch {
-        return "neutral";
-      }
-    }
-    return "neutral";
-  });
-  function setPersona(value: string) {
-    setPersonaState(value);
-    try {
-      localStorage.setItem("ai-persona", value);
-    } catch {}
-  }
-  const { messages, status, error, sendMessage, regenerate, stop } = useChat();
-  const isLoading = status === "submitted" || status === "streaming";
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    posthog.capture("ai_message_sent", {
-      button_name: "Send",
-      page: "home",
-    });
-    const value = input.trim();
-    if (!value || isLoading) return;
-    sendMessage(
-      { role: "user", parts: [{ type: "text", text: value }] },
-      { headers: { "x-persona": persona } },
-    );
-    setInput("");
-  }
-
-  /** Summary-Cache + de-dupe */
-  const [toolSummaries, setToolSummaries] = useState<
-    Record<string, ToolCallSummary>
-  >({});
-  const inFlight = useRef<Set<string>>(new Set());
-
-  /** Personalized AI suggestions */
-  const [sugs, setSugs] = useState<string[]>([]);
-  const [sugsLoading, setSugsLoading] = useState(false);
-  const [sugsError, setSugsError] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
-
-  const fetchSuggestions = async () => {
-    if (!session?.user || fetchedRef.current) return;
-    try {
-      setSugsLoading(true);
-      setSugsError(null);
-      const items = await generateSuggestions({
-        session: session.session,
-        locale,
-      });
-      setSugs(items ?? []);
-      fetchedRef.current = true;
-      posthog.capture("ai_suggestions_loaded", { count: items?.length ?? 0 });
-    } catch (e: any) {
-      setSugsError(e?.message || "Konnte Vorschläge nicht laden.");
-    } finally {
-      setSugsLoading(false);
-    }
-  };
-
-  /** Load suggestions once when the sheet is opened (and we have a session) */
-  useEffect(() => {
-    if (aiOpen && session?.user && !fetchedRef.current) {
-      fetchSuggestions();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aiOpen, session?.user?.id, locale]);
-
-  const handleSuggestionClick = (suggestion: string) => {
-    if (!suggestion || isLoading) return;
-    posthog.capture("ai_suggestion_clicked", { suggestion });
-    sendMessage(
-      { role: "user", parts: [{ type: "text", text: suggestion }] },
-      { headers: { "x-persona": persona } },
-    );
-  };
-
-  /** Server-Action nur für finale Toolcalls; währenddessen nur Skeleton */
-  useEffect(() => {
-    try {
-      const parts =
-        messages.flatMap((m) => (m.parts as any[]).filter(isToolUIPart)) ?? [];
-      parts.forEach(async (p: any) => {
-        const id = p?.toolCallId as string | undefined;
-        if (!id) return;
-        if (p?.state !== "output-available") return; // nur final zusammenfassen
-        if (toolSummaries[id] || inFlight.current.has(id)) return;
-
-        inFlight.current.add(id);
-        const slim: ToolCallPart = {
-          type: p.type,
-          toolCallId: id,
-          state: p.state,
-          input: undefined, // kein Input an die Server-Action senden
-          output: p.output,
-        };
-
-        try {
-          const summary = await generateToolSummary({
-            part: slim,
-            locale,
-            session: session.session,
-          });
-          setToolSummaries((prev) => ({ ...prev, [id]: summary }));
-        } catch (err) {
-          console.error("generateToolSummary failed", err);
-          const fallback: ToolCallSummary = {
-            type: "Action",
-            label: p.type
-              .replace(/^tool-/, "")
-              .replace(/([a-z])([A-Z])/g, "$1 $2"),
-            description: "Ich habe das Tool ausgeführt.",
-          } as ToolCallSummary;
-          setToolSummaries((prev) => ({ ...prev, [id]: fallback }));
-        } finally {
-          inFlight.current.delete(id);
-        }
-      });
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages, locale]);
-
   return (
     <section className="relative -mt-24 z-10 overflow-x-clip">
       <div className="container mx-auto px-4">
@@ -823,7 +534,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
       <Sheet open={aiOpen} onOpenChange={setAiOpen}>
         <SheetContent
           side="right"
-          className="px-2 sm:max-w-md w-full flex flex-col"
+          className="px-2 sm:max-w-md w-full flex flex-col h-full overflow-hidden"
         >
           <SheetHeader>
             <SheetTitle>AI Assistent</SheetTitle>
@@ -832,280 +543,7 @@ export default function DashboardOverview({ days, goodies = [] }: Props) {
             </SheetDescription>
           </SheetHeader>
 
-          <Conversation className="mt-4 flex-1 relative">
-            <ConversationContent>
-              {messages.map((m, idx) => {
-                const isUser = m.role === "user";
-                const isAssistant = m.role === "assistant";
-                const isLast = idx === messages.length - 1;
-                const loading =
-                  status === "submitted" || status === "streaming";
-
-                const avatarEl = isUser ? (
-                  <MessageAvatar
-                    src={session?.user?.image || userAvatar || ""}
-                    name={session?.user?.name || "DU"}
-                    className="shadow ring-indigo-500/30"
-                  />
-                ) : (
-                  <div className="size-8 flex items-center justify-center rounded-lg bg-fuchsia-500/15 border border-fuchsia-400/30 text-fuchsia-300 shadow-sm">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                );
-
-                const bubbleBase =
-                  "relative rounded-xl border backdrop-blur-xl px-4 py-3 text-sm leading-relaxed bg-gradient-to-br shadow-sm break-words";
-                const bubbleClassesUser = `${bubbleBase} border-indigo-500/40 from-indigo-600/30 via-indigo-600/20 to-indigo-500/10 text-indigo-50 dark:text-indigo-100`;
-                const bubbleClassesAssistant = `${bubbleBase} border-fuchsia-400/30 from-fuchsia-500/15 via-background/70 to-background/40 text-fuchsia-900 dark:text-fuchsia-100`;
-
-                const isFinishPart = (part: any) =>
-                  part?.type === "finish" ||
-                  part?.type === "finish-step" ||
-                  part?.type === "d" ||
-                  part?.type === "e";
-
-                const visibleParts = (m.parts as any[]).filter(
-                  (p) => !isFinishPart(p),
-                );
-
-                if (isAssistant) {
-                  let printedText = false;
-
-                  return (
-                    <div key={m.id} className="space-y-2 mb-2">
-                      {visibleParts.map((part: any, i: number) => {
-                        if (part?.type === "reasoning") {
-                          return (
-                            <Reasoning
-                              key={m.id + "-reasoning-" + i}
-                              className="w-full"
-                              isStreaming={loading && isLast}
-                            >
-                              <ReasoningTrigger />
-                              <ReasoningContent>
-                                {stripLeadTags(part.text)}
-                              </ReasoningContent>
-                            </Reasoning>
-                          );
-                        }
-
-                        if (isToolUIPart(part)) {
-                          return renderToolAsTask(
-                            part,
-                            `${m.id}-tool-${i}`,
-                            formatDateTime,
-                            (toolSummaries as any)[part.toolCallId],
-                          );
-                        }
-
-                        if (part?.type === "text") {
-                          printedText = true;
-                          const text = stripLeadTags(part.text ?? "");
-                          const showSpinner =
-                            isLast && loading && text.trim().length === 0;
-
-                          return (
-                            <Message key={`${m.id}-text-${i}`} from="assistant">
-                              <MessageContent className="bg-transparent p-0">
-                                <div className={bubbleClassesAssistant}>
-                                  {showSpinner ? (
-                                    <div className="flex justify-center items-center">
-                                      <svg
-                                        className="animate-spin h-6 w-6 text-fuchsia-500"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <circle
-                                          className="opacity-20"
-                                          cx="12"
-                                          cy="12"
-                                          r="10"
-                                          stroke="currentColor"
-                                          strokeWidth="4"
-                                          fill="none"
-                                        />
-                                        <path
-                                          className="opacity-70"
-                                          fill="currentColor"
-                                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                        />
-                                      </svg>
-                                    </div>
-                                  ) : (
-                                    <Response>{text}</Response>
-                                  )}
-                                </div>
-                              </MessageContent>
-                              {avatarEl}
-                            </Message>
-                          );
-                        }
-
-                        return null;
-                      })}
-
-                      {!printedText && isLast && loading ? (
-                        <Message from="assistant">
-                          <MessageContent className="bg-transparent p-0">
-                            <div className={bubbleClassesAssistant}>
-                              <div className="flex justify-center items-center">
-                                <svg
-                                  className="animate-spin h-6 w-6 text-fuchsia-500"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-20"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    fill="none"
-                                  />
-                                  <path
-                                    className="opacity-70"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          </MessageContent>
-                          {avatarEl}
-                        </Message>
-                      ) : null}
-                    </div>
-                  );
-                }
-
-                // USER
-                const userTextParts = (m.parts as any[]).filter(
-                  (p) => p.type === "text",
-                ) as Array<{ text: string }>;
-
-                return (
-                  <Message key={m.id} from="user">
-                    <MessageContent className="bg-transparent p-0">
-                      <div className={bubbleClassesUser}>
-                        {userTextParts.length
-                          ? userTextParts.map((p, i2) => (
-                              <Response key={m.id + "-" + i2}>
-                                {stripLeadTags(p.text)}
-                              </Response>
-                            ))
-                          : null}
-                      </div>
-                    </MessageContent>
-                    {avatarEl}
-                  </Message>
-                );
-              })}
-              {error && (
-                <Message from="assistant">
-                  <MessageContent>
-                    <div className="text-xs text-red-500">
-                      Fehler: {error.message}
-                    </div>
-                  </MessageContent>
-                </Message>
-              )}
-            </ConversationContent>
-            <ConversationScrollButton />
-          </Conversation>
-
-          {/* Personalized Suggestions Row */}
-          <div className="mt-2">
-            <Suggestions className="px-1">
-              {sugsLoading && (
-                <>
-                  <Suggestion suggestion="Lade Vorschläge…" disabled />
-                </>
-              )}
-              {!sugsLoading && sugsError && (
-                <Suggestion suggestion={sugsError} disabled />
-              )}
-              {!sugsLoading &&
-                !sugsError &&
-                (sugs.length
-                  ? sugs
-                  : [
-                      "Was sind die Top-Goodies heute?",
-                      "Plane meine nächsten zwei Events",
-                      "Wo sind Free Drinks in der Nähe?",
-                    ]
-                ).map((s) => (
-                  <Suggestion
-                    key={s}
-                    suggestion={s}
-                    onClick={handleSuggestionClick}
-                  />
-                ))}
-            </Suggestions>
-          </div>
-
-          <PromptInput
-            onSubmit={onSubmit}
-            className="mt-2 mb-2 relative border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-500/15 via-background/60 to-background/40 backdrop-blur-xl shadow-sm"
-          >
-            <PromptInputTextarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Frage eingeben..."
-              minHeight={80}
-            />
-            <PromptInputToolbar className="px-2 text-fuchsia-700 dark:text-fuchsia-200">
-              <PromptInputTools>
-                <PromptInputButton
-                  title="Letzte Antwort neu generieren"
-                  disabled={
-                    !messages.some((m) => m.role === "assistant") || isLoading
-                  }
-                  onClick={() => regenerate()}
-                >
-                  ↻
-                </PromptInputButton>
-                {isLoading && (
-                  <PromptInputButton onClick={stop} title="Stop">
-                    Stop
-                  </PromptInputButton>
-                )}
-                {/* Persona-Auswahl statt Model-Auswahl */}
-                <PromptInputModelSelect
-                  onValueChange={(value) => setPersona(value)}
-                  value={persona}
-                >
-                  <PromptInputModelSelectTrigger className="bg-transparent">
-                    <PromptInputModelSelectValue />
-                  </PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectContent>
-                    <PromptInputModelSelectItem value="neutral">
-                      Normal
-                    </PromptInputModelSelectItem>
-                    <PromptInputModelSelectItem value="uwu">
-                      Kawaii 🎀
-                    </PromptInputModelSelectItem>
-                    <PromptInputModelSelectItem value="bernd">
-                      Bernd das Brot 🍞
-                    </PromptInputModelSelectItem>
-                    <PromptInputModelSelectItem value="monga">
-                      Monga 🅱️
-                    </PromptInputModelSelectItem>
-                    <PromptInputModelSelectItem value="denglish">
-                      Money Boy 💸
-                    </PromptInputModelSelectItem>
-                    <PromptInputModelSelectItem value="apored">
-                      ApoRed 👟
-                    </PromptInputModelSelectItem>
-                  </PromptInputModelSelectContent>
-                </PromptInputModelSelect>
-              </PromptInputTools>
-              <PromptInputSubmit
-                className="absolute right-2 bottom-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-sm ring-1 ring-fuchsia-400/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!input.trim() || isLoading}
-                status={status}
-                variant="default"
-              />
-            </PromptInputToolbar>
-          </PromptInput>
+          <AIChat open={aiOpen} session={session} userAvatar={userAvatar} />
         </SheetContent>
       </Sheet>
     </section>
