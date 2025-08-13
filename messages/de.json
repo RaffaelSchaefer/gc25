@@ -411,7 +411,8 @@
       "show_collected": "Gesammelte anzeigen",
       "types": "Typen",
       "all": "Alle",
-      "none": "Keine"
+      "none": "Keine",
+      "search": "Goodies durchsuchen..."
     },
     "fields": {
       "name": "Name",

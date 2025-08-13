@@ -33,6 +33,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   ArrowBigUp,
   ArrowBigDown,
@@ -43,6 +44,7 @@ import {
   Plus,
   Trash2,
   Pencil,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -77,6 +79,7 @@ export default function GoodieTrackerClient({
   const [viewMode] = useState<"grid" | "list">("grid");
   const [goodieImages, setGoodieImages] = useState<Record<string, string>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // Lazy attempt to fetch images for goodies (only once per id)
   useEffect(() => {
@@ -156,8 +159,15 @@ export default function GoodieTrackerClient({
     });
   };
 
+  const q = search.toLowerCase().trim();
   const filtered = goodies.filter(
-    (g) => (showCollected || !g.collected) && activeTypes.includes(g.type),
+    (g) =>
+      (showCollected || !g.collected) &&
+      activeTypes.includes(g.type) &&
+      (q === "" ||
+        [g.name, g.location, g.instructions].some((v) =>
+          v.toLowerCase().includes(q),
+        )),
   );
 
   // Relevanz-Berechnung (spiegelt Server-Heuristik) für konsistente Sortierung nach Ranking
@@ -367,6 +377,16 @@ export default function GoodieTrackerClient({
             </div>
             {/* Action / Filter Bar: stack on narrow screens to avoid clipping */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 md:justify-end w-full max-w-full">
+              <div className="flex h-9 items-center gap-2 rounded-md border bg-background px-3 w-full sm:w-[200px]">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={t("filters.search")}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-8 w-full border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
               <div className="flex h-9 items-center gap-2 rounded-md border bg-background px-3 sm:w-auto w-full justify-between sm:justify-start">
                 <Label
                   htmlFor="show-collected"

@@ -401,7 +401,8 @@
       "show_collected": "Show collected",
       "types": "Types",
       "all": "All",
-      "none": "None"
+      "none": "None",
+      "search": "Search goodies..."
     },
     "fields": {
       "name": "Name",
