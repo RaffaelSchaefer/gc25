@@ -469,3 +469,79 @@ export const getGoodies = tool({
     return collectedOnly ? mapped.filter((g) => g.collected) : mapped;
   },
 });
+
+export const getMyAgenda = tool({
+  description:
+    "Daily agenda with joined events and uncollected goodies for the specified day.",
+  inputSchema: z.object({ day: z.string().date().optional() }),
+  execute: async ({ day }, options) => {
+    const ctx = ctxOf(options);
+    const err = assertAuthSession(ctx);
+    if (err) return err;
+
+    const start = day ? new Date(day) : new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    const now = Date.now();
+
+    const events = await prisma.event.findMany({
+      where: {
+        startDate: { gte: start, lt: end },
+        participants: { some: { userId: ctx.session!.user.id } },
+      },
+      orderBy: { startDate: "asc" },
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        location: true,
+      },
+    });
+
+    const goodies = await prisma.goodie.findMany({
+      where: {
+        date: { gte: start, lt: end },
+        collections: { none: { userId: ctx.session!.user.id } },
+      },
+      orderBy: { date: "asc" },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        location: true,
+        date: true,
+      },
+    });
+
+    const eventsMapped = events.map((e) => {
+      const passed = now > e.endDate.getTime();
+      return {
+        id: e.id,
+        name: e.name,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        location: e.location,
+        status: passed ? "over" : "upcoming",
+        passed,
+        startsInMs: e.startDate.getTime() - now,
+      };
+    });
+
+    const goodiesMapped = goodies.map((g) => {
+      const passed = now > g.date.getTime();
+      return {
+        id: g.id,
+        name: g.name,
+        type: g.type,
+        location: g.location,
+        date: g.date,
+        status: passed ? "over" : "upcoming",
+        passed,
+      };
+    });
+
+    return { events: eventsMapped, goodies: goodiesMapped };
+  },
+});

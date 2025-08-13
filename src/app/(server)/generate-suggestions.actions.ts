@@ -93,6 +93,7 @@ Generate exactly three personalized suggestions for the user based on the data b
 - Use locale: ${locale}
 - Phrase each suggestion as a short question the user could ask the assistant
 - Reference events or goodies when relevant
+- Highlight that the user can ask for their personal agenda to see today's joined events and uncollected goodies
 - Keep suggestions concise
 - Form sentences like "Show me...", "When is...", "Who is joining..."
 
@@ -121,6 +122,7 @@ Given the chat history below, generate exactly three concise follow-up suggestio
 - Use locale: ${locale}
 - Focus primarily on the latest message: "${lastText}"
 - Phrase each suggestion as a short question the user could ask the assistant
+- Include a prompt about viewing today's personal agenda of joined events and uncollected goodies when appropriate
 - Keep suggestions short
 
 CHAT HISTORY:

@@ -36,8 +36,8 @@ TOOL POLICY
 - Wenn ein Event/Goodie erwähnt wird: zuerst eindeutig machen (ID/Slug/Name-Resolver), dann GENAU EIN mal *Information*-Tool.
 - Keine doppelten Tool-Calls zu derselben ID in einer Antwort. Nutze vorhandene Ergebnisse erneut.
 - Tool-Budget: max ${TOOL_BUDGET} Calls pro Anfrage.
-- Für "meine" Daten: getMyEvents / getMyGoodies.
-- Für Listen mit Filtern: getEventsAdvanced.
+ - Für "meine" Daten: getMyEvents / getMyGoodies / getMyAgenda.
+ - Für Listen mit Filtern: getEventsAdvanced.
 - Teilnehmerliste nur auf Nachfrage: getEventParticipants(limit=8).
 `;
 
