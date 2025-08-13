@@ -73,10 +73,7 @@ export const getEventsAdvanced = tool({
       .enum(["startDate", "name", "createdAt"])
       .optional()
       .default("startDate"),
-    sortOrder: z
-      .enum(["asc", "desc"])
-      .optional()
-      .default("asc"),
+    sortOrder: z.enum(["asc", "desc"]).optional().default("asc"),
     limit: z.number().int().min(1).max(100).default(20),
   }),
   execute: async (args, options) => {
@@ -283,10 +280,7 @@ export const getEvents = tool({
       .enum(["startDate", "name", "createdAt"])
       .optional()
       .default("startDate"),
-    sortOrder: z
-      .enum(["asc", "desc"])
-      .optional()
-      .default("asc"),
+    sortOrder: z.enum(["asc", "desc"]).optional().default("asc"),
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
   execute: async (
@@ -314,8 +308,7 @@ export const getEvents = tool({
 
     const where: any = {};
     if (search) where.name = { contains: search, mode: "insensitive" };
-    if (location)
-      where.location = { contains: location, mode: "insensitive" };
+    if (location) where.location = { contains: location, mode: "insensitive" };
     if (description)
       where.description = { contains: description, mode: "insensitive" };
     const startDate: any = {};
@@ -384,10 +377,7 @@ export const getGoodies = tool({
       .enum(["createdAt", "date", "name"])
       .optional()
       .default("createdAt"),
-    sortOrder: z
-      .enum(["asc", "desc"])
-      .optional()
-      .default("desc"),
+    sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
   execute: async (
@@ -421,8 +411,7 @@ export const getGoodies = tool({
         { name: { contains: search, mode: "insensitive" } },
         { instructions: { contains: search, mode: "insensitive" } },
       ];
-    if (location)
-      where.location = { contains: location, mode: "insensitive" };
+    if (location) where.location = { contains: location, mode: "insensitive" };
     const date: any = {};
     if (dateFrom) date.gte = new Date(dateFrom);
     if (dateTo) date.lte = new Date(dateTo);

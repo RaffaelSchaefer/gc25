@@ -19,13 +19,10 @@ export async function POST(req: Request) {
   const requestId = headers.get("x-request-id") || randomUUID();
 
   const personaID = headers.get("x-persona")?.trim() || "neutral";
-  // Wenn persona 'denglish', dann immer 'x-ai/grok-3-mini' als Model
   const modelId =
-    personaID === "denglish"
-      ? "x-ai/grok-3-mini"
-      : headers.get("x-model")?.trim() ||
-        process.env.OPENROUTER_MODEL ||
-        "openai/gpt-oss-120b";
+    personaID === headers.get("x-model")?.trim() ||
+    process.env.OPENROUTER_MODEL ||
+    "google/gemini-2.5-flash";
 
   // ✨ NEU: Parent-Trace in Langfuse anlegen (klares, lesbares Naming)
   const parentTraceId = randomUUID();
