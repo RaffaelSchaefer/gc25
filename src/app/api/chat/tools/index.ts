@@ -15,6 +15,7 @@ export {
   getEventsAdvanced,
   getMyEvents,
   getMyGoodies,
+  getMyAgenda,
   getEvents,
   getGoodies,
 } from "./lists";
