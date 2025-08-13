@@ -78,9 +78,16 @@ const getStats = tool({
 const getEventsAdvanced = tool({
   description: "Advanced event listing with filters.",
   inputSchema: z.object({
-    category: z.nativeEnum(
-      { MEETUP:"MEETUP", EXPO:"EXPO", FOOD:"FOOD", PARTY:"PARTY", TRAVEL:"TRAVEL", TOURNAMENT:"TOURNAMENT" } as const
-    ).optional(),
+    category: z
+      .nativeEnum({
+        MEETUP: "MEETUP",
+        EXPO: "EXPO",
+        FOOD: "FOOD",
+        PARTY: "PARTY",
+        TRAVEL: "TRAVEL",
+        TOURNAMENT: "TOURNAMENT",
+      } as const)
+      .optional(),
     dateFrom: z.string().datetime().optional(),
     dateTo: z.string().datetime().optional(),
     mineOnly: z.boolean().optional(),
@@ -92,7 +99,8 @@ const getEventsAdvanced = tool({
     const ctx = ctxOf(options);
     const where: any = {};
     if (args.category) where.category = args.category;
-    if (args.search) where.name = { contains: args.search, mode: "insensitive" };
+    if (args.search)
+      where.name = { contains: args.search, mode: "insensitive" };
     if (args.dateFrom || args.dateTo) {
       where.startDate = {};
       if (args.dateFrom) where.startDate.gte = new Date(args.dateFrom);
@@ -101,8 +109,14 @@ const getEventsAdvanced = tool({
     if (!ctx.session) where.isPublic = true;
 
     const baseSelect: any = {
-      id: true, name: true, startDate: true, endDate: true, location: true,
-      isPublic: true, category: true, createdById: true,
+      id: true,
+      name: true,
+      startDate: true,
+      endDate: true,
+      location: true,
+      isPublic: true,
+      category: true,
+      createdById: true,
     };
 
     if (args.mineOnly || args.joinedOnly) {
@@ -116,24 +130,24 @@ const getEventsAdvanced = tool({
       take: args.limit,
       ...(args.joinedOnly && ctx.session
         ? {
-          include: {
-            participants: {
-              where: { userId: ctx.session.user.id },
-              select: { id: true },
+            include: {
+              participants: {
+                where: { userId: ctx.session.user.id },
+                select: { id: true },
+              },
             },
-          },
-        }
+          }
         : { select: baseSelect }),
       include: {
         participants: {
           where: {
-            userId: ""
+            userId: "",
           },
           select: {
-            id: true
-          }
-        }
-      }
+            id: true,
+          },
+        },
+      },
     });
 
     const mapped = rows.map((e: any) => ({
@@ -173,7 +187,14 @@ const getMyEvents = tool({
         where: { createdById: ctx.session!.user.id },
         orderBy: { startDate: "asc" },
         take: limit,
-        select: { id: true, name: true, startDate: true, endDate: true, location: true, category: true },
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+          location: true,
+          category: true,
+        },
       });
       return rows.map((e) => ({ ...e, joined: true, createdByMe: true }));
     }
@@ -182,11 +203,28 @@ const getMyEvents = tool({
       where: { userId: ctx.session!.user.id },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { event: { select: { id: true, name: true, startDate: true, endDate: true, location: true, category: true } } },
+      include: {
+        event: {
+          select: {
+            id: true,
+            name: true,
+            startDate: true,
+            endDate: true,
+            location: true,
+            category: true,
+          },
+        },
+      },
     });
     return rows.map((p) => ({
-      id: p.event.id, name: p.event.name, startDate: p.event.startDate, endDate: p.event.endDate,
-      location: p.event.location, category: p.event.category, joined: true, createdByMe: false,
+      id: p.event.id,
+      name: p.event.name,
+      startDate: p.event.startDate,
+      endDate: p.event.endDate,
+      location: p.event.location,
+      category: p.event.category,
+      joined: true,
+      createdByMe: false,
     }));
   },
 });
@@ -207,7 +245,13 @@ const getMyGoodies = tool({
         where: { createdById: ctx.session!.user.id },
         orderBy: { createdAt: "desc" },
         take: limit,
-        select: { id: true, name: true, type: true, location: true, date: true },
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          location: true,
+          date: true,
+        },
       });
       return rows.map((g) => ({ ...g, collected: true }));
     }
@@ -216,7 +260,17 @@ const getMyGoodies = tool({
       where: { userId: ctx.session!.user.id },
       orderBy: { collectedAt: "desc" },
       take: limit,
-      include: { goodie: { select: { id: true, name: true, type: true, location: true, date: true } } },
+      include: {
+        goodie: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            location: true,
+            date: true,
+          },
+        },
+      },
     });
     return rows.map((c) => ({ ...c.goodie, collected: true }));
   },
@@ -225,7 +279,10 @@ const getMyGoodies = tool({
 // Event-Kommentare (CRUD light, nur Event)
 const listEventComments = tool({
   description: "List comments for an event (newest first).",
-  inputSchema: z.object({ eventId: z.string().min(1), limit: z.number().int().min(1).max(50).default(20) }),
+  inputSchema: z.object({
+    eventId: z.string().min(1),
+    limit: z.number().int().min(1).max(50).default(20),
+  }),
   execute: async ({ eventId, limit }) =>
     await prisma.comment.findMany({
       where: { eventId },
@@ -237,7 +294,10 @@ const listEventComments = tool({
 
 const createEventComment = tool({
   description: "Create a comment on an event (requires auth).",
-  inputSchema: z.object({ eventId: z.string().min(1), content: z.string().trim().min(1).max(2000) }),
+  inputSchema: z.object({
+    eventId: z.string().min(1),
+    content: z.string().trim().min(1).max(2000),
+  }),
   execute: async ({ eventId, content }, options) => {
     const ctx = ctxOf(options);
     const err = assertAuthSession(ctx);
@@ -259,7 +319,10 @@ const deleteMyEventComment = tool({
     const err = assertAuthSession(ctx);
     if (err) return err;
 
-    const c = await prisma.comment.findUnique({ where: { id: commentId }, select: { createdById: true } });
+    const c = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: { createdById: true },
+    });
     if (!c) return { error: "not-found" };
     if (c.createdById !== ctx.session!.user.id) return { error: "forbidden" };
     await prisma.comment.delete({ where: { id: commentId } });
@@ -403,9 +466,8 @@ Sport-Vergleich: „Wirf’s rein wie Melo: klein, präzise, drin.“
 Kompliment: „Dein Ding glänzt – swag! ✨“
 Pivot safe: „War Joke – ernsthaft: {klarer Fact}.“
 CTA: „Wenn’s hilft, Red Bull sippen & weitermachen.“
-`
-const SYSTEM_PROMPT_DENGLISH_MONEYBOY =
-  SYSTEM_CORE + STYLE_DENGLISH_MONEYBOY;
+`;
+const SYSTEM_PROMPT_DENGLISH_MONEYBOY = SYSTEM_CORE + STYLE_DENGLISH_MONEYBOY;
 
 const STYLE_APORED = `
 STYLE
@@ -561,7 +623,9 @@ const getEventInformation = tool({
   inputSchema: z.object({ eventId: z.string().min(1) }),
   execute: async ({ eventId }, options) => {
     const ctx = ctxOf(options);
-    const session = ctx.session ?? (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
+    const session =
+      ctx.session ??
+      (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
 
     return fromCache(options, `evt:${eventId}`, async () => {
       const e = await prisma.event.findUnique({
@@ -618,7 +682,9 @@ const getGoodieInformation = tool({
   inputSchema: z.object({ goodieId: z.string().min(1) }),
   execute: async ({ goodieId }, options) => {
     const ctx = ctxOf(options);
-    const session = ctx.session ?? (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
+    const session =
+      ctx.session ??
+      (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
 
     return fromCache(options, `good:${goodieId}`, async () => {
       const g = await prisma.goodie.findUnique({
