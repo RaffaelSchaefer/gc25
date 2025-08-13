@@ -63,22 +63,47 @@ export const getEventsAdvanced = tool({
       .optional(),
     dateFrom: z.string().datetime().optional(),
     dateTo: z.string().datetime().optional(),
+    day: z.string().date().optional(),
     mineOnly: z.boolean().optional(),
     joinedOnly: z.boolean().optional(),
     search: z.string().trim().min(1).max(200).optional(),
+    location: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().min(1).max(500).optional(),
+    sortBy: z
+      .enum(["startDate", "name", "createdAt"])
+      .optional()
+      .default("startDate"),
+    sortOrder: z
+      .enum(["asc", "desc"])
+      .optional()
+      .default("asc"),
     limit: z.number().int().min(1).max(100).default(20),
   }),
   execute: async (args, options) => {
     const ctx = ctxOf(options);
+    const now = Date.now();
     const where: any = {};
     if (args.category) where.category = args.category;
     if (args.search)
       where.name = { contains: args.search, mode: "insensitive" };
-    if (args.dateFrom || args.dateTo) {
-      where.startDate = {};
-      if (args.dateFrom) where.startDate.gte = new Date(args.dateFrom);
-      if (args.dateTo) where.startDate.lte = new Date(args.dateTo);
+    if (args.location)
+      where.location = { contains: args.location, mode: "insensitive" };
+    if (args.description)
+      where.description = {
+        contains: args.description,
+        mode: "insensitive",
+      };
+    const startDate: any = {};
+    if (args.dateFrom) startDate.gte = new Date(args.dateFrom);
+    if (args.dateTo) startDate.lte = new Date(args.dateTo);
+    if (args.day) {
+      const start = new Date(args.day);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      startDate.gte = start;
+      startDate.lt = end;
     }
+    if (Object.keys(startDate).length > 0) where.startDate = startDate;
     if (!ctx.session) where.isPublic = true;
 
     const baseSelect: any = {
@@ -96,31 +121,21 @@ export const getEventsAdvanced = tool({
       if (!ctx.session) return { error: "auth-required" };
     }
     if (args.mineOnly && ctx.session) where.createdById = ctx.session.user.id;
+    if (args.joinedOnly && ctx.session)
+      where.participants = { some: { userId: ctx.session.user.id } };
+
+    const select: any = { ...baseSelect };
+    if (ctx.session)
+      select.participants = {
+        where: { userId: ctx.session.user.id },
+        select: { id: true },
+      };
 
     const rows = await prisma.event.findMany({
       where,
-      orderBy: { startDate: "asc" },
+      orderBy: { [args.sortBy ?? "startDate"]: args.sortOrder ?? "asc" },
       take: args.limit,
-      ...(args.joinedOnly && ctx.session
-        ? {
-            include: {
-              participants: {
-                where: { userId: ctx.session.user.id },
-                select: { id: true },
-              },
-            },
-          }
-        : { select: baseSelect }),
-      include: {
-        participants: {
-          where: {
-            userId: "",
-          },
-          select: {
-            id: true,
-          },
-        },
-      },
+      select,
     });
 
     const mapped = rows.map((e: any) => ({
@@ -137,6 +152,7 @@ export const getEventsAdvanced = tool({
         e.participants.length > 0
       ),
       createdByMe: !!(ctx.session && e.createdById === ctx.session.user.id),
+      startsInMs: new Date(e.startDate).getTime() - now,
     }));
 
     return mapped;
@@ -153,6 +169,7 @@ export const getMyEvents = tool({
     const ctx = ctxOf(options);
     const err = assertAuthSession(ctx);
     if (err) return err;
+    const now = Date.now();
 
     if (role === "created") {
       const rows = await prisma.event.findMany({
@@ -168,7 +185,12 @@ export const getMyEvents = tool({
           category: true,
         },
       });
-      return rows.map((e) => ({ ...e, joined: true, createdByMe: true }));
+      return rows.map((e) => ({
+        ...e,
+        joined: true,
+        createdByMe: true,
+        startsInMs: e.startDate.getTime() - now,
+      }));
     }
 
     const rows = await prisma.eventParticipant.findMany({
@@ -197,6 +219,7 @@ export const getMyEvents = tool({
       category: p.event.category,
       joined: true,
       createdByMe: false,
+      startsInMs: p.event.startDate.getTime() - now,
     }));
   },
 });
@@ -253,9 +276,32 @@ export const getEvents = tool({
   inputSchema: z.object({
     upcomingOnly: z.boolean().optional(),
     search: z.string().trim().min(1).max(200).optional(),
+    location: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().min(1).max(500).optional(),
+    day: z.string().date().optional(),
+    sortBy: z
+      .enum(["startDate", "name", "createdAt"])
+      .optional()
+      .default("startDate"),
+    sortOrder: z
+      .enum(["asc", "desc"])
+      .optional()
+      .default("asc"),
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
-  execute: async ({ upcomingOnly, search, limit }, options) => {
+  execute: async (
+    {
+      upcomingOnly,
+      search,
+      location,
+      description,
+      day,
+      sortBy,
+      sortOrder,
+      limit,
+    },
+    options,
+  ) => {
     const ctx = (
       options as {
         experimental_context?: { session?: Session; headers?: Headers };
@@ -264,15 +310,30 @@ export const getEvents = tool({
     let session = ctx?.session ?? null;
     if (!session && ctx?.headers)
       session = await getSessionFromHeaders(ctx.headers);
+    const now = Date.now();
 
     const where: any = {};
-    if (upcomingOnly) where.startDate = { gte: new Date() };
     if (search) where.name = { contains: search, mode: "insensitive" };
+    if (location)
+      where.location = { contains: location, mode: "insensitive" };
+    if (description)
+      where.description = { contains: description, mode: "insensitive" };
+    const startDate: any = {};
+    if (day) {
+      const start = new Date(day);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      startDate.gte = start;
+      startDate.lt = end;
+    } else if (upcomingOnly) {
+      startDate.gte = new Date();
+    }
+    if (Object.keys(startDate).length > 0) where.startDate = startDate;
     if (!session) where.isPublic = true;
 
     const rows = await prisma.event.findMany({
       where,
-      orderBy: { startDate: "asc" },
+      orderBy: { [sortBy ?? "startDate"]: sortOrder ?? "asc" },
       take: limit,
       select: {
         id: true,
@@ -304,6 +365,7 @@ export const getEvents = tool({
         Array.isArray(e.participants) &&
         e.participants.length > 0
       ),
+      startsInMs: new Date(e.startDate).getTime() - now,
     }));
   },
 });
@@ -314,9 +376,35 @@ export const getGoodies = tool({
     type: z.enum(["GIFT", "FOOD", "DRINK"]).optional(),
     collectedOnly: z.boolean().optional(),
     search: z.string().trim().min(1).max(200).optional(),
+    location: z.string().trim().min(1).max(200).optional(),
+    dateFrom: z.string().datetime().optional(),
+    dateTo: z.string().datetime().optional(),
+    day: z.string().date().optional(),
+    sortBy: z
+      .enum(["createdAt", "date", "name"])
+      .optional()
+      .default("createdAt"),
+    sortOrder: z
+      .enum(["asc", "desc"])
+      .optional()
+      .default("desc"),
     limit: z.number().int().min(1).max(50).optional().default(20),
   }),
-  execute: async ({ type, collectedOnly, search, limit }, options) => {
+  execute: async (
+    {
+      type,
+      collectedOnly,
+      search,
+      location,
+      dateFrom,
+      dateTo,
+      day,
+      sortBy,
+      sortOrder,
+      limit,
+    },
+    options,
+  ) => {
     const ctx = (
       options as {
         experimental_context?: { session?: Session; headers?: Headers };
@@ -328,11 +416,28 @@ export const getGoodies = tool({
 
     const where: any = {};
     if (type) where.type = type;
-    if (search) where.name = { contains: search, mode: "insensitive" };
+    if (search)
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { instructions: { contains: search, mode: "insensitive" } },
+      ];
+    if (location)
+      where.location = { contains: location, mode: "insensitive" };
+    const date: any = {};
+    if (dateFrom) date.gte = new Date(dateFrom);
+    if (dateTo) date.lte = new Date(dateTo);
+    if (day) {
+      const start = new Date(day);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      date.gte = start;
+      date.lt = end;
+    }
+    if (Object.keys(date).length > 0) where.date = date;
 
     const rows = await prisma.goodie.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: { [sortBy ?? "createdAt"]: sortOrder ?? "desc" },
       take: limit,
       select: {
         id: true,

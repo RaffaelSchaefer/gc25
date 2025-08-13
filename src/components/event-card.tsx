@@ -32,6 +32,7 @@ export type EventCardEvent = {
   userJoined: boolean;
   startDate: string;
   endDate: string;
+  startsInMs?: number;
   createdById: string;
   createdBy?: {
     name: string;

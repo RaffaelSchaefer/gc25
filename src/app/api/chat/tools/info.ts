@@ -49,6 +49,7 @@ export const getEventInformation = tool({
         userJoined,
         startDate: e.startDate.toISOString(),
         endDate: e.endDate.toISOString(),
+        startsInMs: e.startDate.getTime() - Date.now(),
         createdById: e.createdById,
         createdBy: e.createdBy
           ? { name: e.createdBy.name, image: e.createdBy.image ?? null }
