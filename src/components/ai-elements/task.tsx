@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentProps } from "react";
+import type { ComponentProps, JSX } from "react";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -54,18 +54,20 @@ export const Task = ({
 
 export type TaskTriggerProps = ComponentProps<typeof CollapsibleTrigger> & {
   title: string;
+  icon: JSX.Element;
 };
 
 export const TaskTrigger = ({
   children,
   className,
   title,
+  icon,
   ...props
 }: TaskTriggerProps) => (
   <CollapsibleTrigger asChild className={cn("group", className)} {...props}>
     {children ?? (
       <div className="flex items-center gap-2 text-muted-foreground cursor-pointer hover:text-foreground">
-        <SearchIcon className="size-4" />
+        {icon}
         <p className="text-sm">{title}</p>
         <ChevronDownIcon className="size-4 transition-transform group-data-[state=open]:rotate-180" />
       </div>
