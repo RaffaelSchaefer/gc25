@@ -48,6 +48,7 @@ export async function generateSuggestions({
 You generate personalized suggestions for the user based on their stored user data. Suggestions should be relevant to the user’s interests, focusing on events and goodies they are likely to enjoy.
 Use the locale: ${locale} for all output.
 Write the suggestions from the user’s perspective, as if they are asking a question about the event or goodie.
+Keep them short and concise.
 
 USER DATA
 
@@ -57,7 +58,7 @@ ${JSON.stringify(userData)}
   const resultObj = await generateObject({
     model: openrouter("openai/gpt-4.1-nano"),
     schema: z.object({
-      suggestions: z.array(z.string().max(100)).min(3).max(3),
+      suggestions: z.array(z.string()).min(3).max(3),
     }),
     prompt: prompt,
     experimental_telemetry: {
