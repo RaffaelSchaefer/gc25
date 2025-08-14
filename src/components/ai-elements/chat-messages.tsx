@@ -22,6 +22,7 @@ import { AIChatCardPart } from "./ai-chat-card-part";
 import { Actions, Action } from "./actions";
 import type { ToolCallSummary } from "@/app/(server)/tool-summary.actions";
 import { sendFeedback } from "@/app/(server)/feedback.actions";
+import { stripLeadTags } from "./strip-lead-tags";
 
 function isToolUIPart(part: any): part is {
   type: string;
@@ -37,11 +38,6 @@ function isToolUIPart(part: any): part is {
     part.type.startsWith("tool-") &&
     typeof (part as any).toolCallId === "string"
   );
-}
-
-function stripLeadTags(s?: string) {
-  if (!s) return "";
-  return s.replace(/^\s*(\*{0,2})?(analysis|final)(\*{0,2})?\s*[:\-—]\s*/i, "");
 }
 
 function ToolTypeIcon({
