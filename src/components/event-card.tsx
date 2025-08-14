@@ -138,8 +138,9 @@ const formatEventTime = (iso?: string) => {
 };
 
 export function EventCard({ event }: EventCardProps) {
-  const tone = categoryTokens[event.category];
-  const BgIcon = categoryIcons[event.category];
+  const tone = categoryTokens[event.category] ?? categoryTokens.MEETUP;
+  const BgIcon = categoryIcons[event.category] ?? Users;
+  const CategoryIcon = categoryIcons[event.category] ?? Users;
 
   return (
     <div className="break-inside-avoid mb-6">
@@ -157,9 +158,7 @@ export function EventCard({ event }: EventCardProps) {
               variant="outline"
               className={`h-6 px-2 text-[11px] ${tone.text} border-border/50 backdrop-blur-[2px] bg-background/40 hover:bg-background/60 inline-flex items-center gap-1`}
             >
-              {React.createElement(categoryIcons[event.category], {
-                className: `w-3.5 h-3.5 ${tone.text}`,
-              })}
+              <CategoryIcon className={`w-3.5 h-3.5 ${tone.text}`} />
               <span>{event.category.toLowerCase()}</span>
             </Badge>
           </div>

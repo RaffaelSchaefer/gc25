@@ -218,6 +218,14 @@ export default function GoodieTrackerClient({
     },
   };
 
+  const defaultTokens = {
+    ring: "ring-muted-foreground/30",
+    gradFrom: "from-muted-foreground/10",
+    icon: "text-muted-foreground",
+    shadow: "shadow-muted-foreground/10 hover:shadow-muted-foreground/30",
+    idleArrow: "text-muted-foreground/40 dark:text-muted-foreground/40",
+  };
+
   // Realtime updates via socket.io similar to events
   useEffect(() => {
     let off: (() => void) | null = null;
@@ -456,7 +464,7 @@ export default function GoodieTrackerClient({
             const Icon =
               g.type === "GIFT" ? Gift : g.type === "FOOD" ? Utensils : CupSoda;
             const isPast = g.date ? new Date(g.date) < new Date() : false;
-            const tone = typeTokens[g.type];
+            const tone = typeTokens[g.type as keyof typeof typeTokens] ?? defaultTokens;
             const collected = g.collected;
             const cardRing = collected ? "ring-emerald-500/50" : tone.ring;
             const gradFrom = collected ? "from-emerald-500/15" : tone.gradFrom;
