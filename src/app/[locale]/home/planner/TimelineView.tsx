@@ -526,15 +526,18 @@ export function TimelineView({
                               {/* Category summary chips */}
                               <div className="flex flex-wrap gap-1.5">
                                 {dayCategories.map((cat) => {
-                                  const IconComp = categoryIcons[cat];
+                                  const IconComp = categoryIcons[cat] ?? Users;
+                                  const tone =
+                                    categoryTokens[cat as keyof typeof categoryTokens] ??
+                                    categoryTokens.MEETUP;
                                   return (
                                     <span
                                       key={cat}
-                                      className={`inline-flex items-center gap-1 h-6 px-2 rounded-full border ${categoryTokens[cat].chipBg} ${categoryTokens[cat].text} border-border/50 backdrop-blur-[2px]`}
+                                      className={`inline-flex items-center gap-1 h-6 px-2 rounded-full border ${tone.chipBg} ${tone.text} border-border/50 backdrop-blur-[2px]`}
                                       aria-label={`${t("timeline.categories")} ${cat}`}
                                     >
                                       <IconComp
-                                        className={`w-3.5 h-3.5 ${categoryTokens[cat].text}`}
+                                        className={`w-3.5 h-3.5 ${tone.text}`}
                                       />
                                       <span className="text-xs font-medium">
                                         {t(`categories.${cat.toLowerCase()}`)}
@@ -593,7 +596,9 @@ export function TimelineView({
                         day.events
                           .filter((e) => !deletedIds.has(e.id))
                           .map((event) => {
-                            const tone = categoryTokens[event.category];
+                            const tone =
+                              categoryTokens[event.category as keyof typeof categoryTokens] ??
+                              categoryTokens.MEETUP;
                             const priorityTone = getPriorityTone(
                               event.attendees,
                             );
@@ -627,7 +632,7 @@ export function TimelineView({
                                           >
                                             {(() => {
                                               const IconComp =
-                                                categoryIcons[merged.category];
+                                                categoryIcons[merged.category] ?? Users;
                                               return (
                                                 <IconComp
                                                   className={`w-3.5 h-3.5 ${tone.text}`}
@@ -1347,7 +1352,7 @@ export function TimelineView({
                                   </CardContent>
                                   {(() => {
                                     const BgIcon =
-                                      categoryIcons[merged.category];
+                                      categoryIcons[merged.category] ?? Users;
                                     return (
                                       <BgIcon
                                         aria-hidden
