@@ -20,6 +20,8 @@ import {
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
 } from "./prompt-input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import type {
   ToolCallSummary,
   ToolCallPart,
@@ -65,8 +67,34 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
     } catch {}
   }
 
+  const [reasoning, setReasoningState] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem("ai-reasoning") === "true";
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+  function setReasoning(value: boolean) {
+    setReasoningState(value);
+    try {
+      localStorage.setItem("ai-reasoning", String(value));
+    } catch {}
+  }
+
   const { messages, status, error, sendMessage, regenerate, stop } = useChat();
   const isLoading = status === "submitted" || status === "streaming";
+
+  const handleRegenerate = (options?: { messageId?: string }) =>
+    regenerate({
+      ...options,
+      headers: {
+        "x-persona": persona,
+        "x-model": reasoning ? "reasoning" : "default",
+      },
+    });
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -78,7 +106,12 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
     if (!value || isLoading) return;
     sendMessage(
       { role: "user", parts: [{ type: "text", text: value }] },
-      { headers: { "x-persona": persona } },
+      {
+        headers: {
+          "x-persona": persona,
+          "x-model": reasoning ? "reasoning" : "default",
+        },
+      },
     );
     setInput("");
   }
@@ -181,7 +214,12 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
     posthog.capture("ai_suggestion_clicked", { suggestion });
     sendMessage(
       { role: "user", parts: [{ type: "text", text: suggestion }] },
-      { headers: { "x-persona": persona } },
+      {
+        headers: {
+          "x-persona": persona,
+          "x-model": reasoning ? "reasoning" : "default",
+        },
+      },
     );
   };
 
@@ -195,7 +233,7 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
           session={session}
           userAvatar={userAvatar}
           toolSummaries={toolSummaries}
-          onRegenerate={regenerate}
+          onRegenerate={handleRegenerate}
         />
       </div>
 
@@ -241,7 +279,7 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
               disabled={
                 !messages.some((m) => m.role === "assistant") || isLoading
               }
-              onClick={() => regenerate()}
+              onClick={() => handleRegenerate()}
             >
               ↻
             </PromptInputButton>
@@ -250,6 +288,19 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
                 Stop
               </PromptInputButton>
             )}
+            <div className="flex items-center gap-1 px-1">
+              <Switch
+                id="reasoning-toggle"
+                checked={reasoning}
+                onCheckedChange={setReasoning}
+              />
+              <Label
+                htmlFor="reasoning-toggle"
+                className="text-xs cursor-pointer"
+              >
+                {reasoning ? "Thinking" : "Fast"}
+              </Label>
+            </div>
             <PromptInputModelSelect
               onValueChange={(value) => setPersona(value)}
               value={persona}
