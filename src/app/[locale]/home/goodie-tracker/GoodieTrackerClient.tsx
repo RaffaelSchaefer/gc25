@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
+import * as Dialog from "@radix-ui/react-dialog";
 import type { GoodieDto } from "@/app/(server)/goodies.actions";
 import {
   voteGoodie,
@@ -43,6 +44,7 @@ import {
   Plus,
   Trash2,
   Pencil,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -564,20 +566,36 @@ export default function GoodieTrackerClient({
                     </div>
                   </CardHeader>
                   {goodieImages[g.id] && (
-                    <div className="relative mx-5 mb-4 mt-1 rounded-lg overflow-hidden aspect-video border border-foreground/5 bg-foreground/5">
-                      <Image
-                        src={goodieImages[g.id]}
-                        alt={g.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover"
-                        priority={false}
-                      />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-black/10" />
-                      {collected && (
-                        <div className="absolute inset-0 ring-1 ring-inset ring-emerald-500/40" />
-                      )}
-                    </div>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <div className="relative mx-5 mb-4 mt-1 rounded-lg overflow-hidden aspect-video border border-foreground/5 bg-foreground/5 cursor-pointer">
+                          <Image
+                            src={goodieImages[g.id]}
+                            alt={g.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover"
+                            priority={false}
+                          />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-black/10" />
+                          {collected && (
+                            <div className="absolute inset-0 ring-1 ring-inset ring-emerald-500/40" />
+                          )}
+                        </div>
+                      </Dialog.Trigger>
+                      <Dialog.Portal>
+                        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
+                        <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                          <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
+                            <Image src={goodieImages[g.id]} alt={g.name} fill className="object-contain" />
+                          </div>
+                          <Dialog.Close className="absolute top-4 right-4 text-white">
+                            <X className="w-6 h-6" />
+                            <span className="sr-only">Close</span>
+                          </Dialog.Close>
+                        </Dialog.Content>
+                      </Dialog.Portal>
+                    </Dialog.Root>
                   )}
                   <CardContent className="space-y-3 text-sm px-5 pb-4 flex flex-col flex-1">
                     <p
