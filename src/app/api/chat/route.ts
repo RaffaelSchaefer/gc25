@@ -19,10 +19,7 @@ export async function POST(req: Request) {
   const requestId = headers.get("x-request-id") || randomUUID();
 
   const personaID = headers.get("x-persona")?.trim() || "neutral";
-  const modelId =
-    personaID === headers.get("x-model")?.trim() ||
-    process.env.OPENROUTER_MODEL ||
-    "google/gemini-2.5-flash";
+  const modelId = "google/gemini-2.5-flash";
 
   // ✨ NEU: Parent-Trace in Langfuse anlegen (klares, lesbares Naming)
   const parentTraceId = randomUUID();

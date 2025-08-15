@@ -519,7 +519,7 @@ export const getMyAgenda = tool({
     });
 
     const goodiesMapped = goodies.map((g) => {
-      const passed = now > g.date.getTime();
+      const passed = g.date ? now > g.date.getTime() : false;
       return {
         id: g.id,
         name: g.name,
