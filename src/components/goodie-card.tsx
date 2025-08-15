@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import * as Dialog from "@radix-ui/react-dialog";
 import type { GoodieDto } from "@/app/(server)/goodies.actions";
 import {
   Card,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Gift, Utensils, CupSoda } from "lucide-react";
+import { Gift, Utensils, CupSoda, X } from "lucide-react";
 
 interface Props {
   goodie: GoodieDto;
@@ -116,20 +117,36 @@ export function GoodieCard({ goodie, goodieImage }: Props) {
           </div>
         </CardHeader>
         {goodieImage && (
-          <div className="relative mx-5 mb-4 mt-1 rounded-lg overflow-hidden aspect-video border border-foreground/5 bg-foreground/5">
-            <Image
-              src={goodieImage}
-              alt={goodie.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover"
-              priority={false}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-black/10" />
-            {collected && (
-              <div className="absolute inset-0 ring-1 ring-inset ring-emerald-500/40" />
-            )}
-          </div>
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
+              <div className="relative mx-5 mb-4 mt-1 rounded-lg overflow-hidden aspect-video border border-foreground/5 bg-foreground/5 cursor-pointer">
+                <Image
+                  src={goodieImage}
+                  alt={goodie.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                  priority={false}
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/10 via-transparent to-black/10" />
+                {collected && (
+                  <div className="absolute inset-0 ring-1 ring-inset ring-emerald-500/40" />
+                )}
+              </div>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
+              <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
+                  <Image src={goodieImage} alt={goodie.name} fill className="object-contain" />
+                </div>
+                <Dialog.Close className="absolute top-4 right-4 text-white">
+                  <X className="w-6 h-6" />
+                  <span className="sr-only">Close</span>
+                </Dialog.Close>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         )}
         <CardContent className="space-y-3 text-sm px-5 pb-4 flex flex-col flex-1">
           <p
