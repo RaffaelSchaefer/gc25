@@ -26,6 +26,10 @@ model User {
   goodies       Goodie[]           @relation("GoodiesCreated")
   goodieVotes   GoodieVote[]
   goodieCollections GoodieCollection[]
+  posts         Post[]            @relation("PostsCreated")
+  taggedPostLinks PostTaggedUser[] @relation("PostTaggedUsers")
+  postComments  PostComment[]     @relation("PostCommentsCreated")
+  postLikes     PostLike[]        @relation("PostLikes")
 
   // AI Rate Limit Felder
   aiUsageCount   Int                @default(0) // Anzahl der AI-Nutzungen im aktuellen Zeitraum
@@ -104,6 +108,7 @@ model Event {
   createdBy    User               @relation("CreatedEvents", fields: [createdById], references: [id])
   updatedBy    User?              @relation("UpdatedEvents", fields: [updatedById], references: [id])
   participants EventParticipant[]
+  posts        Post[]
 
   @@index([createdById])
   @@index([updatedById])
@@ -160,6 +165,7 @@ model Goodie {
   createdBy      User         @relation("GoodiesCreated", fields: [createdById], references: [id], onDelete: Cascade)
   votes          GoodieVote[]
   collections    GoodieCollection[]
+  posts          Post[]
 
   @@index([createdById])
   @@index([type])
@@ -193,6 +199,65 @@ model GoodieCollection {
   @@unique([userId, goodieId])
   @@index([goodieId])
   @@map("goodie_collection")
+}
+
+model Post {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdById  String
+  content      String
+  imageUrl     String?
+  goodieId     String?
+  eventId      String?
+  createdBy    User     @relation("PostsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  goodie       Goodie?  @relation(fields: [goodieId], references: [id], onDelete: Cascade)
+  event        Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  taggedUsers  PostTaggedUser[]
+  comments     PostComment[]
+  likes        PostLike[]
+
+  @@index([createdById])
+  @@index([goodieId])
+  @@index([eventId])
+  @@map("post")
+}
+
+model PostTaggedUser {
+  postId String
+  userId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   User   @relation("PostTaggedUsers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+  @@map("post_tagged_user")
+}
+
+model PostComment {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  createdById String
+  postId      String
+  content     String
+  createdBy   User     @relation("PostCommentsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@map("post_comment")
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("PostLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@map("post_like")
 }
 
 enum GoodieType {

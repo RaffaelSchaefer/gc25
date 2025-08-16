@@ -33,3 +33,10 @@ export {
   clearGoodieVote,
   toggleCollectGoodie,
 } from "./actions";
+
+export {
+  listPosts,
+  createPost,
+  likePost,
+  addPostComment,
+} from "./posts";
