@@ -288,19 +288,6 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
                 Stop
               </PromptInputButton>
             )}
-            <div className="flex items-center gap-1 h-8 px-2 rounded-md border bg-background">
-              <Switch
-                id="reasoning-toggle"
-                checked={reasoning}
-                onCheckedChange={setReasoning}
-              />
-              <Label
-                htmlFor="reasoning-toggle"
-                className="text-xs cursor-pointer"
-              >
-                {reasoning ? "Thinking" : "Fast"}
-              </Label>
-            </div>
             <PromptInputModelSelect
               onValueChange={(value) => setPersona(value)}
               value={persona}
@@ -329,6 +316,20 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
                 </PromptInputModelSelectItem>
               </PromptInputModelSelectContent>
             </PromptInputModelSelect>
+            <div className="flex items-center gap-1 px-2">
+              <Switch
+                id="reasoning-toggle"
+                checked={reasoning}
+                onCheckedChange={setReasoning}
+                className="data-[state=checked]:bg-fuchsia-600 data-[state=unchecked]:bg-fuchsia-300 rounded-2xl"
+              />
+              <Label
+                htmlFor="reasoning-toggle"
+                className="text-xs cursor-pointer"
+              >
+                {reasoning ? "Thinking" : "Fast"}
+              </Label>
+            </div>
           </PromptInputTools>
           <PromptInputSubmit
             className="absolute right-2 bottom-2 bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-sm ring-1 ring-fuchsia-400/40 disabled:opacity-50 disabled:cursor-not-allowed"
