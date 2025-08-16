@@ -161,3 +161,71 @@ export const toggleCollectGoodie = tool({
     }
   },
 });
+
+export const reviewGoodie = tool({
+  description:
+    "Review a collected goodie with 1-5 stars and optional image (requires auth).",
+  inputSchema: z.object({
+    goodieId: z.string().min(1),
+    rating: z.coerce.number().int().min(1).max(5),
+    imageBase64: z.string().optional(),
+  }),
+  execute: async ({ goodieId, rating, imageBase64 }, options) => {
+    const ctx = (
+      options as {
+        experimental_context?: { session?: Session; headers?: Headers };
+      }
+    ).experimental_context;
+    let session = ctx?.session ?? null;
+    if (!session && ctx?.headers)
+      session = await getSessionFromHeaders(ctx.headers);
+    if (!session) return { error: "auth-required" };
+
+    const collected = await prisma.goodieCollection.findFirst({
+      where: { userId: session.user.id, goodieId },
+      select: { id: true },
+    });
+    if (!collected) return { error: "not-collected" };
+
+    let imageBytes: Buffer | undefined;
+    if (imageBase64) {
+      try {
+        imageBytes = Buffer.from(imageBase64, "base64");
+      } catch {
+        return { error: "invalid-image" };
+      }
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.goodieReview.upsert({
+        where: {
+          userId_goodieId: { userId: session!.user.id, goodieId },
+        },
+        create: {
+          userId: session!.user.id,
+          goodieId,
+          rating,
+          imageBytes,
+        },
+        update: { rating, imageBytes },
+      });
+
+      const avg = await tx.goodieReview.aggregate({
+        where: { goodieId },
+        _avg: { rating: true },
+      });
+
+      const voteAgg = await tx.goodieVote.aggregate({
+        where: { goodieId },
+        _sum: { value: true },
+      });
+
+      return {
+        avgRating: avg._avg.rating || 0,
+        totalScore: voteAgg._sum.value || 0,
+      };
+    });
+
+    return { ok: true, ...result, rating };
+  },
+});
