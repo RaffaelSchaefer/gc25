@@ -531,6 +531,7 @@ export type BroadcastMessage =
       goodie: {
         id: string;
         totalScore: number;
+        avgRating?: number;
       };
     }
   | { type: "goodie_collected"; goodieId: string; collectedCount: number }

@@ -23,6 +23,8 @@ export type GoodieDto = {
   totalScore: number; // sum of votes
   userVote: number; // -1/0/1
   collected: boolean;
+  avgRating: number;
+  userRating?: number | null;
 };
 
 async function getUserId() {
@@ -34,6 +36,7 @@ async function getUserId() {
 // Sorting heuristic weights
 const PERSONAL_WEIGHT = 3;
 const TOTAL_WEIGHT = 1;
+const REVIEW_WEIGHT = 2;
 const TIME_DECAY_HOURS = 8; // after this many hours relevance halves
 
 function computeRelevance(g: GoodieDto): number {
@@ -44,7 +47,12 @@ function computeRelevance(g: GoodieDto): number {
   const hoursDiff = (dateRef - now) / 36e5; // future positive, past negative
   // Basic time score: slightly favor upcoming within 24h, penalize far past
   const timeScore = Math.exp(-Math.abs(hoursDiff) / TIME_DECAY_HOURS);
-  return g.userVote * PERSONAL_WEIGHT + g.totalScore * TOTAL_WEIGHT + timeScore;
+  return (
+    g.userVote * PERSONAL_WEIGHT +
+    g.totalScore * TOTAL_WEIGHT +
+    (g.avgRating || 0) * REVIEW_WEIGHT +
+    timeScore
+  );
 }
 
 export async function listGoodies(): Promise<GoodieDto[]> {
@@ -54,6 +62,7 @@ export async function listGoodies(): Promise<GoodieDto[]> {
       votes: userId ? { where: { userId } } : false,
       _count: { select: { votes: true, collections: true } },
       collections: userId ? { where: { userId } } : false,
+      reviews: userId ? { where: { userId } } : false,
       createdBy: { select: { id: true, name: true, image: true } },
     },
     orderBy: { createdAt: "desc" },
@@ -67,6 +76,15 @@ export async function listGoodies(): Promise<GoodieDto[]> {
   });
   const voteMap = new Map<string, number>(
     (voteSums as any[]).map((v: any) => [v.goodieId, v._sum.value || 0]),
+  );
+
+  const reviewAvgs = await (prisma as any).goodieReview.groupBy({
+    by: ["goodieId"],
+    _avg: { rating: true },
+    where: { goodieId: { in: (goodies as any[]).map((g: any) => g.id) } },
+  });
+  const reviewMap = new Map<string, number>(
+    (reviewAvgs as any[]).map((r: any) => [r.goodieId, r._avg.rating || 0]),
   );
 
   const mapped: GoodieDto[] = (goodies as any[]).map((g: any) => ({
@@ -86,6 +104,8 @@ export async function listGoodies(): Promise<GoodieDto[]> {
     totalScore: voteMap.get(g.id) ?? 0,
     userVote: g.votes && g.votes.length > 0 ? g.votes[0].value : 0,
     collected: !!(g.collections && g.collections.length > 0),
+    avgRating: reviewMap.get(g.id) ?? 0,
+    userRating: g.reviews && g.reviews.length > 0 ? g.reviews[0].rating : null,
   }));
 
   // apply sorting heuristic
@@ -105,6 +125,7 @@ export async function getGoodieById(id: string): Promise<GoodieDto | null> {
       votes: userId ? { where: { userId } } : false,
       _count: { select: { votes: true, collections: true } },
       collections: userId ? { where: { userId } } : false,
+      reviews: userId ? { where: { userId } } : false,
       createdBy: { select: { id: true, name: true, image: true } },
     },
   });
@@ -117,6 +138,12 @@ export async function getGoodieById(id: string): Promise<GoodieDto | null> {
     where: { goodieId: id },
   });
   const totalScore = voteSums[0]?._sum.value || 0;
+
+  const reviewAgg = await (prisma as any).goodieReview.aggregate({
+    where: { goodieId: id },
+    _avg: { rating: true },
+  });
+  const avgRating = reviewAgg._avg.rating || 0;
 
   return {
     id: goodie.id,
@@ -140,6 +167,11 @@ export async function getGoodieById(id: string): Promise<GoodieDto | null> {
     userVote:
       goodie.votes && goodie.votes.length > 0 ? goodie.votes[0].value : 0,
     collected: !!(goodie.collections && goodie.collections.length > 0),
+    avgRating,
+    userRating:
+      goodie.reviews && goodie.reviews.length > 0
+        ? goodie.reviews[0].rating
+        : null,
   };
 }
 
@@ -354,4 +386,62 @@ export async function updateGoodie(
     },
   });
   return updated;
+}
+
+export async function reviewGoodie(input: {
+  goodieId: string;
+  rating: number;
+  image?: ArrayBuffer | Uint8Array | null;
+}) {
+  const userId = await getUserId();
+  if (!userId) throw new Error("Unauthorized");
+
+  const collected = await (prisma as any).goodieCollection.findFirst({
+    where: { userId, goodieId: input.goodieId },
+    select: { id: true },
+  });
+  if (!collected) throw new Error("Goodie not collected");
+
+  const imageBytes = input.image
+    ? Buffer.from(input.image as ArrayBuffer)
+    : undefined;
+
+  const result = await (prisma as any).$transaction(async (tx: any) => {
+    await tx.goodieReview.upsert({
+      where: { userId_goodieId: { userId, goodieId: input.goodieId } },
+      create: {
+        userId,
+        goodieId: input.goodieId,
+        rating: input.rating,
+        imageBytes,
+      },
+      update: { rating: input.rating, imageBytes },
+    });
+
+    const avg = await tx.goodieReview.aggregate({
+      where: { goodieId: input.goodieId },
+      _avg: { rating: true },
+    });
+
+    const voteAgg = await tx.goodieVote.aggregate({
+      where: { goodieId: input.goodieId },
+      _sum: { value: true },
+    });
+
+    return {
+      avgRating: avg._avg.rating || 0,
+      totalScore: voteAgg._sum.value || 0,
+    };
+  });
+
+  await broadcast({
+    type: "goodie_updated",
+    goodie: {
+      id: input.goodieId,
+      totalScore: result.totalScore,
+      avgRating: result.avgRating,
+    },
+  });
+
+  return result;
 }
