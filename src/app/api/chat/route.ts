@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     modelChoice === "reasoning"
       ? process.env.AI_MODEL_REASONING || "google/gemini-2.5-pro"
       : process.env.AI_MODEL || "google/gemini-2.5-flash";
+  const usageCost = modelChoice === "reasoning" ? 5 : 1;
 
   // ✨ NEU: Parent-Trace in Langfuse anlegen (klares, lesbares Naming)
   const parentTraceId = randomUUID();
@@ -77,7 +78,7 @@ export async function POST(req: Request) {
         });
         user.aiUsageCount = 0;
       }
-      if (!user.isAdmin && user.aiUsageCount >= limit) {
+      if (!user.isAdmin && user.aiUsageCount + usageCost > limit) {
         return new Response(
           JSON.stringify({
             error: "AI-Rate-Limit erreicht. Bitte morgen wieder versuchen.",
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
       }
       await prisma.user.update({
         where: { id: user.id },
-        data: { aiUsageCount: { increment: 1 } },
+        data: { aiUsageCount: { increment: usageCost } },
       });
     }
   }
