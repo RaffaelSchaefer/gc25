@@ -288,7 +288,7 @@ export function AIChat({ open, session, userAvatar }: AIChatProps) {
                 Stop
               </PromptInputButton>
             )}
-            <div className="flex items-center gap-1 px-1">
+            <div className="flex items-center gap-1 h-8 px-2 rounded-md border bg-background">
               <Switch
                 id="reasoning-toggle"
                 checked={reasoning}
