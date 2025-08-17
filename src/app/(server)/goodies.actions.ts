@@ -1,4 +1,26 @@
 "use server";
+// Opt-in/Opt-out für Goodie-Reminder
+export async function toggleGoodieNotifier(goodieId: string, enabled: boolean) {
+  const userId = await getUserId();
+  if (!userId) throw new Error("Unauthorized");
+  if (enabled) {
+    // Upsert: Reminder aktivieren
+    await prisma.goodieNotifier.upsert({
+      where: { userId_goodieId: { userId, goodieId } },
+      update: { reminderEnabled: true },
+      create: { userId, goodieId, reminderEnabled: true },
+    });
+  } else {
+    // Reminder deaktivieren (entweder löschen oder Flag setzen)
+    await prisma.goodieNotifier.updateMany({
+      where: { userId, goodieId },
+      data: { reminderEnabled: false },
+    });
+  }
+  // Optional: Broadcast für UI-Update
+  await broadcast({ type: "goodie_notifier_changed", goodieId });
+  return { ok: true };
+}
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { prisma } from "@/lib/prisma";
@@ -199,7 +221,6 @@ export async function createGoodie(input: {
       registrationUrl: created.registrationUrl ?? null,
       totalScore: 0,
       createdAt: created.createdAt.toISOString(),
-      reminderEnabled: created.reminderEnabled,
       createdBy: created.createdBy
         ? {
             id: created.createdBy.id,
@@ -360,7 +381,6 @@ export async function updateGoodie(
       date: updated.date ? updated.date.toISOString() : null,
       registrationUrl: updated.registrationUrl ?? null,
       updatedAt: updated.updatedAt.toISOString(),
-      reminderEnabled: updated.reminderEnabled,
     },
   });
   return updated;

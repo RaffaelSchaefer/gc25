@@ -572,7 +572,8 @@ export type BroadcastMessage =
         registrationUrl?: string | null;
         updatedAt: string;
       };
-    };
+    }
+  | { type: "goodie_notifier_changed"; goodieId: string };
 
 type WSClient = {
   send: (data: string) => void;
