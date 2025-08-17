@@ -23,6 +23,7 @@ export type GoodieDto = {
   totalScore: number; // sum of votes
   userVote: number; // -1/0/1
   collected: boolean;
+  reminderEnabled: boolean;
 };
 
 async function getUserId() {
@@ -86,6 +87,7 @@ export async function listGoodies(): Promise<GoodieDto[]> {
     totalScore: voteMap.get(g.id) ?? 0,
     userVote: g.votes && g.votes.length > 0 ? g.votes[0].value : 0,
     collected: !!(g.collections && g.collections.length > 0),
+    reminderEnabled: g.reminderEnabled,
   }));
 
   // apply sorting heuristic
@@ -140,6 +142,7 @@ export async function getGoodieById(id: string): Promise<GoodieDto | null> {
     userVote:
       goodie.votes && goodie.votes.length > 0 ? goodie.votes[0].value : 0,
     collected: !!(goodie.collections && goodie.collections.length > 0),
+    reminderEnabled: goodie.reminderEnabled,
   };
 }
 
@@ -180,6 +183,7 @@ export async function createGoodie(input: {
       date: true,
       registrationUrl: true,
       createdAt: true,
+      reminderEnabled: true,
       createdBy: { select: { id: true, name: true, image: true } },
     },
   });
@@ -195,6 +199,7 @@ export async function createGoodie(input: {
       registrationUrl: created.registrationUrl ?? null,
       totalScore: 0,
       createdAt: created.createdAt.toISOString(),
+      reminderEnabled: created.reminderEnabled,
       createdBy: created.createdBy
         ? {
             id: created.createdBy.id,
@@ -300,6 +305,7 @@ export async function updateGoodie(
     date?: string | null;
     registrationUrl?: string | null;
     image?: ArrayBuffer | Uint8Array | null; // if provided replace; if undefined keep; if null clear
+    reminderEnabled?: boolean;
   },
 ) {
   const userId = await getUserId();
@@ -324,6 +330,8 @@ export async function updateGoodie(
     if (patch.image === null) data.imageBytes = null;
     else data.imageBytes = Buffer.from(patch.image as ArrayBuffer);
   }
+  if (patch.reminderEnabled !== undefined)
+    data.reminderEnabled = patch.reminderEnabled;
 
   const updated = await (prisma as any).goodie.update({
     where: { id },
@@ -337,6 +345,7 @@ export async function updateGoodie(
       date: true,
       registrationUrl: true,
       updatedAt: true,
+      reminderEnabled: true,
       // keep creator stable (not needed in update broadcast currently)
     },
   });
@@ -351,7 +360,28 @@ export async function updateGoodie(
       date: updated.date ? updated.date.toISOString() : null,
       registrationUrl: updated.registrationUrl ?? null,
       updatedAt: updated.updatedAt.toISOString(),
+      reminderEnabled: updated.reminderEnabled,
     },
   });
   return updated;
+}
+
+export async function setGoodieReminder(id: string, enabled: boolean) {
+  const userId = await getUserId();
+  if (!userId) throw new Error("Unauthorized");
+  const existing = await (prisma as any).goodie.findUnique({
+    where: { id },
+    select: { createdById: true },
+  });
+  if (!existing) throw new Error("Not found");
+  if (existing.createdById !== userId) throw new Error("Forbidden");
+  await (prisma as any).goodie.update({
+    where: { id },
+    data: { reminderEnabled: enabled },
+  });
+  await broadcast({
+    type: "goodie_updated",
+    goodie: { id, reminderEnabled: enabled },
+  });
+  return { ok: true };
 }

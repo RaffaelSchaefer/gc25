@@ -131,6 +131,7 @@ model EventParticipant {
   createdAt DateTime @default(now())
   userId    String
   eventId   String
+  reminderEnabled Boolean @default(true)
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -156,6 +157,7 @@ model Goodie {
   date           DateTime?
   registrationUrl String?     @db.VarChar(300)
   imageBytes     Bytes?
+  reminderEnabled Boolean @default(true)
 
   createdBy      User         @relation("GoodiesCreated", fields: [createdById], references: [id], onDelete: Cascade)
   votes          GoodieVote[]

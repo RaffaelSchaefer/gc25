@@ -22,6 +22,7 @@ export async function GET() {
       slug: true,
       startDate: true,
       participants: {
+        where: { reminderEnabled: true },
         select: {
           user: { select: { name: true, email: true } },
         },

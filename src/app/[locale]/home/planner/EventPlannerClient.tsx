@@ -25,6 +25,7 @@ import {
   createEvent,
   joinEvent,
   cancelJoin,
+  setEventReminder,
 } from "../../../(server)/events.actions";
 import { toast } from "sonner";
 
@@ -38,6 +39,7 @@ type TimelinedEvent = {
   description?: string | null;
   attendees: number;
   userJoined: boolean;
+  reminderEnabled: boolean;
   startDate: string;
   endDate: string;
   createdById: string;
@@ -129,6 +131,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
         url: payload.url ?? "",
         attendees: 0,
         userJoined: false,
+        reminderEnabled: false,
         startDate: payload.startDate,
         endDate: payload.endDate,
         createdById: payload.createdById,
@@ -257,7 +260,12 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
             ...day,
             events: day.events.map((event) =>
               event.id === eventId
-                ? { ...event, userJoined: true, attendees: result.attendees }
+                ? {
+                    ...event,
+                    userJoined: true,
+                    attendees: result.attendees,
+                    reminderEnabled: true,
+                  }
                 : event,
             ),
           })),
@@ -272,7 +280,12 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
             ...day,
             events: day.events.map((event) =>
               event.id === eventId
-                ? { ...event, userJoined: false, attendees: result.attendees }
+                ? {
+                    ...event,
+                    userJoined: false,
+                    attendees: result.attendees,
+                    reminderEnabled: false,
+                  }
                 : event,
             ),
           })),
@@ -281,6 +294,26 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
     } catch (error) {
       toast.error(t("toast.join_error"));
       console.error("Error toggling join:", error);
+    }
+  };
+
+  const handleToggleReminder = async (eventId: string, enabled: boolean) => {
+    try {
+      await setEventReminder(eventId, enabled);
+      setEvents((prev) =>
+        prev.map((day) => ({
+          ...day,
+          events: day.events.map((event) =>
+            event.id === eventId
+              ? { ...event, reminderEnabled: enabled }
+              : event,
+          ),
+        })),
+      );
+      toast.success(enabled ? "Reminder on" : "Reminder off");
+    } catch (error) {
+      toast.error("Failed to update reminder");
+      console.error("Error toggling reminder:", error);
     }
   };
 
@@ -465,6 +498,7 @@ export function EventPlannerClient({ initialEvents }: EventPlannerClientProps) {
               viewMode={viewMode}
               onCreateEvent={() => setIsCreateModalOpen(true)}
               onToggleJoin={handleToggleJoin}
+              onToggleReminder={handleToggleReminder}
             />
           )}
         </TabsContent>

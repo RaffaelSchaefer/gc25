@@ -14,6 +14,7 @@ export async function GET() {
         gte: start,
         lt: end,
       },
+      reminderEnabled: true,
     },
     select: {
       name: true,

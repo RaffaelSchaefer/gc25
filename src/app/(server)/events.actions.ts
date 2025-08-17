@@ -16,6 +16,7 @@ export type TimelinedEvent = {
   description?: string | null;
   attendees: number;
   userJoined: boolean;
+  reminderEnabled: boolean;
   startDate: string; // ISO
   endDate: string; // ISO
   createdById: string;
@@ -109,6 +110,7 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
       participants: {
         select: {
           userId: true,
+          reminderEnabled: true,
           user: {
             select: { id: true, name: true, image: true },
           },
@@ -134,9 +136,11 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
     }
 
     const attendees = e.participants.length;
-    const userJoined = userId
-      ? e.participants.some((p) => p.userId === userId)
-      : false;
+    const participant = userId
+      ? e.participants.find((p) => p.userId === userId)
+      : undefined;
+    const userJoined = Boolean(participant);
+    const reminderEnabled = participant ? participant.reminderEnabled : false;
 
     byDay.get(dateISO)!.events.push({
       id: e.id,
@@ -148,6 +152,7 @@ export async function listPublishedEvents(): Promise<DayBucket[]> {
       description: e.description,
       attendees,
       userJoined,
+      reminderEnabled,
       startDate: e.startDate.toISOString(),
       endDate: e.endDate.toISOString(),
       createdById: e.createdById,
@@ -198,6 +203,7 @@ export async function getEventById(id: string): Promise<TimelinedEvent | null> {
       participants: {
         select: {
           userId: true,
+          reminderEnabled: true,
           user: {
             select: { id: true, name: true, image: true },
           },
@@ -213,9 +219,11 @@ export async function getEventById(id: string): Promise<TimelinedEvent | null> {
   const time = toHHmmLocal(start);
 
   const attendees = event.participants.length;
-  const userJoined = userId
-    ? event.participants.some((p) => p.userId === userId)
-    : false;
+  const participant = userId
+    ? event.participants.find((p) => p.userId === userId)
+    : undefined;
+  const userJoined = Boolean(participant);
+  const reminderEnabled = participant ? participant.reminderEnabled : false;
 
   return {
     id: event.id,
@@ -227,6 +235,7 @@ export async function getEventById(id: string): Promise<TimelinedEvent | null> {
     description: event.description,
     attendees,
     userJoined,
+    reminderEnabled,
     startDate: event.startDate.toISOString(),
     endDate: event.endDate.toISOString(),
     createdById: event.createdById,
@@ -451,6 +460,21 @@ export async function joinEvent(eventId: string) {
   return { ok: true, attendees };
 }
 
+export async function setEventReminder(eventId: string, enabled: boolean) {
+  const userId = await getSessionUserId();
+  if (!userId) throw new Error("Unauthorized");
+  await prisma.eventParticipant.update({
+    where: { userId_eventId: { userId, eventId } },
+    data: { reminderEnabled: enabled },
+  });
+  await broadcast({
+    type: "participant_changed",
+    eventId,
+    attendees: await prisma.eventParticipant.count({ where: { eventId } }),
+  });
+  return { ok: true };
+}
+
 /**
  * Cancel participation in an event. Requires authentication.
  */
@@ -530,7 +554,8 @@ export type BroadcastMessage =
       type: "goodie_updated";
       goodie: {
         id: string;
-        totalScore: number;
+        totalScore?: number;
+        reminderEnabled?: boolean;
       };
     }
   | { type: "goodie_collected"; goodieId: string; collectedCount: number }

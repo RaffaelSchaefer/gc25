@@ -17,6 +17,7 @@ type TimelinedEvent = {
   description?: string | null;
   attendees: number;
   userJoined: boolean;
+  reminderEnabled: boolean;
   startDate: string;
   endDate: string;
   createdById: string;
