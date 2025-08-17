@@ -1,5 +1,7 @@
 import { registerOTel } from "@vercel/otel";
 import { LangfuseExporter } from "langfuse-vercel";
+import cron from "node-cron";
+import { sendEventReminders, sendGoodieReminders } from "@/lib/reminders";
 
 export function register() {
   registerOTel({
@@ -7,6 +9,11 @@ export function register() {
     traceExporter: new LangfuseExporter({
       debug: process.env.NODE_ENV !== "production",
     }),
+  });
+
+  cron.schedule("* * * * *", () => {
+    sendEventReminders().catch(console.error);
+    sendGoodieReminders().catch(console.error);
   });
 }
 
