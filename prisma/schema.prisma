@@ -1,3 +1,17 @@
+model GoodieNotifier {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String
+  goodieId  String
+  reminderEnabled Boolean @default(false)
+  goodie    Goodie   @relation(fields: [goodieId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goodieId])
+  @@index([goodieId])
+  @@index([userId])
+  @@map("goodie_notifier")
+}
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
@@ -26,6 +40,7 @@ model User {
   goodies       Goodie[]           @relation("GoodiesCreated")
   goodieVotes   GoodieVote[]
   goodieCollections GoodieCollection[]
+  goodieNotifiers GoodieNotifier[]
 
   // AI Rate Limit Felder
   aiUsageCount   Int                @default(0) // Anzahl der AI-Nutzungen im aktuellen Zeitraum
@@ -131,6 +146,7 @@ model EventParticipant {
   createdAt DateTime @default(now())
   userId    String
   eventId   String
+  reminderEnabled Boolean @default(true)
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -156,10 +172,12 @@ model Goodie {
   date           DateTime?
   registrationUrl String?     @db.VarChar(300)
   imageBytes     Bytes?
+  reminderEnabled Boolean @default(true)
 
   createdBy      User         @relation("GoodiesCreated", fields: [createdById], references: [id], onDelete: Cascade)
   votes          GoodieVote[]
   collections    GoodieCollection[]
+  notifiers      GoodieNotifier[]
 
   @@index([createdById])
   @@index([type])

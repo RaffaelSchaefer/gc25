@@ -105,6 +105,7 @@ export const getGoodieInformation = tool({
         instructions: g.instructions,
         date: g.date ? g.date.toISOString() : null,
         registrationUrl: g.registrationUrl ?? null,
+        reminderEnabled: g.reminderEnabled,
         collected,
         totalScore,
         createdBy: g.createdBy

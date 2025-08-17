@@ -49,6 +49,8 @@ import {
   PartyPopper,
   Plane,
   Trophy,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { EventCategory } from "@prisma/client";
 import { AvatarStack } from "@/components/ui/kibo-ui/avatar-stack/AvatarStack";
@@ -75,6 +77,7 @@ type TimelinedEvent = {
   description?: string | null;
   attendees: number;
   userJoined: boolean;
+  reminderEnabled: boolean;
   startDate: string;
   endDate: string;
   createdById: string;
@@ -111,6 +114,7 @@ interface TimelineViewProps {
   viewMode: "grid" | "list";
   onCreateEvent?: () => void;
   onToggleJoin?: (eventId: string, nextJoined: boolean) => void;
+  onToggleReminder?: (eventId: string, enabled: boolean) => void;
 }
 
 const categoryTokens = {
@@ -251,6 +255,7 @@ export function TimelineView({
   viewMode,
   onCreateEvent,
   onToggleJoin,
+  onToggleReminder,
 }: TimelineViewProps) {
   const t = useTranslations("planner");
   const { data: session } = authClient.useSession();
@@ -528,8 +533,9 @@ export function TimelineView({
                                 {dayCategories.map((cat) => {
                                   const IconComp = categoryIcons[cat] ?? Users;
                                   const tone =
-                                    categoryTokens[cat as keyof typeof categoryTokens] ??
-                                    categoryTokens.MEETUP;
+                                    categoryTokens[
+                                      cat as keyof typeof categoryTokens
+                                    ] ?? categoryTokens.MEETUP;
                                   return (
                                     <span
                                       key={cat}
@@ -597,8 +603,9 @@ export function TimelineView({
                           .filter((e) => !deletedIds.has(e.id))
                           .map((event) => {
                             const tone =
-                              categoryTokens[event.category as keyof typeof categoryTokens] ??
-                              categoryTokens.MEETUP;
+                              categoryTokens[
+                                event.category as keyof typeof categoryTokens
+                              ] ?? categoryTokens.MEETUP;
                             const priorityTone = getPriorityTone(
                               event.attendees,
                             );
@@ -632,7 +639,9 @@ export function TimelineView({
                                           >
                                             {(() => {
                                               const IconComp =
-                                                categoryIcons[merged.category] ?? Users;
+                                                categoryIcons[
+                                                  merged.category
+                                                ] ?? Users;
                                               return (
                                                 <IconComp
                                                   className={`w-3.5 h-3.5 ${tone.text}`}
@@ -716,7 +725,7 @@ export function TimelineView({
                                               Comments
                                             </TooltipContent>
                                           </Tooltip>
-                                          <div className="basis-full sm:basis-auto">
+                                          <div className="basis-full sm:basis-auto flex items-center gap-2">
                                             <Button
                                               variant={
                                                 merged.userJoined
@@ -741,6 +750,27 @@ export function TimelineView({
                                               {merged.userJoined
                                                 ? t("joined")
                                                 : t("join")}
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="w-full sm:w-auto justify-center text-xs"
+                                              onClick={() =>
+                                                onToggleReminder?.(
+                                                  merged.id,
+                                                  !merged.reminderEnabled,
+                                                )
+                                              }
+                                              disabled={!merged.userJoined}
+                                              aria-pressed={
+                                                merged.reminderEnabled
+                                              }
+                                            >
+                                              {merged.reminderEnabled ? (
+                                                <Bell className="w-4 h-4" />
+                                              ) : (
+                                                <BellOff className="w-4 h-4" />
+                                              )}
                                             </Button>
                                           </div>
                                         </div>

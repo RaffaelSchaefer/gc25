@@ -11,6 +11,7 @@ import {
   createGoodie,
   deleteGoodie,
   updateGoodie,
+  setGoodieReminder,
 } from "@/app/(server)/goodies.actions";
 import { GoodieCreateModal } from "./GoodieCreateModal";
 import { useTranslations } from "next-intl";
@@ -45,6 +46,8 @@ import {
   Trash2,
   Pencil,
   X,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -138,6 +141,24 @@ export default function GoodieTrackerClient({
         );
       } catch {
         toast.error(t("errors.collect"));
+      }
+    });
+  };
+
+  const onToggleReminder = (id: string) => {
+    startTransition(async () => {
+      try {
+        const g = goodies.find((gg) => gg.id === id);
+        const next = !g?.reminderEnabled;
+        await setGoodieReminder(id, next);
+        setGoodies((prev) =>
+          prev.map((gd) =>
+            gd.id === id ? { ...gd, reminderEnabled: next } : gd,
+          ),
+        );
+        toast.success(next ? "Reminder on" : "Reminder off");
+      } catch {
+        toast.error("Could not update reminder");
       }
     });
   };
@@ -266,7 +287,15 @@ export default function GoodieTrackerClient({
             setGoodies((prev) =>
               prev.map((g) =>
                 g.id === msg.goodie.id
-                  ? { ...g, totalScore: msg.goodie.totalScore }
+                  ? {
+                      ...g,
+                      ...(msg.goodie.totalScore !== undefined
+                        ? { totalScore: msg.goodie.totalScore }
+                        : {}),
+                      ...(msg.goodie.reminderEnabled !== undefined
+                        ? { reminderEnabled: msg.goodie.reminderEnabled }
+                        : {}),
+                    }
                   : g,
               ),
             );
@@ -314,6 +343,7 @@ export default function GoodieTrackerClient({
           totalScore: 0,
           userVote: 0,
           collected: false,
+          reminderEnabled: true,
         },
         ...prev,
       ]);
@@ -341,6 +371,7 @@ export default function GoodieTrackerClient({
                 date: updated.date?.toString() || null,
                 registrationUrl: updated.registrationUrl ?? null,
                 updatedAt: updated.updatedAt.toString(),
+                reminderEnabled: updated.reminderEnabled,
               }
             : g,
         ),
@@ -466,7 +497,8 @@ export default function GoodieTrackerClient({
             const Icon =
               g.type === "GIFT" ? Gift : g.type === "FOOD" ? Utensils : CupSoda;
             const isPast = g.date ? new Date(g.date) < new Date() : false;
-            const tone = typeTokens[g.type as keyof typeof typeTokens] ?? defaultTokens;
+            const tone =
+              typeTokens[g.type as keyof typeof typeTokens] ?? defaultTokens;
             const collected = g.collected;
             const cardRing = collected ? "ring-emerald-500/50" : tone.ring;
             const gradFrom = collected ? "from-emerald-500/15" : tone.gradFrom;
@@ -587,7 +619,12 @@ export default function GoodieTrackerClient({
                         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/80" />
                         <Dialog.Content className="fixed inset-0 z-50 flex items-center justify-center p-4">
                           <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
-                            <Image src={goodieImages[g.id]} alt={g.name} fill className="object-contain" />
+                            <Image
+                              src={goodieImages[g.id]}
+                              alt={g.name}
+                              fill
+                              className="object-contain"
+                            />
                           </div>
                           <Dialog.Close className="absolute top-4 right-4 text-white">
                             <X className="w-6 h-6" />
@@ -659,6 +696,24 @@ export default function GoodieTrackerClient({
                           <CheckCircle2 className="w-4 h-4 mr-1" />{" "}
                           {collected ? t("uncheck") : t("check")}
                         </Button>
+                        {currentUserId && g.createdById === currentUserId && (
+                          <Button
+                            size="sm"
+                            aria-pressed={g.reminderEnabled}
+                            onClick={() => onToggleReminder(g.id)}
+                            className={`h-8 px-3 justify-center flex items-center border transition-colors ${
+                              g.reminderEnabled
+                                ? "bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-600 shadow shadow-indigo-600/30"
+                                : "text-indigo-700 dark:text-indigo-300 bg-indigo-500/15 dark:bg-indigo-500/20 hover:bg-indigo-500/25 border-indigo-300 hover:border-indigo-400"
+                            }`}
+                          >
+                            {g.reminderEnabled ? (
+                              <Bell className="w-4 h-4" />
+                            ) : (
+                              <BellOff className="w-4 h-4" />
+                            )}
+                          </Button>
+                        )}
                         {currentUserId && g.createdById === currentUserId && (
                           <Button
                             size="sm"
