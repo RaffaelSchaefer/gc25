@@ -243,9 +243,27 @@ export const getMyGoodies = tool({
           type: true,
           location: true,
           date: true,
+          reviews: {
+            where: { userId: ctx.session!.user.id },
+            select: { rating: true },
+          },
         },
       });
-      return rows.map((g) => ({ ...g, collected: true }));
+      const ids = rows.map((g) => g.id);
+      const avgRows = await prisma.goodieReview.groupBy({
+        by: ["goodieId"],
+        where: { goodieId: { in: ids } },
+        _avg: { rating: true },
+      });
+      const avgMap = new Map(
+        avgRows.map((r) => [r.goodieId, r._avg.rating || 0]),
+      );
+      return rows.map((g) => ({
+        ...g,
+        collected: true,
+        avgRating: avgMap.get(g.id) || 0,
+        userRating: g.reviews && g.reviews.length > 0 ? g.reviews[0].rating : null,
+      }));
     }
 
     const rows = await prisma.goodieCollection.findMany({
@@ -260,11 +278,32 @@ export const getMyGoodies = tool({
             type: true,
             location: true,
             date: true,
+            reviews: {
+              where: { userId: ctx.session!.user.id },
+              select: { rating: true },
+            },
           },
         },
       },
     });
-    return rows.map((c) => ({ ...c.goodie, collected: true }));
+    const ids = rows.map((c) => c.goodie.id);
+    const avgRows = await prisma.goodieReview.groupBy({
+      by: ["goodieId"],
+      where: { goodieId: { in: ids } },
+      _avg: { rating: true },
+    });
+    const avgMap = new Map(
+      avgRows.map((r) => [r.goodieId, r._avg.rating || 0]),
+    );
+    return rows.map((c) => ({
+      ...c.goodie,
+      collected: true,
+      avgRating: avgMap.get(c.goodie.id) || 0,
+      userRating:
+        c.goodie.reviews && c.goodie.reviews.length > 0
+          ? c.goodie.reviews[0].rating
+          : null,
+    }));
   },
 });
 
@@ -440,8 +479,22 @@ export const getGoodies = tool({
               select: { id: true },
             }
           : false,
+        reviews: session
+          ? {
+              where: { userId: session.user.id },
+              select: { rating: true },
+            }
+          : false,
       },
     });
+
+    const ids = rows.map((g: any) => g.id);
+    const avgRows = await prisma.goodieReview.groupBy({
+      by: ["goodieId"],
+      where: { goodieId: { in: ids } },
+      _avg: { rating: true },
+    });
+    const avgMap = new Map(avgRows.map((r) => [r.goodieId, r._avg.rating || 0]));
 
     const mapped = rows.map((g: any) => ({
       id: g.id,
@@ -454,6 +507,11 @@ export const getGoodies = tool({
         Array.isArray(g.collections) &&
         g.collections.length > 0
       ),
+      avgRating: avgMap.get(g.id) || 0,
+      userRating:
+        session && Array.isArray(g.reviews) && g.reviews.length > 0
+          ? g.reviews[0].rating
+          : null,
     }));
     return collectedOnly ? mapped.filter((g) => g.collected) : mapped;
   },

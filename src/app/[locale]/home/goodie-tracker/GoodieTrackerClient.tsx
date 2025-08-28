@@ -11,8 +11,10 @@ import {
   createGoodie,
   deleteGoodie,
   updateGoodie,
+  reviewGoodie,
 } from "@/app/(server)/goodies.actions";
 import { GoodieCreateModal } from "./GoodieCreateModal";
+import { GoodieReviewModal } from "./GoodieReviewModal";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,12 +75,14 @@ export default function GoodieTrackerClient({
   const allTypes: Array<GoodieDto["type"]> = ["GIFT", "FOOD", "DRINK"];
   const [activeTypes, setActiveTypes] = useState<GoodieDto["type"][]>(allTypes);
   const [isPending, startTransition] = useTransition();
+  const [reviewPending, startReview] = useTransition();
   const [creating, setCreating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<GoodieDto | null>(null);
   const [viewMode] = useState<"grid" | "list">("grid");
   const [goodieImages, setGoodieImages] = useState<Record<string, string>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState<GoodieDto | null>(null);
 
   // Lazy attempt to fetch images for goodies (only once per id)
   useEffect(() => {
@@ -158,6 +162,31 @@ export default function GoodieTrackerClient({
     });
   };
 
+  const handleReviewSubmit = (rating: number, image?: File | null) => {
+    if (!reviewing) return;
+    startReview(async () => {
+      try {
+        const imgBuf = image ? await image.arrayBuffer() : undefined;
+        const res = await reviewGoodie({
+          goodieId: reviewing.id,
+          rating,
+          image: imgBuf ?? null,
+        });
+        setGoodies((prev) =>
+          prev.map((g) =>
+            g.id === reviewing.id
+              ? { ...g, avgRating: res.avgRating, userRating: rating }
+              : g,
+          ),
+        );
+        toast.success(t("review_saved"));
+        setReviewing(null);
+      } catch {
+        toast.error(t("errors.review"));
+      }
+    });
+  };
+
   const filtered = goodies.filter(
     (g) => (showCollected || !g.collected) && activeTypes.includes(g.type),
   );
@@ -165,6 +194,7 @@ export default function GoodieTrackerClient({
   // Relevanz-Berechnung (spiegelt Server-Heuristik) für konsistente Sortierung nach Ranking
   const PERSONAL_WEIGHT = 3;
   const TOTAL_WEIGHT = 1;
+  const REVIEW_WEIGHT = 2;
   const TIME_DECAY_HOURS = 8; // nach dieser Zeit halbiert sich Einfluss
   const computeRelevance = (g: GoodieDto) => {
     const now = Date.now();
@@ -174,7 +204,10 @@ export default function GoodieTrackerClient({
     const hoursDiff = (reference - now) / 36e5; // Zukunft positiv
     const timeScore = Math.exp(-Math.abs(hoursDiff) / TIME_DECAY_HOURS);
     return (
-      g.userVote * PERSONAL_WEIGHT + g.totalScore * TOTAL_WEIGHT + timeScore
+      g.userVote * PERSONAL_WEIGHT +
+      g.totalScore * TOTAL_WEIGHT +
+      (g.avgRating || 0) * REVIEW_WEIGHT +
+      timeScore
     );
   };
   const ranked = [...filtered].sort((a, b) => {
@@ -258,6 +291,8 @@ export default function GoodieTrackerClient({
                   totalScore: g.totalScore,
                   userVote: 0,
                   collected: false,
+                  avgRating: 0,
+                  userRating: null,
                 },
                 ...prev,
               ];
@@ -266,7 +301,14 @@ export default function GoodieTrackerClient({
             setGoodies((prev) =>
               prev.map((g) =>
                 g.id === msg.goodie.id
-                  ? { ...g, totalScore: msg.goodie.totalScore }
+                  ? {
+                      ...g,
+                      totalScore: msg.goodie.totalScore,
+                      avgRating:
+                        msg.goodie.avgRating !== undefined
+                          ? msg.goodie.avgRating
+                          : g.avgRating,
+                    }
                   : g,
               ),
             );
@@ -314,6 +356,8 @@ export default function GoodieTrackerClient({
           totalScore: 0,
           userVote: 0,
           collected: false,
+          avgRating: 0,
+          userRating: null,
         },
         ...prev,
       ]);
@@ -659,6 +703,15 @@ export default function GoodieTrackerClient({
                           <CheckCircle2 className="w-4 h-4 mr-1" />{" "}
                           {collected ? t("uncheck") : t("check")}
                         </Button>
+                        {collected && (
+                          <Button
+                            size="sm"
+                            onClick={() => setReviewing(g)}
+                            className="flex-1 justify-center border"
+                          >
+                            {t("review")}
+                          </Button>
+                        )}
                         {currentUserId && g.createdById === currentUserId && (
                           <Button
                             size="sm"
@@ -714,6 +767,15 @@ export default function GoodieTrackerClient({
               }
             : undefined
         }
+      />
+      <GoodieReviewModal
+        open={!!reviewing}
+        onOpenChange={(o) => {
+          if (!o) setReviewing(null);
+        }}
+        goodieName={reviewing?.name || ""}
+        onSubmit={({ rating, image }) => handleReviewSubmit(rating, image || null)}
+        pending={reviewPending}
       />
     </div>
   );

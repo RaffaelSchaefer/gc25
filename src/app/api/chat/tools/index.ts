@@ -32,4 +32,5 @@ export {
   voteGoodie,
   clearGoodieVote,
   toggleCollectGoodie,
+  reviewGoodie,
 } from "./actions";

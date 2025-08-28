@@ -406,6 +406,8 @@
     "uncheck": "Zurücksetzen",
     "collected": "Gesammelt",
     "score": "Score {score}",
+    "review": "Bewerten",
+    "review_saved": "Bewertung gespeichert",
     "register_link": "Registrierungs- / Claim-Link",
     "filters": {
       "show_collected": "Gesammelte anzeigen",
@@ -425,7 +427,8 @@
       "vote": "Abstimmung fehlgeschlagen",
       "collect": "Umschalten fehlgeschlagen",
       "create": "Erstellung fehlgeschlagen",
-      "delete": "Löschen fehlgeschlagen"
+      "delete": "Löschen fehlgeschlagen",
+      "review": "Bewertung fehlgeschlagen"
     },
     "confirm": {
       "delete_title": "Goodie löschen?",
@@ -438,7 +441,11 @@
       "edit_title": "{name} bearbeiten",
       "create": "Goodie erstellen",
       "save_changes": "Änderungen speichern",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "review_title": "{name} bewerten",
+      "rating": "Bewertung",
+      "photo": "Foto",
+      "submit_review": "Bewertung senden"
     },
     "placeholders": {
       "name": "Sticker Pack...",

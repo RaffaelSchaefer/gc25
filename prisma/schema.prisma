@@ -160,6 +160,7 @@ model Goodie {
   createdBy      User         @relation("GoodiesCreated", fields: [createdById], references: [id], onDelete: Cascade)
   votes          GoodieVote[]
   collections    GoodieCollection[]
+  reviews       GoodieReview[]
 
   @@index([createdById])
   @@index([type])
@@ -193,6 +194,23 @@ model GoodieCollection {
   @@unique([userId, goodieId])
   @@index([goodieId])
   @@map("goodie_collection")
+}
+
+model GoodieReview {
+  id         String   @id @default(uuid())
+  userId     String
+  goodieId   String
+  rating     Int
+  imageBytes Bytes?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goodie Goodie @relation(fields: [goodieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goodieId])
+  @@index([goodieId])
+  @@map("goodie_review")
 }
 
 enum GoodieType {

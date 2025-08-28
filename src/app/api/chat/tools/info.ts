@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ctxOf, fromCache, getSessionFromHeaders, Session } from "../utils";
+import { getGoodieById } from "@/app/(server)/goodies.actions";
 
 export const getEventInformation = tool({
   description: "Return EventCardEvent for a given event ID.",
@@ -73,44 +74,8 @@ export const getGoodieInformation = tool({
       (ctx.headers ? await getSessionFromHeaders(ctx.headers) : null);
 
     return fromCache(options, `good:${goodieId}`, async () => {
-      const g = await prisma.goodie.findUnique({
-        where: { id: goodieId },
-        include: {
-          createdBy: { select: { id: true, name: true, image: true } },
-        },
-      });
-      if (!g) return { error: "Goodie not found" };
-
-      const collected =
-        !!session &&
-        !!(await prisma.goodieCollection.findFirst({
-          where: { userId: session.user.id, goodieId },
-          select: { id: true },
-        }));
-
-      const votes = await prisma.goodieVote.findMany({
-        where: { goodieId },
-        select: { value: true },
-      });
-      const totalScore = votes.reduce((a, v) => a + v.value, 0);
-
-      const goodie = {
-        id: g.id,
-        createdAt: g.createdAt.toISOString(),
-        updatedAt: g.updatedAt.toISOString(),
-        createdById: g.createdById,
-        type: g.type,
-        name: g.name,
-        location: g.location,
-        instructions: g.instructions,
-        date: g.date ? g.date.toISOString() : null,
-        registrationUrl: g.registrationUrl ?? null,
-        collected,
-        totalScore,
-        createdBy: g.createdBy
-          ? { name: g.createdBy.name, image: g.createdBy.image ?? null }
-          : undefined,
-      };
+      const goodie = await getGoodieById(goodieId);
+      if (!goodie) return { error: "Goodie not found" };
       return goodie;
     });
   },
